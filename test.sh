@@ -39,8 +39,17 @@ send_request '{"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}'
 # Test 3: Recherche de documentation
 send_request '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "search_spring_docs", "arguments": {"query": "REST API", "limit": 3}}}' "Recherche de documentation REST API"
 
-# Test 4: Recherche de concepts
-send_request '{"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "search_spring_concepts", "arguments": {"concept": "auto-configuration"}}}' "Recherche du concept auto-configuration"
+# Test 4: Recherche de projets Spring
+send_request '{"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "search_spring_projects", "arguments": {"query": "security", "limit": 3}}}' "Recherche de projets Spring Security"
+
+# Test 5: Détails d'un projet Spring
+send_request '{"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "get_spring_project", "arguments": {"projectName": "spring-boot"}}}' "Détails du projet Spring Boot"
+
+# Test 6: Liste des guides Spring
+send_request '{"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "get_all_spring_guides", "arguments": {"category": "Web", "limit": 5}}}' "Guides Spring catégorie Web"
+
+# Test 7: Recherche de concepts
+send_request '{"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "search_spring_concepts", "arguments": {"concept": "auto-configuration"}}}' "Recherche du concept auto-configuration"
 
 echo -e "\n✅ Tests terminés!"
 echo ""

@@ -1,32 +1,37 @@
-# Serveur MCP Spring Boot Documentation
+# 📚 Spring Documentation MCP Server
 
-Un serveur MCP (Model Context Protocol) en TypeScript qui permet d'accéder facilement à la documentation officielle de Spring Boot. Ce serveur récupère et formate le contenu depuis `docs.spring.io` et l'expose via une interface MCP standardisée.
+[![npm version](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp.svg)](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![GitHub](https://img.shields.io/badge/GitHub-tky0065/springdocs--mcp-blue.svg)](https://github.com/tky0065/springdocs-mcp)
 
-## 🎯 Objectifs
+Un serveur **Model Context Protocol (MCP)** public qui donne accès à toute la documentation Spring Boot et l'écosystème Spring complet directement dans Claude Desktop.
 
-- ✅ Fournir un accès programmatique à la documentation Spring Boot
-- ✅ Supporter le protocole MCP 2024-11-05
-- ✅ Convertir le HTML en format Markdown lisible
-- ✅ Offrir une interface simple et bien documentée
-
-## 🚀 Installation
-
-### Prérequis
-
-- Node.js 18 ou plus récent
-- npm ou yarn
-
-### Installation des dépendances
+## 🚀 Installation rapide
 
 ```bash
-npm install
+npm install -g @enokdev/springdocs-mcp
 ```
 
-### Compilation
-
-```bash
-npm run build
+Puis ajoutez à votre `claude_desktop_config.json` :
+```json
+{
+  "mcpServers": {
+    "spring-docs": {
+      "command": "springdocs-mcp"
+    }
+  }
+}
 ```
+
+## ✨ Fonctionnalités
+
+- 🌐 **Accès complet** à spring.io/projects (tous les projets Spring)
+- 📖 **Guides pratiques** spring.io/guides avec filtrage
+- 📚 **Documentation de référence** docs.spring.io
+- � **Recherche intelligente** dans tout l'écosystème Spring
+- 💡 **Base de connaissances** intégrée des concepts Spring Boot
+- ⚡ **7 outils MCP** pour une exploration complète
 
 ## 🛠️ Utilisation
 
@@ -42,39 +47,69 @@ ou
 node build/index.js
 ```
 
-### Outils disponibles
+## 🛠️ Outils disponibles
 
-Le serveur expose 4 outils principaux :
+Le serveur MCP propose **7 outils** pour explorer la documentation Spring :
 
-#### 1. `search_spring_docs`
+### 1. `search_spring_docs`
 Recherche dans la documentation Spring Boot avec des mots-clés.
 
 **Paramètres :**
-- `query` (requis) : Les mots-clés à rechercher
-- `docType` (optionnel) : Type de documentation ("guides", "reference", "api", "all")
-- `limit` (optionnel) : Nombre maximum de résultats (défaut: 10)
+- `query` (string, requis) : Mots-clés à rechercher
+- `docType` (string, optionnel) : Type de documentation (`guides`, `reference`, `api`, `all`)
+- `limit` (number, optionnel) : Nombre maximum de résultats (défaut: 10)
 
-#### 2. `get_spring_guide`
+### 2. `search_spring_projects`
+Recherche parmi tous les projets Spring disponibles sur spring.io/projects.
+
+**Paramètres :**
+- `query` (string, requis) : Mots-clés à rechercher dans les projets Spring
+- `limit` (number, optionnel) : Nombre maximum de projets à retourner (défaut: 10)
+
+### 3. `get_spring_project`
+Récupère les détails complets d'un projet Spring spécifique.
+
+**Paramètres :**
+- `projectName` (string, requis) : Nom du projet Spring (ex: `spring-boot`, `spring-security`)
+
+### 4. `get_all_spring_guides`
+Récupère la liste de tous les guides Spring disponibles, optionnellement filtrés par catégorie.
+
+**Paramètres :**
+- `category` (string, optionnel) : Catégorie de guides à filtrer
+- `limit` (number, optionnel) : Nombre maximum de guides (défaut: 20)
+
+### 5. `get_spring_guide`
 Récupère le contenu complet d'un guide Spring Boot spécifique.
 
 **Paramètres :**
-- `guideId` (requis) : L'identifiant du guide (ex: "gs-rest-service")
+- `guideId` (string, requis) : Identifiant du guide (ex: `gs-rest-service`)
 
-#### 3. `get_spring_reference`
-Récupère une section spécifique de la documentation de référence.
-
-**Paramètres :**
-- `section` (requis) : La section de la documentation (ex: "web", "data")
-- `subsection` (optionnel) : Sous-section pour une recherche plus précise
-
-#### 4. `search_spring_concepts`
-Recherche des concepts Spring Boot par catégorie avec des explications détaillées.
+### 6. `get_spring_reference`
+Récupère une section spécifique de la documentation de référence Spring Boot.
 
 **Paramètres :**
-- `concept` (requis) : Le concept à rechercher (ex: "auto-configuration")
-- `category` (optionnel) : Catégorie du concept ("core", "web", "data", "security", "testing", "production")
+- `section` (string, requis) : Section de la documentation (ex: `web`, `data`, `security`)
+- `subsection` (string, optionnel) : Sous-section pour une recherche plus précise
 
-## 🔧 Configuration avec Claude Desktop
+### 7. `search_spring_concepts`
+Recherche des concepts Spring Boot par catégorie avec explications détaillées.
+
+**Paramètres :**
+- `concept` (string, requis) : Concept à rechercher (ex: `auto-configuration`)
+- `category` (string, optionnel) : Catégorie (`core`, `web`, `data`, `security`, `testing`, `production`)
+
+## � Sources de documentation
+
+Ce serveur MCP accède aux sources de documentation Spring suivantes :
+
+- **🌟 [spring.io/projects](https://spring.io/projects)** - Tous les projets Spring (Boot, Security, Data, Cloud, etc.)
+- **📖 [spring.io/guides](https://spring.io/guides)** - Guides pratiques et tutoriels
+- **📚 [docs.spring.io](https://docs.spring.io)** - Documentation de référence officielle
+- **🔧 API Documentation** - Documentation des classes et méthodes
+- **💡 Base de connaissances intégrée** - Concepts et bonnes pratiques Spring Boot
+
+## �🔧 Configuration avec Claude Desktop
 
 Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante dans votre fichier `claude_desktop_config.json` :
 
@@ -99,6 +134,21 @@ Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante 
 ### Recherche générale
 ```
 Recherche "REST API" dans la documentation Spring Boot
+```
+
+### Recherche de projets Spring
+```
+Trouve des projets Spring liés à "security"
+```
+
+### Détails d'un projet spécifique
+```
+Montre-moi les détails du projet "spring-boot"
+```
+
+### Liste des guides par catégorie
+```
+Quels sont les guides Spring pour la catégorie "Web" ?
 ```
 
 ### Récupération d'un guide spécifique

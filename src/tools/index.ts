@@ -33,6 +33,62 @@ export class ToolDefinitions {
         },
       },
       {
+        name: "search_spring_projects",
+        description: "Recherche parmi tous les projets Spring disponibles sur spring.io/projects",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "Les mots-clés à rechercher dans les projets Spring (ex: 'security', 'data', 'cloud')",
+            },
+            limit: {
+              type: "number",
+              description: "Nombre maximum de projets à retourner",
+              default: 10,
+              minimum: 1,
+              maximum: 20,
+            },
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "get_spring_project",
+        description: "Récupère les détails complets d'un projet Spring spécifique",
+        inputSchema: {
+          type: "object",
+          properties: {
+            projectName: {
+              type: "string",
+              description: "Le nom du projet Spring (ex: 'spring-boot', 'spring-security', 'spring-data')",
+            },
+          },
+          required: ["projectName"],
+        },
+      },
+      {
+        name: "get_all_spring_guides",
+        description: "Récupère la liste de tous les guides Spring disponibles, optionnellement filtrés par catégorie",
+        inputSchema: {
+          type: "object",
+          properties: {
+            category: {
+              type: "string",
+              description: "Catégorie de guides à filtrer (ex: 'Web', 'Data', 'Security', 'Testing')",
+            },
+            limit: {
+              type: "number",
+              description: "Nombre maximum de guides à retourner",
+              default: 20,
+              minimum: 1,
+              maximum: 50,
+            },
+          },
+          required: [],
+        },
+      },
+      {
         name: "get_spring_guide",
         description: "Récupère le contenu complet d'un guide Spring Boot spécifique",
         inputSchema: {

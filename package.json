@@ -1,26 +1,49 @@
 {
-  "name": "springboot-mcp-server",
-  "version": "1.0.0",
-  "description": "Un serveur MCP pour accéder à la documentation Spring Boot",
+  "name": "@enokdev/springdocs-mcp",
+  "version": "1.1.0",
+  "description": "Public MCP server for accessing Spring Boot documentation and the complete Spring ecosystem",
   "type": "module",
   "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tky0065/springdocs-mcp.git"
+  },
+  "homepage": "https://github.com/tky0065/springdocs-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/tky0065/springdocs-mcp/issues"
+  },
   "bin": {
-    "springboot-mcp-server": "build/index.js"
+    "springdocs-mcp": "build/index.js"
   },
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
     "dev": "npm run build && node build/index.js",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "test": "node test.sh",
+    "install-global": "npm install -g ."
   },
   "keywords": [
     "mcp",
     "spring-boot",
+    "spring-framework",
     "documentation",
-    "model-context-protocol"
+    "model-context-protocol",
+    "spring-ecosystem",
+    "claude",
+    "ai-assistant",
+    "java",
+    "spring-docs"
   ],
-  "author": "Yacoub Akone",
+  "author": "EnokDev <enokdev@example.com> (https://github.com/tky0065)",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
     "cheerio": "^1.0.0-rc.12",
@@ -28,11 +51,8 @@
     "turndown": "^7.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/turndown": "^5.0.4",
+    "@types/node": "^20.0.0",
+    "@types/turndown": "^5.0.0",
     "typescript": "^5.3.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }

@@ -17,7 +17,7 @@ class SpringBootMCPServer {
     this.server = new Server(
       {
         name: "springboot-mcp-server",
-        version: "1.0.0",
+        version: "1.1.0",
       },
       {
         capabilities: {
@@ -47,6 +47,15 @@ class SpringBootMCPServer {
           case "search_spring_docs":
             return await this.handleSearchDocs(args);
           
+          case "search_spring_projects":
+            return await this.handleSearchProjects(args);
+          
+          case "get_spring_project":
+            return await this.handleGetProject(args);
+          
+          case "get_all_spring_guides":
+            return await this.handleGetAllGuides(args);
+          
           case "get_spring_guide":
             return await this.handleGetGuide(args);
           
@@ -72,6 +81,59 @@ class SpringBootMCPServer {
         };
       }
     });
+  }
+
+  private async handleSearchProjects(args: any) {
+    const { query, limit = 10 } = args;
+    
+    if (!query || typeof query !== "string") {
+      throw new Error("Le paramètre 'query' est requis et doit être une chaîne de caractères");
+    }
+
+    const results = await this.docsService.searchSpringProjects(query, limit);
+    
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Projets Spring trouvés pour "${query}":\n\n${this.formatSearchResults(results)}`,
+        },
+      ],
+    };
+  }
+
+  private async handleGetProject(args: any) {
+    const { projectName } = args;
+    
+    if (!projectName || typeof projectName !== "string") {
+      throw new Error("Le paramètre 'projectName' est requis et doit être une chaîne de caractères");
+    }
+
+    const project = await this.docsService.getSpringProject(projectName);
+    
+    return {
+      content: [
+        {
+          type: "text",
+          text: project,
+        },
+      ],
+    };
+  }
+
+  private async handleGetAllGuides(args: any) {
+    const { category, limit = 20 } = args;
+
+    const results = await this.docsService.getAllSpringGuides(category, limit);
+    
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Guides Spring disponibles${category ? ` dans la catégorie "${category}"` : ""}:\n\n${this.formatSearchResults(results)}`,
+        },
+      ],
+    };
   }
 
   private async handleSearchDocs(args: any) {

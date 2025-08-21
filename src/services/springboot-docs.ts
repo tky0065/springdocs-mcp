@@ -20,8 +20,293 @@ export class SpringBootDocsService {
   }
 
   /**
-   * Recherche dans la documentation Spring Boot
+   * Recherche dans tous les projets Spring
    */
+  async searchSpringProjects(query: string, limit: number = 10) {
+    try {
+      const response = await fetch(this.springProjectsUrl);
+      
+      if (!response.ok) {
+        throw new Error('Impossible d\'accéder à la page des projets Spring');
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      
+      const projects: any[] = [];
+      
+      // Extraire les projets depuis la page
+      $('.project-list .project, .project-item, .card').each((index: number, element: any) => {
+        const $project = $(element);
+        const title = $project.find('h2, h3, .title, .project-title').first().text().trim();
+        const description = $project.find('p, .description, .summary').first().text().trim();
+        const link = $project.find('a').first().attr('href');
+        
+        if (title && (
+          title.toLowerCase().includes(query.toLowerCase()) ||
+          description.toLowerCase().includes(query.toLowerCase())
+        )) {
+          projects.push({
+            type: 'spring-project',
+            title: title,
+            description: description,
+            url: link?.startsWith('http') ? link : `https://spring.io${link}`,
+          });
+        }
+      });
+
+      // Si peu de résultats, ajouter des projets populaires
+      if (projects.length < 3) {
+        const popularProjects = this.getPopularSpringProjects()
+          .filter(project => 
+            project.title.toLowerCase().includes(query.toLowerCase()) ||
+            project.description.toLowerCase().includes(query.toLowerCase()) ||
+            project.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
+          );
+        
+        projects.push(...popularProjects);
+      }
+
+      return projects.slice(0, limit);
+    } catch (error) {
+      console.error('Erreur lors de la recherche des projets Spring:', error);
+      // Fallback sur les projets populaires
+      return this.getPopularSpringProjects()
+        .filter(project => 
+          project.title.toLowerCase().includes(query.toLowerCase()) ||
+          project.description.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, limit);
+    }
+  }
+
+  /**
+   * Récupère les détails d'un projet Spring spécifique
+   */
+  async getSpringProject(projectName: string): Promise<string> {
+    try {
+      const url = `${this.springProjectsUrl}/${projectName}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Projet non trouvé: ${projectName}`);
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      
+      // Extrait le contenu principal du projet
+      const content = $('.project-overview, .content, main, .project-details').first();
+      
+      if (content.length === 0) {
+        throw new Error('Contenu du projet non trouvé');
+      }
+
+      // Nettoie et convertit en Markdown
+      this.cleanHtml($, content);
+      const markdown = this.turndownService.turndown(content.html() || '');
+      
+      // Ajouter des informations supplémentaires
+      const version = $('.version, .current-version').first().text().trim();
+      const status = $('.status, .project-status').first().text().trim();
+      
+      let result = `# Projet Spring: ${projectName}\n\n`;
+      if (version) result += `**Version actuelle:** ${version}\n\n`;
+      if (status) result += `**Statut:** ${status}\n\n`;
+      result += markdown;
+      
+      return result;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération du projet ${projectName}:`, error);
+      throw new Error(`Impossible de récupérer le projet: ${projectName}`);
+    }
+  }
+
+  /**
+   * Récupère tous les guides Spring disponibles
+   */
+  async getAllSpringGuides(category?: string, limit: number = 20) {
+    try {
+      const response = await fetch(this.springGuideUrl);
+      
+      if (!response.ok) {
+        throw new Error('Impossible d\'accéder à la page des guides Spring');
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      
+      const guides: any[] = [];
+      
+      // Extraire les guides depuis la page
+      $('.guide-list .guide, .guide-item, .card').each((index: number, element: any) => {
+        const $guide = $(element);
+        const title = $guide.find('h2, h3, .title, .guide-title').first().text().trim();
+        const description = $guide.find('p, .description, .summary').first().text().trim();
+        const link = $guide.find('a').first().attr('href');
+        const guideCategory = $guide.find('.category, .tag').first().text().trim();
+        
+        if (title && (!category || guideCategory.toLowerCase().includes(category.toLowerCase()))) {
+          guides.push({
+            type: 'spring-guide',
+            title: title,
+            description: description,
+            category: guideCategory,
+            url: link?.startsWith('http') ? link : `https://spring.io${link}`,
+            id: link?.split('/').pop()?.replace('.html', '') || title.toLowerCase().replace(/\s+/g, '-'),
+          });
+        }
+      });
+
+      // Si peu de résultats, ajouter des guides populaires
+      if (guides.length < 5) {
+        const popularGuides = this.getPopularSpringGuides();
+        guides.push(...popularGuides);
+      }
+
+      return guides.slice(0, limit);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des guides Spring:', error);
+      // Fallback sur les guides populaires
+      return this.getPopularSpringGuides().slice(0, limit);
+    }
+  }
+
+  /**
+   * Liste des projets Spring populaires
+   */
+  private getPopularSpringProjects() {
+    return [
+      {
+        type: 'spring-project',
+        title: 'Spring Boot',
+        description: 'Créez des applications Spring de qualité production facilement',
+        url: 'https://spring.io/projects/spring-boot',
+        keywords: ['boot', 'microservices', 'web', 'standalone'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring Framework',
+        description: 'Le framework Java le plus populaire pour créer des applications d\'entreprise',
+        url: 'https://spring.io/projects/spring-framework',
+        keywords: ['framework', 'core', 'mvc', 'ioc', 'dependency injection'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring Data',
+        description: 'Fournit un modèle de programmation familier pour l\'accès aux données',
+        url: 'https://spring.io/projects/spring-data',
+        keywords: ['data', 'jpa', 'mongodb', 'redis', 'repository'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring Security',
+        description: 'Framework de sécurité puissant et hautement personnalisable',
+        url: 'https://spring.io/projects/spring-security',
+        keywords: ['security', 'authentication', 'authorization', 'oauth'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring Cloud',
+        description: 'Outils pour développer rapidement des patterns de systèmes distribués',
+        url: 'https://spring.io/projects/spring-cloud',
+        keywords: ['cloud', 'microservices', 'distributed', 'netflix'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring Integration',
+        description: 'Implémentation des Enterprise Integration Patterns',
+        url: 'https://spring.io/projects/spring-integration',
+        keywords: ['integration', 'messaging', 'endpoints', 'channels'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring Batch',
+        description: 'Framework pour le traitement batch robuste',
+        url: 'https://spring.io/projects/spring-batch',
+        keywords: ['batch', 'processing', 'jobs', 'steps'],
+      },
+      {
+        type: 'spring-project',
+        title: 'Spring WebFlux',
+        description: 'Framework web réactif pour Spring',
+        url: 'https://spring.io/projects/spring-framework',
+        keywords: ['reactive', 'webflux', 'non-blocking', 'async'],
+      },
+    ];
+  }
+
+  /**
+   * Liste des guides Spring populaires
+   */
+  private getPopularSpringGuides() {
+    return [
+      {
+        type: 'spring-guide',
+        title: 'Building a RESTful Web Service',
+        description: 'Apprendre à créer un service web RESTful avec Spring Boot',
+        category: 'Web',
+        url: 'https://spring.io/guides/gs/rest-service/',
+        id: 'gs-rest-service',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Building an Application with Spring Boot',
+        description: 'Apprendre à construire une application avec une configuration minimale',
+        category: 'Getting Started',
+        url: 'https://spring.io/guides/gs/spring-boot/',
+        id: 'gs-spring-boot',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Accessing Data with JPA',
+        description: 'Apprendre à travailler avec la persistance de données JPA',
+        category: 'Data',
+        url: 'https://spring.io/guides/gs/accessing-data-jpa/',
+        id: 'gs-accessing-data-jpa',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Securing a Web Application',
+        description: 'Apprendre à protéger votre application web avec Spring Security',
+        category: 'Security',
+        url: 'https://spring.io/guides/gs/securing-web/',
+        id: 'gs-securing-web',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Building a RESTful Web Service with Spring Boot Actuator',
+        description: 'Apprendre à créer un service prêt pour la production',
+        category: 'Production',
+        url: 'https://spring.io/guides/gs/actuator-service/',
+        id: 'gs-actuator-service',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Testing the Web Layer',
+        description: 'Apprendre à tester les applications Spring Boot',
+        category: 'Testing',
+        url: 'https://spring.io/guides/gs/testing-web/',
+        id: 'gs-testing-web',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Building a Reactive RESTful Web Service',
+        description: 'Créer des services web réactifs avec Spring WebFlux',
+        category: 'Reactive',
+        url: 'https://spring.io/guides/gs/reactive-rest-service/',
+        id: 'gs-reactive-rest-service',
+      },
+      {
+        type: 'spring-guide',
+        title: 'Consuming a RESTful Web Service',
+        description: 'Apprendre à récupérer des données depuis un endpoint REST',
+        category: 'Web',
+        url: 'https://spring.io/guides/gs/consuming-rest/',
+        id: 'gs-consuming-rest',
+      },
+    ];
+  }
   async searchDocumentation(query: string, docType: string = 'all', limit: number = 10) {
     const results: any[] = [];
 
