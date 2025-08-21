@@ -1,0 +1,38 @@
+{
+  "name": "springboot-mcp-server",
+  "version": "1.0.0",
+  "description": "Un serveur MCP pour accéder à la documentation Spring Boot",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "springboot-mcp-server": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "start": "node build/index.js",
+    "dev": "npm run build && node build/index.js",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "mcp",
+    "spring-boot",
+    "documentation",
+    "model-context-protocol"
+  ],
+  "author": "Yacoub Akone",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "cheerio": "^1.0.0-rc.12",
+    "node-fetch": "^3.3.2",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/turndown": "^5.0.4",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

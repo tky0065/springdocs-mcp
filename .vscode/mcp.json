@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "springboot-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["build/index.js"]
+    }
+  }
+}

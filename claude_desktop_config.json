@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "springboot-docs": {
+      "command": "node",
+      "args": ["/Users/yacoubakone/Documents/dev/springdocsmcp/build/index.js"]
+    }
+  }
+}
