@@ -1,0 +1,7 @@
+{
+  "claude.mcpServers": {
+    "spring-docs": {
+      "command": "/opt/homebrew/bin/springdocs-mcp"
+    }
+  }
+}

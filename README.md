@@ -128,6 +128,44 @@ To use this server with Claude Desktop, add the following configuration to your 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\\Claude\\claude_desktop_config.json`
 
+## 🛠️ Configuration with JetBrains IDEs
+
+### Automatic Setup (Recommended)
+
+Run the automatic configuration script:
+
+```bash
+./setup-jetbrains.sh
+```
+
+This will configure the MCP server for all your installed JetBrains IDEs:
+- **IntelliJ IDEA** (Ultimate & Community)
+- **WebStorm**
+- **PyCharm** (Professional & Community)
+- **PhpStorm**, **RubyMine**, **CLion**, **GoLand**, **Rider**, **DataGrip**
+
+### Manual Configuration
+
+Add to your IDE's Claude plugin configuration:
+
+```json
+{
+  "spring-docs": {
+    "command": "/opt/homebrew/bin/springdocs-mcp",
+    "description": "Spring Documentation MCP Server"
+  }
+}
+```
+
+### Usage in JetBrains IDEs
+
+Once configured, you can ask Claude in your IDE:
+- "What Spring projects are available for security?"
+- "Show me the Spring Boot REST API guide"
+- "Explain Spring Boot auto-configuration"
+
+See [JETBRAINS_SETUP.md](JETBRAINS_SETUP.md) for detailed instructions.
+
 ## 📚 Usage Examples
 
 ### General search
