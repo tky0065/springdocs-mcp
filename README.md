@@ -5,15 +5,15 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![GitHub](https://img.shields.io/badge/GitHub-tky0065/springdocs--mcp-blue.svg)](https://github.com/tky0065/springdocs-mcp)
 
-Un serveur **Model Context Protocol (MCP)** public qui donne accès à toute la documentation Spring Boot et l'écosystème Spring complet directement dans Claude Desktop.
+A public **Model Context Protocol (MCP)** server that provides access to the complete Spring Boot documentation and Spring ecosystem directly in Claude Desktop.
 
-## 🚀 Installation rapide
+## 🚀 Quick Installation
 
 ```bash
 npm install -g @enokdev/springdocs-mcp
 ```
 
-Puis ajoutez à votre `claude_desktop_config.json` :
+Then add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
@@ -24,196 +24,270 @@ Puis ajoutez à votre `claude_desktop_config.json` :
 }
 ```
 
-## ✨ Fonctionnalités
+## ✨ Features
 
-- 🌐 **Accès complet** à spring.io/projects (tous les projets Spring)
-- 📖 **Guides pratiques** spring.io/guides avec filtrage
-- 📚 **Documentation de référence** docs.spring.io
-- � **Recherche intelligente** dans tout l'écosystème Spring
-- 💡 **Base de connaissances** intégrée des concepts Spring Boot
-- ⚡ **7 outils MCP** pour une exploration complète
+- 🌐 **Complete access** to spring.io/projects (all Spring projects)
+- 📖 **Practical guides** spring.io/guides with filtering
+- 📚 **Reference documentation** docs.spring.io
+- 🔍 **Intelligent search** across the entire Spring ecosystem
+- 💡 **Built-in knowledge base** of Spring Boot concepts and best practices
+- ⚡ **7 MCP tools** for comprehensive exploration
 
-## 🛠️ Utilisation
+## 🛠️ Usage
 
-### Démarrage du serveur
+### Starting the server
 
 ```bash
 npm start
 ```
 
-ou
+or
 
 ```bash
 node build/index.js
 ```
 
-## 🛠️ Outils disponibles
+## 🛠️ Available Tools
 
-Le serveur MCP propose **7 outils** pour explorer la documentation Spring :
+The MCP server provides **7 tools** to explore Spring documentation:
 
 ### 1. `search_spring_docs`
-Recherche dans la documentation Spring Boot avec des mots-clés.
+Search through Spring Boot documentation with keywords.
 
-**Paramètres :**
-- `query` (string, requis) : Mots-clés à rechercher
-- `docType` (string, optionnel) : Type de documentation (`guides`, `reference`, `api`, `all`)
-- `limit` (number, optionnel) : Nombre maximum de résultats (défaut: 10)
+**Parameters:**
+- `query` (string, required): Keywords to search for
+- `docType` (string, optional): Documentation type (`guides`, `reference`, `api`, `all`)
+- `limit` (number, optional): Maximum number of results (default: 10)
 
 ### 2. `search_spring_projects`
-Recherche parmi tous les projets Spring disponibles sur spring.io/projects.
+Search among all Spring projects available on spring.io/projects.
 
-**Paramètres :**
-- `query` (string, requis) : Mots-clés à rechercher dans les projets Spring
-- `limit` (number, optionnel) : Nombre maximum de projets à retourner (défaut: 10)
+**Parameters:**
+- `query` (string, required): Keywords to search in Spring projects
+- `limit` (number, optional): Maximum number of projects to return (default: 10)
 
 ### 3. `get_spring_project`
-Récupère les détails complets d'un projet Spring spécifique.
+Retrieve complete details of a specific Spring project.
 
-**Paramètres :**
-- `projectName` (string, requis) : Nom du projet Spring (ex: `spring-boot`, `spring-security`)
+**Parameters:**
+- `projectName` (string, required): Spring project name (e.g., `spring-boot`, `spring-security`)
 
 ### 4. `get_all_spring_guides`
-Récupère la liste de tous les guides Spring disponibles, optionnellement filtrés par catégorie.
+Retrieve a list of all available Spring guides, optionally filtered by category.
 
-**Paramètres :**
-- `category` (string, optionnel) : Catégorie de guides à filtrer
-- `limit` (number, optionnel) : Nombre maximum de guides (défaut: 20)
+**Parameters:**
+- `category` (string, optional): Guide category to filter by
+- `limit` (number, optional): Maximum number of guides (default: 20)
 
 ### 5. `get_spring_guide`
-Récupère le contenu complet d'un guide Spring Boot spécifique.
+Retrieve the complete content of a specific Spring Boot guide.
 
-**Paramètres :**
-- `guideId` (string, requis) : Identifiant du guide (ex: `gs-rest-service`)
+**Parameters:**
+- `guideId` (string, required): Guide identifier (e.g., `gs-rest-service`)
 
 ### 6. `get_spring_reference`
-Récupère une section spécifique de la documentation de référence Spring Boot.
+Retrieve a specific section of the Spring Boot reference documentation.
 
-**Paramètres :**
-- `section` (string, requis) : Section de la documentation (ex: `web`, `data`, `security`)
-- `subsection` (string, optionnel) : Sous-section pour une recherche plus précise
+**Parameters:**
+- `section` (string, required): Documentation section (e.g., `web`, `data`, `security`)
+- `subsection` (string, optional): Subsection for more precise search
 
 ### 7. `search_spring_concepts`
-Recherche des concepts Spring Boot par catégorie avec explications détaillées.
+Search Spring Boot concepts by category with detailed explanations.
 
-**Paramètres :**
-- `concept` (string, requis) : Concept à rechercher (ex: `auto-configuration`)
-- `category` (string, optionnel) : Catégorie (`core`, `web`, `data`, `security`, `testing`, `production`)
+**Parameters:**
+- `concept` (string, required): Concept to search for (e.g., `auto-configuration`)
+- `category` (string, optional): Category (`core`, `web`, `data`, `security`, `testing`, `production`)
 
-## � Sources de documentation
+## 📚 Documentation Sources
 
-Ce serveur MCP accède aux sources de documentation Spring suivantes :
+This MCP server accesses the following Spring documentation sources:
 
-- **🌟 [spring.io/projects](https://spring.io/projects)** - Tous les projets Spring (Boot, Security, Data, Cloud, etc.)
-- **📖 [spring.io/guides](https://spring.io/guides)** - Guides pratiques et tutoriels
-- **📚 [docs.spring.io](https://docs.spring.io)** - Documentation de référence officielle
-- **🔧 API Documentation** - Documentation des classes et méthodes
-- **💡 Base de connaissances intégrée** - Concepts et bonnes pratiques Spring Boot
+- **🌟 [spring.io/projects](https://spring.io/projects)** - All Spring projects (Boot, Security, Data, Cloud, etc.)
+- **📖 [spring.io/guides](https://spring.io/guides)** - Practical guides and tutorials
+- **📚 [docs.spring.io](https://docs.spring.io)** - Official reference documentation
+- **🔧 API Documentation** - Class and method documentation
+- **💡 Built-in knowledge base** - Spring Boot concepts and best practices
 
-## �🔧 Configuration avec Claude Desktop
+## 🔧 Configuration with Claude Desktop
 
-Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante dans votre fichier `claude_desktop_config.json` :
+To use this server with Claude Desktop, add the following configuration to your `claude_desktop_config.json` file:
 
 ```json
 {
   "mcpServers": {
-    "springboot-docs": {
-      "command": "node",
-      "args": ["/chemin/absolu/vers/springdocsmcp/build/index.js"]
+    "spring-docs": {
+      "command": "springdocs-mcp"
     }
   }
 }
 ```
 
-### Localisation du fichier de configuration
+### Configuration file location
 
-- **macOS** : `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows** : `%APPDATA%\\Claude\\claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\\Claude\\claude_desktop_config.json`
 
-## 📚 Exemples d'utilisation
+## 📚 Usage Examples
 
-### Recherche générale
+### General search
 ```
-Recherche "REST API" dans la documentation Spring Boot
-```
-
-### Recherche de projets Spring
-```
-Trouve des projets Spring liés à "security"
+Search for "REST API" in Spring Boot documentation
 ```
 
-### Détails d'un projet spécifique
+### Spring project search
 ```
-Montre-moi les détails du projet "spring-boot"
-```
-
-### Liste des guides par catégorie
-```
-Quels sont les guides Spring pour la catégorie "Web" ?
+Find Spring projects related to "security"
 ```
 
-### Récupération d'un guide spécifique
+### Specific project details
 ```
-Récupère le guide "gs-rest-service"
-```
-
-### Exploration des concepts
-```
-Explique le concept "auto-configuration" dans Spring Boot
+Show me details of the "spring-boot" project
 ```
 
-## 🏗️ Architecture
-
-Le projet est organisé comme suit :
-
+### Guides by category
 ```
-src/
-├── index.ts              # Point d'entrée principal
-├── services/
-│   └── springboot-docs.ts # Service de récupération de documentation
-└── tools/
-    └── index.ts          # Définitions des outils MCP
+What are the Spring guides for the "Web" category?
 ```
 
-### Composants principaux
+### Specific guide retrieval
+```
+Retrieve the "gs-rest-service" guide
+```
 
-- **SpringBootMCPServer** : Serveur MCP principal qui gère les requêtes
-- **SpringBootDocsService** : Service pour récupérer et traiter la documentation
-- **ToolDefinitions** : Définitions des outils exposés via MCP
+### Concept exploration
+```
+Explain Spring Boot auto-configuration
+```
 
-## 🔒 Sécurité
+### Reference documentation
+```
+Show me the Spring Boot web documentation
+```
 
-- Le serveur accède uniquement aux ressources publiques de `docs.spring.io`
-- Aucune donnée sensible n'est stockée ou transmise
-- Toutes les requêtes HTTP sont en lecture seule
+## 🚀 Development
 
-## 🐛 Dépannage
+### Prerequisites
+- Node.js >= 18.0.0
+- npm >= 8.0.0
 
-### Erreurs courantes
+### Installation for development
+```bash
+# Clone the repository
+git clone https://github.com/tky0065/springdocs-mcp.git
+cd springdocs-mcp
 
-1. **"Cannot find module"** : Vérifiez que `npm install` a été exécuté
-2. **"Serveur non démarré"** : Vérifiez que la compilation avec `npm run build` s'est bien passée
-3. **"Documentation non trouvée"** : Vérifiez votre connexion internet
+# Install dependencies
+npm install
 
-### Logs
+# Build the project
+npm run build
+```
 
-Le serveur écrit ses logs sur `stderr` pour éviter d'interférer avec le protocole MCP sur `stdout`.
+### Testing
+```bash
+# Run tests
+npm test
 
-## 🤝 Contribution
+# Or use the test script
+./test.sh
+```
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
+### Available Scripts
+- `npm run build` - Compile TypeScript
+- `npm run start` - Start the server
+- `npm run dev` - Development mode with auto-reload
+- `npm run watch` - Watch mode for TypeScript
 
-1. Forker le projet
-2. Créer une branche pour votre fonctionnalité
-3. Commiter vos changements
-4. Pousser vers la branche
-5. Ouvrir une Pull Request
+## 🧪 Testing
 
-## 📄 Licence
+Test the server functionality:
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+```bash
+# Test all tools
+./test.sh
 
-## 🔗 Ressources utiles
+# Or test manually
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}' | node build/index.js
+```
 
-- [Documentation Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [SDK MCP TypeScript](https://github.com/modelcontextprotocol/typescript-sdk)
+## 📝 Example Requests
+
+### Initialize the server
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {},
+    "clientInfo": {"name": "test", "version": "1.0.0"}
+  }
+}
+```
+
+### Search Spring projects
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "search_spring_projects",
+    "arguments": {"query": "security", "limit": 3}
+  }
+}
+```
+
+### Get Spring Boot project details
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "get_spring_project",
+    "arguments": {"projectName": "spring-boot"}
+  }
+}
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- **npm package**: https://www.npmjs.com/package/@enokdev/springdocs-mcp
+- **GitHub repository**: https://github.com/tky0065/springdocs-mcp
+- **Issues**: https://github.com/tky0065/springdocs-mcp/issues
+- **Documentation**: https://tky0065.github.io/springdocs-mcp
+
+## 📊 Stats
+
+- **Downloads**: https://npm-stat.com/charts.html?package=@enokdev/springdocs-mcp
+- **GitHub Stars**: https://github.com/tky0065/springdocs-mcp/stargazers
+
+## 🙏 Acknowledgments
+
+- [Spring Framework Team](https://spring.io/team) for the excellent documentation
+- [Anthropic](https://www.anthropic.com/) for the Model Context Protocol
+- [Spring Community](https://spring.io/community) for continuous support
+
+---
+
+**Made with ❤️ by [EnokDev](https://github.com/tky0065)**
+
+*Access the complete Spring ecosystem directly in Claude Desktop!*
