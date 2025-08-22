@@ -17,7 +17,7 @@ class SpringBootMCPServer {
     this.server = new Server(
       {
         name: "springboot-mcp-server",
-        version: "1.1.0",
+        version: "1.2.0",
       },
       {
         capabilities: {
@@ -69,6 +69,7 @@ class SpringBootMCPServer {
             throw new Error(`Outil inconnu: ${name}`);
         }
       } catch (error) {
+        console.error(`Erreur dans l'outil ${name}:`, error);
         const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
         return {
           content: [
@@ -255,9 +256,15 @@ class SpringBootMCPServer {
   }
 
   async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error("Serveur MCP Spring Boot démarré sur stdio");
+    try {
+      const transport = new StdioServerTransport();
+      console.error("Serveur MCP Spring Boot démarré sur stdio");
+      await this.server.connect(transport);
+      console.error("Serveur connecté avec succès");
+    } catch (error) {
+      console.error("Erreur lors du démarrage du serveur:", error);
+      throw error;
+    }
   }
 }
 
@@ -279,9 +286,7 @@ process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
 });
 
 // Démarrage du serveur
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((error) => {
-    console.error("Erreur fatale:", error);
-    process.exit(1);
-  });
-}
+main().catch((error) => {
+  console.error("Erreur fatale:", error);
+  process.exit(1);
+});
