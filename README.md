@@ -9,6 +9,24 @@ A public **Model Context Protocol (MCP)** server that provides access to the com
 
 ## 🚀 Quick Installation
 
+### Option 1: Via npx (Recommended)
+```bash
+# No installation required! Always uses latest version
+```
+
+Then add to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "spring-docs": {
+      "command": "npx",
+      "args": ["@enokdev/springdocs-mcp@latest"]
+    }
+  }
+}
+```
+
+### Option 2: Global Installation
 ```bash
 npm install -g @enokdev/springdocs-mcp
 ```
@@ -111,8 +129,31 @@ This MCP server accesses the following Spring documentation sources:
 
 ## 🔧 Configuration with Claude Desktop
 
-To use this server with Claude Desktop, add the following configuration to your `claude_desktop_config.json` file:
+### Option 1: Via npx (Recommended - Always Latest)
+```json
+{
+  "mcpServers": {
+    "spring-docs": {
+      "command": "npx",
+      "args": ["@enokdev/springdocs-mcp@latest"]
+    }
+  }
+}
+```
 
+### Option 2: Fast npx (Skip confirmation)
+```json
+{
+  "mcpServers": {
+    "spring-docs": {
+      "command": "npx",
+      "args": ["-y", "@enokdev/springdocs-mcp@latest"]
+    }
+  }
+}
+```
+
+### Option 3: Global Installation
 ```json
 {
   "mcpServers": {

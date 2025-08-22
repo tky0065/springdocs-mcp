@@ -1,6 +1,6 @@
 {
   "name": "@enokdev/springdocs-mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Public MCP server for accessing Spring Boot documentation and the complete Spring ecosystem",
   "type": "module",
   "main": "build/index.js",
@@ -15,16 +15,24 @@
   "bin": {
     "springdocs-mcp": "build/index.js"
   },
+  "files": [
+    "build/**/*",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
     "dev": "npm run build && node build/index.js",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "test": "node test.sh",
+    "test": "bash test.sh",
+    "test-npx": "./test-npx.sh",
+    "setup-claude-npx": "./setup-claude-npx.sh",
     "install-global": "npm install -g .",
     "setup-jetbrains": "./setup-jetbrains.sh",
-    "setup-all": "npm run setup-jetbrains"
+    "setup-all": "npm run setup-jetbrains && npm run setup-claude-npx"
   },
   "keywords": [
     "mcp",
