@@ -1,0 +1,76 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    # 2. Lire la version du package.json
+    - name: Get version from package.json
+      id: version
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "version=v$VERSION" >> $GITHUB_OUTPUT
+        echo "Version detected: v$VERSION"
+    
+    # 3. Vérifier si le tag existe déjà
+    - name: Check if tag exists
+      id: tag_check
+      run: |
+        if git rev-parse "refs/tags/${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Tag ${{ steps.version.outputs.version }} already exists"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "Tag ${{ steps.version.outputs.version }} does not exist"
+        fi
+    
+    # 4. Créer le tag et la release seulement si le tag n'existe pas
+    - name: Create Tag and Release
+      if: steps.tag_check.outputs.exists == 'false'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Créer le tag
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag ${{ steps.version.outputs.version }}
+        git push origin ${{ steps.version.outputs.version }}
+        
+        # Créer la release avec GitHub CLI
+        gh release create ${{ steps.version.outputs.version }} \
+          --title "Release ${{ steps.version.outputs.version }}" \
+          --notes "## 🚀 Changes in ${{ steps.version.outputs.version }}
+        
+        - Automatic release from package.json version bump
+        - Check [CHANGELOG.md](CHANGELOG.md) for detailed changes
+        
+        ## 📦 Installation
+        \`\`\`bash
+        npx @enokdev/springdocs-mcp@latest
+        \`\`\`
+        
+        ## ⚙️ Configuration for Claude Desktop
+        \`\`\`json
+        {
+          \"mcpServers\": {
+            \"spring-docs\": {
+              \"command\": \"npx\",
+              \"args\": [\"@enokdev/springdocs-mcp@latest\"]
+            }
+          }
+        }
+        \`\`\`" \
+          --latest

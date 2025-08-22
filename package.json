@@ -29,10 +29,15 @@
     "prepublishOnly": "npm run build",
     "test": "bash test.sh",
     "test-npx": "./test-npx.sh",
-    "setup-claude-npx": "./setup-claude-npx.sh",
     "install-global": "npm install -g .",
-    "setup-jetbrains": "./setup-jetbrains.sh",
-    "setup-all": "npm run setup-jetbrains && npm run setup-claude-npx"
+    "version:patch": "npm version patch && git push origin main --follow-tags",
+    "version:minor": "npm version minor && git push origin main --follow-tags",
+    "version:major": "npm version major && git push origin main --follow-tags",
+    "release:dry": "npm publish --dry-run",
+    "release:manual": "npm run build && npm publish",
+    "release:check": "npm view @enokdev/springdocs-mcp version",
+    "cicd:setup": "./setup-cicd.sh",
+    "cicd:check": "./check-cicd.sh"
   },
   "keywords": [
     "mcp",
