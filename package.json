@@ -1,6 +1,6 @@
 {
   "name": "@enokdev/springdocs-mcp",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Public MCP server for accessing Spring Boot documentation and the complete Spring ecosystem",
   "type": "module",
   "main": "build/index.js",
