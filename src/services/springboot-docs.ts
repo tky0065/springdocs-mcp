@@ -340,32 +340,196 @@ export class SpringBootDocsService {
    * Récupère un guide Spring Boot spécifique
    */
   async getGuide(guideId: string): Promise<string> {
+    console.log(`Récupération du guide: ${guideId}`);
+    
+    // Fonction helper pour fetch avec timeout
+    const fetchWithTimeout = async (url: string, timeout = 10000) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      try {
+        const response = await fetch(url, { 
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Spring-Docs-MCP/1.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          }
+        });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+      }
+    };
+
     try {
-      const url = `${this.baseUrl}/guides/${guideId}/`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`Guide non trouvé: ${guideId}`);
+      let content = '';
+      let sourceUrl = '';
+
+      // 1. Essayer d'abord spring.io/guides
+      try {
+        console.log(`Tentative 1: spring.io/guides/${guideId}/`);
+        const url1 = `https://spring.io/guides/${guideId}/`;
+        const response1 = await fetchWithTimeout(url1);
+        
+        if (response1.ok) {
+          content = await response1.text();
+          sourceUrl = url1;
+          console.log(`✅ Succès avec spring.io (${content.length} chars)`);
+        } else {
+          console.log(`❌ spring.io failed: ${response1.status}`);
+        }
+      } catch (error) {
+        console.log(`❌ spring.io error:`, error instanceof Error ? error.message : 'Unknown error');
       }
 
-      const html = await response.text();
-      const $ = cheerio.load(html);
-      
-      // Extrait le contenu principal du guide
-      const content = $('.content, .guide-content, main').first();
-      
-      if (content.length === 0) {
-        throw new Error('Contenu du guide non trouvé');
+      // 2. Si échec, essayer GitHub raw
+      if (!content) {
+        try {
+          console.log(`Tentative 2: GitHub raw/${guideId}/main/README.adoc`);
+          const url2 = `https://raw.githubusercontent.com/spring-guides/${guideId}/main/README.adoc`;
+          const response2 = await fetchWithTimeout(url2);
+          
+          if (response2.ok) {
+            content = await response2.text();
+            sourceUrl = url2;
+            console.log(`✅ Succès avec GitHub raw (${content.length} chars)`);
+          } else {
+            console.log(`❌ GitHub raw failed: ${response2.status}`);
+          }
+        } catch (error) {
+          console.log(`❌ GitHub raw error:`, error instanceof Error ? error.message : 'Unknown error');
+        }
       }
 
-      // Nettoie et convertit en Markdown
-      this.cleanHtml($, content);
-      const markdown = this.turndownService.turndown(content.html() || '');
+      // 3. Si échec, essayer GitHub blob
+      if (!content) {
+        try {
+          console.log(`Tentative 3: GitHub blob/${guideId}/blob/main/README.adoc`);
+          const url3 = `https://github.com/spring-guides/${guideId}/blob/main/README.adoc`;
+          const response3 = await fetchWithTimeout(url3);
+          
+          if (response3.ok) {
+            content = await response3.text();
+            sourceUrl = url3;
+            console.log(`✅ Succès avec GitHub blob (${content.length} chars)`);
+          } else {
+            console.log(`❌ GitHub blob failed: ${response3.status}`);
+          }
+        } catch (error) {
+          console.log(`❌ GitHub blob error:`, error instanceof Error ? error.message : 'Unknown error');
+        }
+      }
+
+      if (!content) {
+        return `# Guide Spring: ${guideId}
+
+❌ **Guide non trouvé**
+
+Le guide "${guideId}" n'a pas pu être récupéré depuis aucune source.
+
+## 📚 Guides populaires disponibles:
+- \`gs-rest-service\` - Building a RESTful Web Service
+- \`gs-spring-boot\` - Building an Application with Spring Boot  
+- \`gs-accessing-data-jpa\` - Accessing Data with JPA
+- \`gs-securing-web\` - Securing a Web Application
+- \`gs-actuator-service\` - Building a RESTful Web Service with Spring Boot Actuator
+- \`gs-testing-web\` - Testing the Web Layer
+
+## 🔧 Outils alternatifs:
+1. \`get_all_spring_guides\` - Voir tous les guides disponibles
+2. \`search_spring_docs\` - Rechercher dans la documentation
+
+## 💡 Format d'identifiant:
+L'identifiant doit être au format: \`gs-nom-du-guide\``;
+      }
+
+      // Traitement du contenu selon le type
+      if (content.includes('<html') || content.includes('<!DOCTYPE')) {
+        // C'est du HTML (spring.io)
+        console.log('Processing HTML content...');
+        const $ = cheerio.load(content);
+        
+        // Chercher le contenu principal avec différents sélecteurs
+        let mainContent = $('.guide-content, .content, main, .container .row .col-md-8, .markdown-body, article').first();
+        
+        if (mainContent.length === 0) {
+          // Fallback: chercher le titre et le contenu
+          const title = $('h1, .guide-title').first().text().trim();
+          const bodyContent = $('.guide-body, .guide-content, .content').first();
+          if (bodyContent.length > 0) {
+            mainContent = bodyContent;
+          } else {
+            mainContent = $('body');
+          }
+        }
+        
+        if (mainContent.length > 0) {
+          // Nettoyer le HTML
+          this.cleanHtml($, mainContent);
+          const markdown = this.turndownService.turndown(mainContent.html() || '');
+          return `# Guide Spring: ${guideId}
+
+*Source: ${sourceUrl}*
+
+${markdown}`;
+        }
+      }
       
-      return `# Guide Spring Boot: ${guideId}\n\n${markdown}`;
+      // Si c'est de l'AsciiDoc ou du texte brut
+      if (content.includes('=') || content.includes(':toc:') || content.includes('== ') || content.includes('=== ')) {
+        console.log('Processing AsciiDoc content...');
+        // Traitement spécial pour AsciiDoc
+        let processedContent = content;
+        
+        // Convertir les titres AsciiDoc en Markdown
+        processedContent = processedContent
+          .replace(/^= (.+)$/gm, '# $1')
+          .replace(/^== (.+)$/gm, '## $1')
+          .replace(/^=== (.+)$/gm, '### $1')
+          .replace(/^==== (.+)$/gm, '#### $1')
+          .replace(/^\[source,(\w+)\]$/gm, '')
+          .replace(/^----$/gm, '```')
+          .replace(/^\+\+\+\+$/gm, '```');
+        
+        return `# Guide Spring: ${guideId}
+
+*Source: ${sourceUrl}*
+
+${processedContent}`;
+      }
+      
+      // Contenu par défaut (texte brut)
+      console.log('Processing plain text content...');
+      return `# Guide Spring: ${guideId}
+
+*Source: ${sourceUrl}*
+
+\`\`\`
+${content}
+\`\`\``;
+      
     } catch (error) {
       console.error(`Erreur lors de la récupération du guide ${guideId}:`, error);
-      throw new Error(`Impossible de récupérer le guide: ${guideId}`);
+      return `# Guide Spring: ${guideId}
+
+❌ **Erreur lors de la récupération du guide**
+
+Le guide "${guideId}" n'a pas pu être récupéré.
+
+## 🔧 Solutions possibles:
+1. Vérifiez l'identifiant du guide (format: \`gs-nom-du-guide\`)
+2. Utilisez \`get_all_spring_guides\` pour voir tous les guides disponibles
+3. Utilisez \`search_spring_docs\` pour rechercher dans la documentation
+
+## 📚 Guides populaires:
+- \`gs-rest-service\` - Creating a RESTful Web Service
+- \`gs-spring-boot\` - Building an Application with Spring Boot
+- \`gs-accessing-data-jpa\` - Accessing Data with JPA
+- \`gs-securing-web\` - Securing a Web Application
+
+**Erreur technique:** ${error instanceof Error ? error.message : 'Erreur inconnue'}`;
     }
   }
 
