@@ -9,7 +9,7 @@ export class SpringBootDocsService {
   private readonly baseUrl = 'https://docs.spring.io';
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
-  private readonly springBootVersion = '3.2.0'; // Version par défaut
+  private readonly springBootVersion = '3.5.5'; // Version par défaut
   private turndownService: TurndownService;
 
   constructor() {

@@ -1,8 +1,10 @@
 # Usage Examples - Spring Documentation MCP Server
 
-This file contains practical usage examples for the Spring Documentation MCP Server with Claude Desktop.
+This file contains practical usage examples for the Spring Documentation MCP Server with Claude Desktop and any MCP client.
 
-## 🚀 Usage Scenarios
+> **Universal Compatibility:** This server works with ANY MCP client, not just Claude Desktop! Compatible with all Model Context Protocol implementations.
+
+## Usage Scenarios
 
 ### 1. Discovering Spring Projects
 
@@ -54,7 +56,7 @@ This file contains practical usage examples for the Spring Documentation MCP Ser
 
 ---
 
-## 🎯 Specific Query Examples
+## Specific Query Examples
 
 ### Documentation Search
 ```
@@ -88,7 +90,7 @@ Claude uses: search_spring_concepts("actuator", "production")
 
 ---
 
-## 💡 Optimal Usage Tips
+## Optimal Usage Tips
 
 ### 1. Be Specific in Your Questions
 - ❌ "Spring Boot"
@@ -110,7 +112,7 @@ Claude uses: search_spring_concepts("actuator", "production")
 
 ---
 
-## 🔧 Recommended Workflows
+## Recommended Workflows
 
 ### Workflow 1: Discovering a New Domain
 1. **Search projects** → `search_spring_projects("domain")`
@@ -132,7 +134,7 @@ Claude uses: search_spring_concepts("actuator", "production")
 
 ---
 
-## 🌟 Advanced Use Cases
+## Advanced Use Cases
 
 ### Developing a Complete REST API
 ```
@@ -161,7 +163,7 @@ Claude uses: search_spring_concepts("actuator", "production")
 
 ---
 
-## 📖 Expected Response Types
+## Expected Response Types
 
 ### Search Results (search_*)
 - Resource titles

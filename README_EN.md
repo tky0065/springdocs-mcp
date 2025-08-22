@@ -1,14 +1,34 @@
-# 📚 Spring Documentation MCP Server
+# Spring Documentation MCP Server
 
 [![npm version](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp.svg)](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![GitHub](https://img.shields.io/badge/GitHub-tky0065/springdocs--mcp-blue.svg)](https://github.com/tky0065/springdocs-mcp)
 
-A public **Model Context Protocol (MCP)** server that provides access to the complete Spring Boot documentation and Spring ecosystem directly in Claude Desktop.
+A public **Model Context Protocol (MCP)** server that provides access to the complete Spring Boot documentation and Spring ecosystem directly in Claude Desktop and ANY MCP client.
 
-## 🚀 Quick Installation
+> **Universal Compatibility:** This server works with ANY MCP client, not just Claude Desktop! Compatible with all Model Context Protocol implementations.
 
+## Quick Installation
+
+### Option 1: Via npx (Recommended)
+```bash
+# No installation required! Always uses latest version
+```
+
+Then add to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "spring-docs": {
+      "command": "npx",
+      "args": ["@enokdev/springdocs-mcp@latest"]
+    }
+  }
+}
+```
+
+### Option 2: Global Installation
 ```bash
 npm install -g @enokdev/springdocs-mcp
 ```
@@ -24,30 +44,16 @@ Then add to your `claude_desktop_config.json`:
 }
 ```
 
-## ✨ Features
+## Features
 
-- 🌐 **Complete access** to spring.io/projects (all Spring projects)
-- 📖 **Practical guides** spring.io/guides with filtering
-- 📚 **Reference documentation** docs.spring.io
-- 🔍 **Intelligent search** across the entire Spring ecosystem
-- 💡 **Built-in knowledge base** of Spring Boot concepts and best practices
-- ⚡ **7 MCP tools** for comprehensive exploration
+- **Complete Spring Ecosystem Access** - Access to spring.io/projects (all Spring projects)
+- **Comprehensive Guides** - Practical guides from spring.io/guides with filtering
+- **Reference Documentation** - Complete docs.spring.io reference
+- **Intelligent Search** - Smart search across the entire Spring ecosystem
+- **Built-in Knowledge Base** - Spring Boot concepts and best practices
+- **7 Powerful MCP Tools** - Specialized tools for comprehensive exploration
 
-## 🛠️ Usage
-
-### Starting the server
-
-```bash
-npm start
-```
-
-or
-
-```bash
-node build/index.js
-```
-
-## 🛠️ Available Tools
+## Available Tools
 
 The MCP server provides **7 tools** to explore Spring documentation:
 

@@ -1,19 +1,39 @@
-# 📚 Spring Documentation MCP Server
+# Serveur MCP Documentation Spring
 
 [![npm version](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp.svg)](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![GitHub](https://img.shields.io/badge/GitHub-tky0065/springdocs--mcp-blue.svg)](https://github.com/tky0065/springdocs-mcp)
 
-A public **Model Context Protocol (MCP)** server that provides access to the complete Spring Boot documentation and Spring ecosystem directly in Claude Desktop.
+Un serveur **Model Context Protocol (MCP)** public qui fournit un accès à la documentation complète de Spring Boot et à l'écosystème Spring directement dans Claude Desktop et TOUT client MCP.
 
-## 🚀 Quick Installation
+> **Compatibilité Universelle :** Ce serveur fonctionne avec N'IMPORTE QUEL client MCP, pas seulement Claude Desktop ! Compatible avec toutes les implémentations du Model Context Protocol.
 
+## Installation Rapide
+
+### Option 1 : Via npx (Recommandé)
+```bash
+# Aucune installation requise ! Utilise toujours la dernière version
+```
+
+Puis ajoutez à votre `claude_desktop_config.json` :
+```json
+{
+  "mcpServers": {
+    "spring-docs": {
+      "command": "npx",
+      "args": ["@enokdev/springdocs-mcp@latest"]
+    }
+  }
+}
+```
+
+### Option 2 : Installation Globale
 ```bash
 npm install -g @enokdev/springdocs-mcp
 ```
 
-Then add to your `claude_desktop_config.json`:
+Puis ajoutez à votre `claude_desktop_config.json` :
 ```json
 {
   "mcpServers": {
@@ -24,16 +44,16 @@ Then add to your `claude_desktop_config.json`:
 }
 ```
 
-## ✨ Features
+## Fonctionnalités
 
-- 🌐 **Complete access** to spring.io/projects (all Spring projects)
-- 📖 **Practical guides** spring.io/guides with filtering
-- 📚 **Reference documentation** docs.spring.io
-- � **Recherche intelligente** dans tout l'écosystème Spring
-- 💡 **Base de connaissances** intégrée des concepts Spring Boot
-- ⚡ **7 outils MCP** pour une exploration complète
+- **Accès Complet à l'Écosystème Spring** - Accès à spring.io/projects (tous les projets Spring)
+- **Guides Complets** - Guides pratiques de spring.io/guides avec filtrage
+- **Documentation de Référence** - Documentation complète de docs.spring.io
+- **Recherche Intelligente** - Recherche intelligente dans tout l'écosystème Spring
+- **Base de Connaissances Intégrée** - Concepts et meilleures pratiques Spring Boot
+- **7 Outils MCP Puissants** - Outils spécialisés pour une exploration complète
 
-## 🛠️ Utilisation
+## Utilisation
 
 ### Démarrage du serveur
 
@@ -47,7 +67,7 @@ ou
 node build/index.js
 ```
 
-## 🛠️ Outils disponibles
+## Outils disponibles
 
 Le serveur MCP propose **7 outils** pour explorer la documentation Spring :
 
@@ -99,7 +119,7 @@ Recherche des concepts Spring Boot par catégorie avec explications détaillées
 - `concept` (string, requis) : Concept à rechercher (ex: `auto-configuration`)
 - `category` (string, optionnel) : Catégorie (`core`, `web`, `data`, `security`, `testing`, `production`)
 
-## � Sources de documentation
+## Sources de documentation
 
 Ce serveur MCP accède aux sources de documentation Spring suivantes :
 
@@ -109,7 +129,7 @@ Ce serveur MCP accède aux sources de documentation Spring suivantes :
 - **🔧 API Documentation** - Documentation des classes et méthodes
 - **💡 Base de connaissances intégrée** - Concepts et bonnes pratiques Spring Boot
 
-## �🔧 Configuration avec Claude Desktop
+## Configuration avec Claude Desktop
 
 Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante dans votre fichier `claude_desktop_config.json` :
 
@@ -129,7 +149,7 @@ Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante 
 - **macOS** : `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows** : `%APPDATA%\\Claude\\claude_desktop_config.json`
 
-## 📚 Exemples d'utilisation
+## Exemples d'utilisation
 
 ### Recherche générale
 ```
@@ -161,7 +181,7 @@ Récupère le guide "gs-rest-service"
 Explique le concept "auto-configuration" dans Spring Boot
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 Le projet est organisé comme suit :
 
@@ -180,13 +200,13 @@ src/
 - **SpringBootDocsService** : Service pour récupérer et traiter la documentation
 - **ToolDefinitions** : Définitions des outils exposés via MCP
 
-## 🔒 Sécurité
+## Sécurité
 
 - Le serveur accède uniquement aux ressources publiques de `docs.spring.io`
 - Aucune donnée sensible n'est stockée ou transmise
 - Toutes les requêtes HTTP sont en lecture seule
 
-## 🐛 Dépannage
+## Dépannage
 
 ### Erreurs courantes
 
@@ -198,7 +218,7 @@ src/
 
 Le serveur écrit ses logs sur `stderr` pour éviter d'interférer avec le protocole MCP sur `stdout`.
 
-## 🤝 Contribution
+## Contribution
 
 Les contributions sont les bienvenues ! N'hésitez pas à :
 
@@ -208,11 +228,11 @@ Les contributions sont les bienvenues ! N'hésitez pas à :
 4. Pousser vers la branche
 5. Ouvrir une Pull Request
 
-## 📄 Licence
+## Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
-## 🔗 Ressources utiles
+## Ressources utiles
 
 - [Documentation Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
