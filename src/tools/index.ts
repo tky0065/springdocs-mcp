@@ -139,6 +139,121 @@ export class ToolDefinitions {
           required: ["concept"],
         },
       },
+      {
+        name: "search_spring_ecosystem",
+        description: "Search across the entire Spring ecosystem including all projects, guides, and documentation",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "Keywords to search across the entire Spring ecosystem",
+            },
+            scope: {
+              type: "string",
+              enum: ["all", "projects", "guides", "docs", "api"],
+              description: "Scope of search",
+              default: "all",
+            },
+            limit: {
+              type: "number",
+              description: "Maximum number of results per category",
+              default: 5,
+              minimum: 1,
+              maximum: 20,
+            },
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "get_spring_tutorial",
+        description: "Get step-by-step tutorials for specific Spring Boot features",
+        inputSchema: {
+          type: "object",
+          properties: {
+            topic: {
+              type: "string",
+              description: "Tutorial topic (e.g., 'rest-api', 'jpa', 'security', 'testing')",
+            },
+            level: {
+              type: "string",
+              enum: ["beginner", "intermediate", "advanced"],
+              description: "Tutorial difficulty level",
+              default: "beginner",
+            },
+          },
+          required: ["topic"],
+        },
+      },
+      {
+        name: "compare_spring_versions",
+        description: "Compare different Spring Boot versions and their features",
+        inputSchema: {
+          type: "object",
+          properties: {
+            version1: {
+              type: "string",
+              description: "First Spring Boot version to compare (e.g., '2.7.0')",
+            },
+            version2: {
+              type: "string",
+              description: "Second Spring Boot version to compare (e.g., '3.0.0')",
+            },
+            focus: {
+              type: "string",
+              enum: ["all", "breaking-changes", "new-features", "deprecations"],
+              description: "What aspect to focus on in comparison",
+              default: "all",
+            },
+          },
+          required: ["version1", "version2"],
+        },
+      },
+      {
+        name: "get_spring_best_practices",
+        description: "Get best practices and recommendations for Spring Boot development",
+        inputSchema: {
+          type: "object",
+          properties: {
+            category: {
+              type: "string",
+              enum: ["architecture", "performance", "security", "testing", "configuration", "deployment"],
+              description: "Category of best practices",
+            },
+            experience_level: {
+              type: "string",
+              enum: ["beginner", "intermediate", "expert"],
+              description: "Developer experience level",
+              default: "intermediate",
+            },
+          },
+          required: ["category"],
+        },
+      },
+      {
+        name: "diagnose_spring_issues",
+        description: "Diagnose common Spring Boot issues and provide solutions",
+        inputSchema: {
+          type: "object",
+          properties: {
+            error_message: {
+              type: "string",
+              description: "Error message or issue description",
+            },
+            component: {
+              type: "string",
+              enum: ["startup", "web", "data", "security", "actuator", "configuration"],
+              description: "Spring Boot component related to the issue",
+            },
+            stack_trace: {
+              type: "string",
+              description: "Stack trace (optional, for more specific diagnosis)",
+            },
+          },
+          required: ["error_message"],
+        },
+      },
     ];
   }
 }
