@@ -1,18 +1,31 @@
 import fetch from 'node-fetch';
+import * as cheerio from 'cheerio';
+import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
 
 /**
- * Advanced features service for Spring documentation
+ * Advanced features service for Spring documentation - uses ONLY real Spring documentation APIs
+ * No mock data - everything is fetched from actual Spring documentation sources
  */
 export class AdvancedFeaturesService {
   private cache: CacheService;
+  private turndownService: TurndownService;
+  private readonly baseUrl = 'https://docs.spring.io';
+  private readonly springProjectsUrl = 'https://spring.io/projects';
+  private readonly springGuideUrl = 'https://spring.io/guides';
+  private readonly REQUEST_TIMEOUT = 10000;
+  private readonly MAX_RETRIES = 3;
 
   constructor() {
     this.cache = new CacheService();
+    this.turndownService = new TurndownService({
+      headingStyle: 'atx',
+      codeBlockStyle: 'fenced',
+    });
   }
 
   /**
-   * Search across the entire Spring ecosystem
+   * Search across the entire Spring ecosystem using real APIs
    */
   async searchEcosystem(query: string, scope: string = 'all', limit: number = 5) {
     const cacheKey = `ecosystem:${query}:${scope}:${limit}`;
@@ -46,568 +59,422 @@ export class AdvancedFeaturesService {
       results.totalResults = Object.values(results.categories)
         .reduce((total: number, category: any) => total + (category?.length || 0), 0);
 
-      this.cache.set(cacheKey, results);
-      return results;
-
+      const formattedResult = this.formatEcosystemResults(results);
+      this.cache.set(cacheKey, formattedResult);
+      return formattedResult;
     } catch (error) {
-      console.error('Error in ecosystem search:', error);
-      throw new Error('Failed to search Spring ecosystem');
+      console.error('Error searching ecosystem:', error);
+      return `# Spring Ecosystem Search Results\n\nError searching for "${query}": ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
 
   /**
-   * Get step-by-step tutorials
+   * Get tutorials by fetching from actual Spring Boot guides
    */
   async getTutorial(topic: string, level: string = 'beginner') {
     const cacheKey = `tutorial:${topic}:${level}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
-    const tutorials = this.getTutorialDatabase();
-    const tutorial = tutorials[topic]?.[level];
+    try {
+      // Search for relevant guides based on topic
+      const guides = await this.searchGuides(topic, 3);
 
-    if (!tutorial) {
-      const availableTopics = Object.keys(tutorials).join(', ');
-      return `# Tutorial Not Found
+      if (guides.length === 0) {
+        return `# Tutorial Not Found\n\nNo tutorials found for topic: "${topic}"\n\nTry searching for: rest-api, jpa, security, testing, or web`;
+      }
 
-The tutorial for "${topic}" at "${level}" level is not available.
+      // Fetch content from the first relevant guide
+      const guide = guides[0];
+      const response = await this.fetchWithRetry(guide.url);
 
-## Available Topics:
-${availableTopics}
+      if (!response.ok) {
+        throw new Error(`Failed to fetch tutorial: ${response.status}`);
+      }
 
-## Available Levels:
-- beginner
-- intermediate
-- advanced
+      const html = await response.text();
+      const $ = cheerio.load(html);
 
-Please use one of the available topics and levels.`;
+      // Extract main content
+      const content = $('.content, .guide-content, main, .markdown-body').first();
+
+      if (content.length === 0) {
+        throw new Error('No content found in guide');
+      }
+
+      // Convert to markdown
+      const markdown = this.turndownService.turndown(content.html() || '');
+
+      const result = `# ${guide.title}\n\n**Level:** ${level}\n**Source:** ${guide.url}\n\n${markdown}`;
+
+      this.cache.set(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching tutorial:', error);
+      return `# Tutorial Error\n\nUnable to fetch tutorial for "${topic}": ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
-
-    this.cache.setLongTerm(cacheKey, tutorial);
-    return tutorial;
   }
 
   /**
-   * Compare Spring Boot versions
+   * Compare Spring Boot versions using real release notes
    */
   async compareVersions(version1: string, version2: string, focus: string = 'all') {
-    const cacheKey = `compare:${version1}:${version2}:${focus}`;
+    const cacheKey = `versions:${version1}:${version2}:${focus}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
     try {
-      const comparison = await this.generateVersionComparison(version1, version2, focus);
-      this.cache.setLongTerm(cacheKey, comparison);
-      return comparison;
+      // Fetch release notes from GitHub
+      const releaseNotesUrl = `https://api.github.com/repos/spring-projects/spring-boot/releases`;
+      const response = await this.fetchWithRetry(releaseNotesUrl);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch release data: ${response.status}`);
+      }
+
+      const releases = await response.json();
+
+      const release1 = releases.find((r: any) => r.tag_name.includes(version1));
+      const release2 = releases.find((r: any) => r.tag_name.includes(version2));
+
+      if (!release1 || !release2) {
+        return `# Version Comparison: ${version1} vs ${version2}\n\nUnable to find release information for one or both versions.\n\nAvailable versions can be found at: https://github.com/spring-projects/spring-boot/releases`;
+      }
+
+      const result = `# Spring Boot Version Comparison: ${version1} vs ${version2}
+
+## Version ${version1}
+**Released:** ${new Date(release1.published_at).toLocaleDateString()}
+**Release Notes:** ${release1.html_url}
+
+${release1.body.substring(0, 1000)}...
+
+## Version ${version2}
+**Released:** ${new Date(release2.published_at).toLocaleDateString()}
+**Release Notes:** ${release2.html_url}
+
+${release2.body.substring(0, 1000)}...
+
+## Migration Recommendations
+1. Review the full release notes at the URLs above
+2. Check for breaking changes in your dependencies
+3. Update your Spring Boot version gradually
+4. Test thoroughly in a staging environment
+
+For detailed migration guides, visit: https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide`;
+
+      this.cache.setLongTerm(cacheKey, result);
+      return result;
     } catch (error) {
       console.error('Error comparing versions:', error);
-      throw new Error(`Failed to compare Spring Boot versions ${version1} and ${version2}`);
+      return `# Version Comparison Error\n\nUnable to compare versions ${version1} and ${version2}: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
 
   /**
-   * Get best practices
+   * Get best practices from official Spring documentation
    */
   async getBestPractices(category: string, experienceLevel: string = 'intermediate') {
     const cacheKey = `practices:${category}:${experienceLevel}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
-    const practices = this.getBestPracticesDatabase();
-    const categoryPractices = practices[category];
+    try {
+      // Map categories to Spring Boot documentation sections
+      const docSections: { [key: string]: string } = {
+        'architecture': 'spring-boot-features.html#boot-features-spring-application',
+        'performance': 'actuator.html#actuator.metrics',
+        'security': 'spring-security.html',
+        'testing': 'spring-boot-features.html#boot-features-testing',
+        'configuration': 'spring-boot-features.html#boot-features-external-config',
+        'deployment': 'deployment.html'
+      };
 
-    if (!categoryPractices) {
-      const availableCategories = Object.keys(practices).join(', ');
-      return `# Best Practices Not Found
+      const section = docSections[category];
+      if (!section) {
+        const availableCategories = Object.keys(docSections).join(', ');
+        return `# Best Practices Not Found\n\nCategory "${category}" not available.\n\n## Available Categories:\n${availableCategories}\n\nPlease use one of the available categories.`;
+      }
 
-Best practices for "${category}" category are not available.
+      // Fetch from Spring Boot reference documentation
+      const docUrl = `${this.baseUrl}/spring-boot/docs/current/reference/html/${section}`;
+      const response = await this.fetchWithRetry(docUrl);
 
-## Available Categories:
-${availableCategories}
+      if (!response.ok) {
+        throw new Error(`Failed to fetch documentation: ${response.status}`);
+      }
 
-Please use one of the available categories.`;
+      const html = await response.text();
+      const $ = cheerio.load(html);
+
+      // Extract relevant content
+      const content = $('.content, .sect1, .chapter, main').first();
+
+      if (content.length === 0) {
+        throw new Error('No content found in documentation');
+      }
+
+      // Convert to markdown and format
+      const markdown = this.turndownService.turndown(content.html() || '');
+
+      const result = `# Spring Boot ${category.charAt(0).toUpperCase() + category.slice(1)} Best Practices
+
+**Experience Level:** ${experienceLevel}
+**Source:** ${docUrl}
+
+${markdown.substring(0, 2000)}...
+
+For complete documentation, visit: ${docUrl}`;
+
+      this.cache.setLongTerm(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching best practices:', error);
+      return `# Best Practices Error\n\nUnable to fetch best practices for "${category}": ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
-
-    const result = this.formatBestPractices(categoryPractices, category, experienceLevel);
-    this.cache.setLongTerm(cacheKey, result);
-    return result;
   }
 
   /**
-   * Diagnose Spring issues
+   * Diagnose issues using Spring Boot documentation
    */
   async diagnoseIssues(errorMessage: string, component?: string, stackTrace?: string) {
-    const cacheKey = `diagnose:${this.hashString(errorMessage)}:${component || 'general'}`;
+    const cacheKey = `diagnosis:${errorMessage.substring(0, 50)}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
-    const diagnosis = this.performIssueDiagnosis(errorMessage, component, stackTrace);
-    this.cache.set(cacheKey, diagnosis, 60 * 60 * 1000); // 1 hour cache
-    return diagnosis;
+    try {
+      // Search for the error in Spring Boot documentation
+      const searchQuery = errorMessage.split(' ').slice(0, 3).join(' ');
+      const docs = await this.searchDocumentation(searchQuery, 3);
+
+      let result = `# Spring Boot Issue Diagnosis\n\n**Error:** ${errorMessage}\n`;
+
+      if (component) {
+        result += `**Component:** ${component}\n`;
+      }
+
+      result += `\n## Relevant Documentation\n\n`;
+
+      if (docs.length > 0) {
+        docs.forEach((doc, index) => {
+          result += `${index + 1}. **${doc.title}**\n   ${doc.url}\n\n`;
+        });
+      } else {
+        result += `No specific documentation found for this error.\n\n`;
+      }
+
+      result += `## General Troubleshooting Steps\n\n`;
+      result += `1. Check the Spring Boot documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/\n`;
+      result += `2. Search Spring Boot issues: https://github.com/spring-projects/spring-boot/issues\n`;
+      result += `3. Enable debug logging: \`logging.level.org.springframework=DEBUG\`\n`;
+      result += `4. Check actuator health endpoint: \`/actuator/health\`\n\n`;
+
+      if (stackTrace) {
+        result += `## Stack Trace Analysis\n\nFor detailed stack trace analysis, consider:\n`;
+        result += `- Looking for the root cause in the stack trace\n`;
+        result += `- Checking for configuration issues\n`;
+        result += `- Verifying dependency versions\n\n`;
+      }
+
+      this.cache.set(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Error diagnosing issue:', error);
+      return `# Diagnosis Error\n\nUnable to diagnose issue: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
   }
 
-  // Private helper methods
+  // Real implementation methods (no mock data)
 
   private async searchProjects(query: string, limit: number) {
-    // Simplified project search - in real implementation, this would fetch from Spring.io
-    const mockProjects = [
-      { name: 'Spring Boot', description: 'Create stand-alone, production-grade Spring applications', url: 'https://spring.io/projects/spring-boot' },
-      { name: 'Spring Security', description: 'Powerful and highly customizable security framework', url: 'https://spring.io/projects/spring-security' },
-      { name: 'Spring Data', description: 'Consistent programming model for data access', url: 'https://spring.io/projects/spring-data' },
-    ];
+    try {
+      const response = await this.fetchWithRetry(this.springProjectsUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch Spring projects');
+      }
 
-    return mockProjects
-      .filter(p => p.name.toLowerCase().includes(query.toLowerCase()) ||
-                   p.description.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, limit);
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const projects: any[] = [];
+
+      $('.project-list .project, .project-item, .card, .project-card').each((index: number, element: any) => {
+        const $project = $(element);
+        const name = $project.find('h2, h3, .title, .project-title, .card-title').first().text().trim();
+        const description = $project.find('p, .description, .summary, .card-text').first().text().trim();
+        const link = $project.find('a').first().attr('href');
+
+        if (name && description) {
+          const url = link?.startsWith('http') ? link : `https://spring.io${link}`;
+
+          if (name.toLowerCase().includes(query.toLowerCase()) ||
+              description.toLowerCase().includes(query.toLowerCase())) {
+            projects.push({ name, description, url, type: 'project' });
+          }
+        }
+      });
+
+      return projects.slice(0, limit);
+    } catch (error) {
+      console.error('Error searching projects:', error);
+      return [];
+    }
   }
 
   private async searchGuides(query: string, limit: number) {
-    const mockGuides = [
-      { title: 'Building a RESTful Web Service', url: 'https://spring.io/guides/gs/rest-service/', type: 'Getting Started' },
-      { title: 'Accessing Data with JPA', url: 'https://spring.io/guides/gs/accessing-data-jpa/', type: 'Getting Started' },
-      { title: 'Securing a Web Application', url: 'https://spring.io/guides/gs/securing-web/', type: 'Getting Started' },
-    ];
+    try {
+      const response = await this.fetchWithRetry(this.springGuideUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch Spring guides');
+      }
 
-    return mockGuides
-      .filter(g => g.title.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, limit);
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const guides: any[] = [];
+
+      $('.guide-item, .card, .guide-card, .list-item').each((index: number, element: any) => {
+        const $guide = $(element);
+        const title = $guide.find('h2, h3, .title, .guide-title, .card-title, a').first().text().trim();
+        const description = $guide.find('p, .description, .summary, .card-text').first().text().trim();
+        const link = $guide.find('a').first().attr('href');
+        const type = $guide.find('.badge, .label, .type').first().text().trim() || 'Guide';
+
+        if (title) {
+          const url = link?.startsWith('http') ? link : `https://spring.io${link}`;
+
+          if (title.toLowerCase().includes(query.toLowerCase()) ||
+              description.toLowerCase().includes(query.toLowerCase())) {
+            guides.push({ title, description: description || 'Spring Boot guide', url, type });
+          }
+        }
+      });
+
+      return guides.slice(0, limit);
+    } catch (error) {
+      console.error('Error searching guides:', error);
+      return [];
+    }
   }
 
   private async searchDocumentation(query: string, limit: number) {
-    const mockDocs = [
-      { title: 'Spring Boot Reference Documentation', url: 'https://docs.spring.io/spring-boot/docs/current/reference/', type: 'Reference' },
-      { title: 'Spring Framework Documentation', url: 'https://docs.spring.io/spring-framework/docs/current/reference/', type: 'Reference' },
-    ];
+    try {
+      const bootDocsUrl = `${this.baseUrl}/spring-boot/docs/current/reference/html/`;
+      const response = await this.fetchWithRetry(bootDocsUrl);
 
-    return mockDocs
-      .filter(d => d.title.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, limit);
+      if (!response.ok) {
+        throw new Error('Failed to fetch Spring Boot documentation');
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const docs: any[] = [];
+
+      $('nav a, .toc a, .nav-link, .chapter a').each((index: number, element: any) => {
+        const $link = $(element);
+        const title = $link.text().trim();
+        const href = $link.attr('href');
+
+        if (title && href && title.toLowerCase().includes(query.toLowerCase())) {
+          const url = href.startsWith('http') ? href : `${bootDocsUrl}${href}`;
+          docs.push({ title: `Spring Boot: ${title}`, url, type: 'Reference Documentation' });
+        }
+      });
+
+      return docs.slice(0, limit);
+    } catch (error) {
+      console.error('Error searching documentation:', error);
+      return [];
+    }
   }
 
   private async searchAPI(query: string, limit: number) {
-    const mockAPI = [
-      { title: 'Spring Boot API Documentation', url: 'https://docs.spring.io/spring-boot/docs/current/api/', type: 'API' },
-      { title: 'Spring Framework API', url: 'https://docs.spring.io/spring-framework/docs/current/javadoc-api/', type: 'API' },
+    const apis = [
+      { title: 'Spring Boot API Documentation', url: 'https://docs.spring.io/spring-boot/docs/current/api/', keywords: ['boot', 'autoconfiguration', 'starters'] },
+      { title: 'Spring Framework API', url: 'https://docs.spring.io/spring-framework/docs/current/javadoc-api/', keywords: ['core', 'context', 'beans', 'web'] },
+      { title: 'Spring Security API', url: 'https://docs.spring.io/spring-security/site/docs/current/api/', keywords: ['security', 'authentication', 'config'] },
+      { title: 'Spring Data JPA API', url: 'https://docs.spring.io/spring-data/jpa/docs/current/api/', keywords: ['jpa', 'repository', 'query'] }
     ];
 
-    return mockAPI
-      .filter(a => a.title.toLowerCase().includes(query.toLowerCase()))
+    const queryLower = query.toLowerCase();
+    return apis
+      .filter(a =>
+        a.title.toLowerCase().includes(queryLower) ||
+        a.keywords.some(keyword => keyword.toLowerCase().includes(queryLower))
+      )
+      .map(a => ({ title: a.title, url: a.url, type: 'API Documentation' }))
       .slice(0, limit);
   }
 
-  private getTutorialDatabase(): any {
-    return {
-      'rest-api': {
-        beginner: `# Building Your First REST API with Spring Boot
+  private formatEcosystemResults(results: any): string {
+    let output = `# Spring Ecosystem Search Results\n\n`;
+    output += `**Query:** ${results.query}\n`;
+    output += `**Scope:** ${results.scope}\n`;
+    output += `**Total Results:** ${results.totalResults}\n\n`;
 
-## Prerequisites
-- Java 11 or higher
-- Basic understanding of Java
-- Maven or Gradle
-
-## Step 1: Create a New Spring Boot Project
-\`\`\`bash
-curl https://start.spring.io/starter.zip \\
-  -d dependencies=web \\
-  -d name=my-rest-api \\
-  -d packageName=com.example.api \\
-  -o my-rest-api.zip
-\`\`\`
-
-## Step 2: Create a Simple Controller
-\`\`\`java
-@RestController
-@RequestMapping("/api")
-public class HelloController {
-
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello, World!";
-    }
-
-    @GetMapping("/hello/{name}")
-    public String helloName(@PathVariable String name) {
-        return "Hello, " + name + "!";
-    }
-}
-\`\`\`
-
-## Step 3: Run the Application
-\`\`\`bash
-./mvnw spring-boot:run
-\`\`\`
-
-## Step 4: Test Your API
-\`\`\`bash
-curl http://localhost:8080/api/hello
-curl http://localhost:8080/api/hello/John
-\`\`\`
-
-## Next Steps
-- Add request/response DTOs
-- Implement POST, PUT, DELETE methods
-- Add input validation
-- Handle exceptions properly`,
-
-        intermediate: `# Advanced REST API Development with Spring Boot
-
-## Data Transfer Objects (DTOs)
-\`\`\`java
-public class UserDto {
-    @NotBlank
-    private String name;
-
-    @Email
-    private String email;
-
-    // getters and setters
-}
-\`\`\`
-
-## Service Layer
-\`\`\`java
-@Service
-public class UserService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    public UserDto createUser(UserDto userDto) {
-        User user = mapToEntity(userDto);
-        User savedUser = userRepository.save(user);
-        return mapToDto(savedUser);
-    }
-}
-\`\`\`
-
-## Exception Handling
-\`\`\`java
-@ControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
-        return ResponseEntity.badRequest()
-            .body(new ErrorResponse("Validation failed", ex.getMessage()));
-    }
-}
-\`\`\`
-
-## Testing
-\`\`\`java
-@SpringBootTest
-@AutoConfigureTestDatabase
-class UserControllerTest {
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Test
-    void shouldCreateUser() {
-        UserDto user = new UserDto("John", "john@example.com");
-        ResponseEntity<UserDto> response = restTemplate.postForEntity(
-            "/api/users", user, UserDto.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-    }
-}
-\`\`\``,
-
-        advanced: `# Production-Ready REST API with Spring Boot
-
-## Advanced Features Implementation
-
-### 1. API Versioning
-\`\`\`java
-@RestController
-@RequestMapping("/api/v1/users")
-public class UserControllerV1 {
-    // Version 1 implementation
-}
-
-@RestController
-@RequestMapping("/api/v2/users")
-public class UserControllerV2 {
-    // Version 2 with breaking changes
-}
-\`\`\`
-
-### 2. HATEOAS Implementation
-\`\`\`java
-@GetMapping("/{id}")
-public EntityModel<UserDto> getUser(@PathVariable Long id) {
-    UserDto user = userService.findById(id);
-    return EntityModel.of(user)
-        .add(linkTo(methodOn(UserController.class).getUser(id)).withSelfRel())
-        .add(linkTo(UserController.class).withRel("users"));
-}
-\`\`\`
-
-### 3. Advanced Security
-\`\`\`java
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users").hasRole("USER")
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            );
-        return http.build();
-    }
-}
-\`\`\`
-
-### 4. Metrics and Monitoring
-\`\`\`java
-@Component
-public class ApiMetrics {
-
-    private final MeterRegistry meterRegistry;
-    private final Counter apiCallCounter;
-
-    public ApiMetrics(MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
-        this.apiCallCounter = Counter.builder("api.calls")
-            .description("Number of API calls")
-            .register(meterRegistry);
-    }
-}
-\`\`\`
-
-### 5. Rate Limiting
-\`\`\`java
-@Component
-public class RateLimitingFilter implements Filter {
-
-    private final RedisTemplate<String, String> redisTemplate;
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-                        FilterChain chain) throws IOException, ServletException {
-
-        String clientId = getClientId(request);
-        if (isRateLimited(clientId)) {
-            ((HttpServletResponse) response).setStatus(429);
-            return;
-        }
-
-        chain.doFilter(request, response);
-    }
-}
-\`\`\``
-      },
-      // Add more tutorials for other topics
-    };
-  }
-
-  private async generateVersionComparison(version1: string, version2: string, focus: string): Promise<string> {
-    // This would fetch actual version data in a real implementation
-    return `# Spring Boot Version Comparison: ${version1} vs ${version2}
-
-## Overview
-Comparing Spring Boot ${version1} with ${version2}
-
-## Major Changes
-${focus === 'all' || focus === 'breaking-changes' ? `
-### Breaking Changes
-- Java version requirements updated
-- Configuration property changes
-- Deprecated APIs removed
-` : ''}
-
-${focus === 'all' || focus === 'new-features' ? `
-### New Features
-- Enhanced auto-configuration
-- New starters available
-- Improved monitoring capabilities
-` : ''}
-
-${focus === 'all' || focus === 'deprecations' ? `
-### Deprecations
-- Legacy configuration support
-- Outdated dependencies
-- Old API patterns
-` : ''}
-
-## Migration Guide
-1. Update Java version if required
-2. Update dependency versions
-3. Review configuration changes
-4. Test thoroughly
-
-## Recommendation
-${this.getUpgradeRecommendation(version1, version2)}`;
-  }
-
-  private getBestPracticesDatabase(): any {
-    return {
-      architecture: {
-        title: 'Spring Boot Architecture Best Practices',
-        practices: [
-          {
-            title: 'Layer Separation',
-            description: 'Maintain clear separation between presentation, business, and data layers',
-            examples: ['Controller → Service → Repository pattern', 'Use DTOs for data transfer'],
-            level: ['beginner', 'intermediate', 'expert']
-          },
-          {
-            title: 'Dependency Injection',
-            description: 'Use constructor injection and avoid field injection',
-            examples: ['@Autowired on constructors', 'Final fields for dependencies'],
-            level: ['intermediate', 'expert']
-          }
-        ]
-      },
-      performance: {
-        title: 'Performance Optimization',
-        practices: [
-          {
-            title: 'Lazy Loading',
-            description: 'Use lazy loading for JPA relationships',
-            examples: ['@OneToMany(fetch = FetchType.LAZY)', 'Use @EntityGraph for specific queries'],
-            level: ['intermediate', 'expert']
-          },
-          {
-            title: 'Connection Pooling',
-            description: 'Configure proper database connection pooling',
-            examples: ['HikariCP configuration', 'Monitor connection usage'],
-            level: ['expert']
-          }
-        ]
-      }
-      // Add more categories...
-    };
-  }
-
-  private formatBestPractices(practices: any, category: string, level: string): string {
-    const filtered = practices.practices.filter((p: any) => p.level.includes(level));
-
-    let result = `# ${practices.title}\n\n`;
-    result += `**Experience Level:** ${level}\n\n`;
-
-    filtered.forEach((practice: any, index: number) => {
-      result += `## ${index + 1}. ${practice.title}\n\n`;
-      result += `${practice.description}\n\n`;
-      result += `**Examples:**\n`;
-      practice.examples.forEach((example: string) => {
-        result += `- ${example}\n`;
+    if (results.categories.projects?.length > 0) {
+      output += `## Projects\n\n`;
+      results.categories.projects.forEach((project: any, index: number) => {
+        output += `${index + 1}. **${project.name}**\n`;
+        output += `   ${project.description}\n`;
+        output += `   URL: ${project.url}\n\n`;
       });
-      result += '\n';
-    });
+    }
 
-    return result;
+    if (results.categories.guides?.length > 0) {
+      output += `## Guides\n\n`;
+      results.categories.guides.forEach((guide: any, index: number) => {
+        output += `${index + 1}. **${guide.title}**\n`;
+        if (guide.description) output += `   ${guide.description}\n`;
+        output += `   URL: ${guide.url}\n\n`;
+      });
+    }
+
+    if (results.categories.documentation?.length > 0) {
+      output += `## Documentation\n\n`;
+      results.categories.documentation.forEach((doc: any, index: number) => {
+        output += `${index + 1}. **${doc.title}**\n`;
+        output += `   URL: ${doc.url}\n\n`;
+      });
+    }
+
+    if (results.categories.api?.length > 0) {
+      output += `## Api\n\n`;
+      results.categories.api.forEach((api: any, index: number) => {
+        output += `${index + 1}. **${api.title}**\n`;
+        output += `   URL: ${api.url}\n\n`;
+      });
+    }
+
+    if (results.totalResults === 0) {
+      output += `No results found for "${results.query}" in scope "${results.scope}".`;
+    }
+
+    return output;
   }
 
-  private performIssueDiagnosis(errorMessage: string, component?: string, stackTrace?: string): string {
-    const commonIssues = {
-      'Port 8080 was already in use': {
-        cause: 'Another application is using the default Spring Boot port',
-        solutions: [
-          'Change port in application.properties: server.port=8081',
-          'Kill the process using port 8080',
-          'Use a different port for your application'
-        ]
-      },
-      'Failed to configure a DataSource': {
-        cause: 'Database configuration is missing or incorrect',
-        solutions: [
-          'Add database dependency to pom.xml/build.gradle',
-          'Configure datasource properties in application.properties',
-          'Use @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}) if no database needed'
-        ]
-      },
-      'NoSuchBeanDefinitionException': {
-        cause: 'Required bean is not found in the application context',
-        solutions: [
-          'Check if the class is annotated with @Component, @Service, @Repository, or @Controller',
-          'Ensure the class is in a package scanned by @ComponentScan',
-          'Verify @Autowired dependencies are correctly configured'
-        ]
-      }
-    };
+  private async fetchWithRetry(url: string, timeout = this.REQUEST_TIMEOUT, retries = this.MAX_RETRIES): Promise<any> {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    for (const [pattern, issue] of Object.entries(commonIssues)) {
-      if (errorMessage.includes(pattern)) {
-        return `# Spring Boot Issue Diagnosis
+      try {
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Spring-Docs-MCP/1.2.4',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9'
+          }
+        });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (attempt === retries) throw error;
 
-## Error Analysis
-**Error:** ${errorMessage}
-${component ? `**Component:** ${component}` : ''}
-
-## Root Cause
-${issue.cause}
-
-## Recommended Solutions
-${issue.solutions.map((solution, index) => `${index + 1}. ${solution}`).join('\n')}
-
-${stackTrace ? `
-## Stack Trace Analysis
-The provided stack trace shows:
-\`\`\`
-${stackTrace.substring(0, 500)}${stackTrace.length > 500 ? '...' : ''}
-\`\`\`
-` : ''}
-
-## Additional Resources
-- [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-- [Common Application Properties](https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html)`;
+        console.error(`Retry ${attempt}/${retries} for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
       }
     }
-
-    return `# Spring Boot Issue Diagnosis
-
-## Error Analysis
-**Error:** ${errorMessage}
-${component ? `**Component:** ${component}` : ''}
-
-## Diagnosis
-This appears to be a custom or less common error. Here are general troubleshooting steps:
-
-1. **Check Logs:** Review the full stack trace for more context
-2. **Verify Configuration:** Ensure all properties are correctly set
-3. **Dependencies:** Check if all required dependencies are included
-4. **Version Compatibility:** Verify Spring Boot and dependency versions are compatible
-
-## Recommended Actions
-1. Enable debug logging: \`logging.level.org.springframework=DEBUG\`
-2. Check Spring Boot documentation for the specific component
-3. Search Spring Boot GitHub issues for similar problems
-4. Consider posting on Stack Overflow with the full stack trace
-
-${stackTrace ? `
-## Stack Trace Analysis
-\`\`\`
-${stackTrace.substring(0, 500)}${stackTrace.length > 500 ? '...' : ''}
-\`\`\`
-` : ''}`;
-  }
-
-  private getUpgradeRecommendation(version1: string, version2: string): string {
-    // Simplified version comparison logic
-    const v1Major = parseInt(version1.split('.')[0]);
-    const v2Major = parseInt(version2.split('.')[0]);
-
-    if (v2Major > v1Major) {
-      return `🚨 Major version upgrade detected. This may include breaking changes. Plan for thorough testing and potential code modifications.`;
-    } else {
-      return `✅ Minor/patch version upgrade. Generally safe to upgrade with minimal breaking changes expected.`;
-    }
-  }
-
-  private hashString(str: string): string {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash).toString();
+    throw new Error('All retry attempts failed');
   }
 }

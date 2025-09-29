@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e797d7e-433b-4d34-a28b-28e619f5eaf4" name="Changes" comment="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis">
+    <list default="true" id="3e797d7e-433b-4d34-a28b-28e619f5eaf4" name="Changes" comment="feat: Bump version to 1.2.4; update server configuration and enhance task management in workspace">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/advanced-features.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/advanced-features.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/springboot-docs-optimized.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/springboot-docs-optimized.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,26 +37,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/yacoubakone/Documents/dev/springdocsmcp&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/yacoubakone/Documents/dev/springdocsmcp/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/yacoubakone/Documents/dev/springdocsmcp",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.version:patch.executor": "Run",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "/Users/yacoubakone/Documents/dev/springdocsmcp/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RunManager">
+    <configuration name="version:patch" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="version:patch" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.version:patch" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -73,7 +91,7 @@
       <updated>1755853069905</updated>
       <workItem from="1755853071426" duration="3506000" />
       <workItem from="1759163966299" duration="139000" />
-      <workItem from="1759164119027" duration="3464000" />
+      <workItem from="1759164119027" duration="7907000" />
     </task>
     <task id="LOCAL-00001" summary="feat: Update documentation for universal MCP compatibility and enhance examples with new features">
       <option name="closed" value="true" />
@@ -99,7 +117,15 @@
       <option name="project" value="LOCAL" />
       <updated>1759166761322</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="feat: Bump version to 1.2.4; update server configuration and enhance task management in workspace">
+      <option name="closed" value="true" />
+      <created>1759167611017</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1759167611017</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -109,6 +135,7 @@
     <MESSAGE value="feat: Update documentation for universal MCP compatibility and enhance examples with new features" />
     <MESSAGE value="feat: Update CHANGELOG and version to 1.2.3; enhance documentation with universal MCP compatibility and improved presentation" />
     <MESSAGE value="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis" />
+    <MESSAGE value="feat: Bump version to 1.2.4; update server configuration and enhance task management in workspace" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: Bump version to 1.2.4; update server configuration and enhance task management in workspace" />
   </component>
 </project>
