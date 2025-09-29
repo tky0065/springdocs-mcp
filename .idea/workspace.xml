@@ -4,28 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e797d7e-433b-4d34-a28b-28e619f5eaf4" name="Changes" comment="feat: Update CHANGELOG and version to 1.2.3; enhance documentation with universal MCP compatibility and improved presentation">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/springdocsmcp.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CI_CD_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/EXAMPLES.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/EXAMPLES_FR.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/INSTALL_FR.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_EN.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_FR.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SOCIAL_MEDIA_POSTS.md" beforeDir="false" />
+    <list default="true" id="3e797d7e-433b-4d34-a28b-28e619f5eaf4" name="Changes" comment="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/guid.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/debug.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/springboot-docs.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tools/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/tools/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +73,7 @@
       <updated>1755853069905</updated>
       <workItem from="1755853071426" duration="3506000" />
       <workItem from="1759163966299" duration="139000" />
-      <workItem from="1759164119027" duration="2563000" />
+      <workItem from="1759164119027" duration="3464000" />
     </task>
     <task id="LOCAL-00001" summary="feat: Update documentation for universal MCP compatibility and enhance examples with new features">
       <option name="closed" value="true" />
@@ -109,7 +91,15 @@
       <option name="project" value="LOCAL" />
       <updated>1755855334044</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis">
+      <option name="closed" value="true" />
+      <created>1759166761322</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1759166761322</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -118,6 +108,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: Update documentation for universal MCP compatibility and enhance examples with new features" />
     <MESSAGE value="feat: Update CHANGELOG and version to 1.2.3; enhance documentation with universal MCP compatibility and improved presentation" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: Update CHANGELOG and version to 1.2.3; enhance documentation with universal MCP compatibility and improved presentation" />
+    <MESSAGE value="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: Bump version to 1.2.4; enhance MCP server with intelligent caching and advanced tools for Spring ecosystem search, tutorials, version comparison, best practices, and issue diagnosis" />
   </component>
 </project>

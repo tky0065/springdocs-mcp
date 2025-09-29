@@ -19,7 +19,7 @@ class SpringBootMCPServerAdvanced {
     this.server = new Server(
       {
         name: "springboot-mcp-server-advanced",
-        version: "1.2.3",
+        version: "1.2.4",
       },
       {
         capabilities: {
