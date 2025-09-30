@@ -102,10 +102,10 @@ export class AdvancedFeaturesService {
         throw new Error('No content found in guide');
       }
 
-      // Convert to markdown
+      // Convert to markdown and limit length
       const markdown = this.turndownService.turndown(content.html() || '');
 
-      const result = `# ${guide.title}\n\n**Level:** ${level}\n**Source:** ${guide.url}\n\n${markdown}`;
+      const result = `# ${guide.title}\n\n**Level:** ${level}\n**Source:** ${guide.url}\n\n${markdown.substring(0, 1500)}...\n\nFor complete tutorial, visit: ${guide.url}`;
 
       this.cache.set(cacheKey, result);
       return result;
@@ -222,7 +222,7 @@ For detailed migration guides, visit: https://github.com/spring-projects/spring-
 **Experience Level:** ${experienceLevel}
 **Source:** ${docUrl}
 
-${markdown.substring(0, 2000)}...
+${markdown.substring(0, 1000)}...
 
 For complete documentation, visit: ${docUrl}`;
 

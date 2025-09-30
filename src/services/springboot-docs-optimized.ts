@@ -111,7 +111,8 @@ export class SpringBootDocsServiceOptimized {
       }
 
       const markdown = this.turndownService.turndown(content.html() || '');
-      const result = `# ${projectName}\n\n${markdown}`;
+      const projectUrl = `${this.springProjectsUrl}/${projectName.toLowerCase().replace(/\s+/g, '-')}`;
+      const result = `# ${projectName}\n\n${markdown.substring(0, 1500)}...\n\nFor complete project info, visit: ${projectUrl}`;
 
       this.cache.setLongTerm(cacheKey, result);
       return result;
@@ -267,7 +268,7 @@ export class SpringBootDocsServiceOptimized {
       }
 
       const markdown = this.turndownService.turndown(content.html() || '');
-      const result = `# Spring Boot Reference: ${section}\n\n${markdown}`;
+      const result = `# Spring Boot Reference: ${section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
 
       this.cache.setLongTerm(cacheKey, result);
       return result;
@@ -306,20 +307,27 @@ export class SpringBootDocsServiceOptimized {
 
       // Look for concept in documentation
       let conceptContent = '';
+      let foundSections = 0;
+      const maxSections = 3;
+
       $('h1, h2, h3, h4').each((_, element) => {
+        if (foundSections >= maxSections) return false; // Stop after 3 sections
+
         const heading = $(element);
         const headingText = heading.text().toLowerCase();
 
         if (headingText.includes(concept.toLowerCase())) {
           const section = heading.parent();
-          conceptContent += this.turndownService.turndown(section.html() || '');
+          const sectionMarkdown = this.turndownService.turndown(section.html() || '');
+          conceptContent += sectionMarkdown.substring(0, 500) + '\n\n';
+          foundSections++;
         }
       });
 
       if (!conceptContent) {
         conceptContent = `# Spring Concept: ${concept}\n\nConcept not found in documentation. Try searching for more specific terms.`;
       } else {
-        conceptContent = `# Spring Concept: ${concept}\n\n${conceptContent}`;
+        conceptContent = `# Spring Concept: ${concept}\n\n${conceptContent}\n\nFor complete documentation, visit: ${searchUrl}`;
       }
 
       this.cache.set(cacheKey, conceptContent);
@@ -421,11 +429,11 @@ export class SpringBootDocsServiceOptimized {
       console.log('No main content found, using body');
       $('script, style').remove();
       const bodyMarkdown = this.turndownService.turndown($('body').html() || '');
-      return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n\n${bodyMarkdown}`;
+      return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n\n${bodyMarkdown.substring(0, 2000)}...\n\nFor complete guide, visit: ${sourceUrl}`;
     }
 
     const markdown = this.turndownService.turndown(mainContent.html() || '');
-    return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n\n${markdown}`;
+    return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n\n${markdown.substring(0, 2000)}...\n\nFor complete guide, visit: ${sourceUrl}`;
   }
 
   private async fetchWithRetry(url: string, timeout = this.REQUEST_TIMEOUT, retries = this.MAX_RETRIES): Promise<any> {
