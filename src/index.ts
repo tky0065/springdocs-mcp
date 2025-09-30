@@ -199,13 +199,13 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleGetGuide(args: any) {
-    const { guideId } = args;
+    const { guideId, detail_level = "medium" } = args;
 
     if (!guideId || typeof guideId !== "string") {
       throw new Error("The 'guideId' parameter is required and must be a string");
     }
 
-    const guide = await this.docsService.getGuide(guideId);
+    const guide = await this.docsService.getGuide(guideId, detail_level);
 
     return {
       content: [
@@ -276,13 +276,13 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleGetTutorial(args: any) {
-    const { topic, level = "beginner" } = args;
+    const { topic, level = "beginner", detail_level = "medium" } = args;
 
     if (!topic || typeof topic !== "string") {
       throw new Error("The 'topic' parameter is required and must be a string");
     }
 
-    const tutorial = await this.advancedService.getTutorial(topic, level);
+    const tutorial = await this.advancedService.getTutorial(topic, level, detail_level);
 
     return {
       content: [

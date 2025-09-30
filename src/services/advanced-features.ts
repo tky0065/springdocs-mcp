@@ -69,22 +69,76 @@ export class AdvancedFeaturesService {
   }
 
   /**
+   * Extract content intelligently - same as in SpringBootDocsServiceOptimized
+   */
+  private extractIntelligentContent(markdown: string, detailLevel: string = 'medium'): string {
+    const limits: { [key: string]: number } = {
+      'summary': 1500,
+      'medium': 4000,
+      'full': 8000
+    };
+
+    const maxLength = limits[detailLevel] || limits['medium'];
+    if (markdown.length <= maxLength) return markdown;
+
+    const lines = markdown.split('\n');
+    let result = '';
+    let inCodeBlock = false;
+    let codeBlockContent = '';
+    let currentLength = 0;
+
+    for (const line of lines) {
+      if (line.trim().startsWith('```')) {
+        inCodeBlock = !inCodeBlock;
+        if (!inCodeBlock && codeBlockContent) {
+          const blockToAdd = codeBlockContent + line + '\n';
+          if (currentLength + blockToAdd.length <= maxLength * 0.8) {
+            result += blockToAdd;
+            currentLength += blockToAdd.length;
+          }
+          codeBlockContent = '';
+        } else {
+          codeBlockContent = line + '\n';
+        }
+        continue;
+      }
+
+      if (inCodeBlock) {
+        codeBlockContent += line + '\n';
+        continue;
+      }
+
+      if (line.startsWith('#') || line.startsWith('-') || line.startsWith('*') || line.trim().startsWith('>')) {
+        if (currentLength + line.length + 1 <= maxLength) {
+          result += line + '\n';
+          currentLength += line.length + 1;
+        }
+      } else if (line.trim() && currentLength + line.length + 1 <= maxLength) {
+        result += line + '\n';
+        currentLength += line.length + 1;
+      }
+
+      if (currentLength >= maxLength) break;
+    }
+
+    return result.trim();
+  }
+
+  /**
    * Get tutorials by fetching from actual Spring Boot guides
    */
-  async getTutorial(topic: string, level: string = 'beginner') {
-    const cacheKey = `tutorial:${topic}:${level}`;
+  async getTutorial(topic: string, level: string = 'beginner', detailLevel: string = 'medium') {
+    const cacheKey = `tutorial:${topic}:${level}:${detailLevel}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
     try {
-      // Search for relevant guides based on topic
       const guides = await this.searchGuides(topic, 3);
 
       if (guides.length === 0) {
         return `# Tutorial Not Found\n\nNo tutorials found for topic: "${topic}"\n\nTry searching for: rest-api, jpa, security, testing, or web`;
       }
 
-      // Fetch content from the first relevant guide
       const guide = guides[0];
       const response = await this.fetchWithRetry(guide.url);
 
@@ -94,18 +148,17 @@ export class AdvancedFeaturesService {
 
       const html = await response.text();
       const $ = cheerio.load(html);
-
-      // Extract main content
       const content = $('.content, .guide-content, main, .markdown-body').first();
 
       if (content.length === 0) {
         throw new Error('No content found in guide');
       }
 
-      // Convert to markdown and limit length
       const markdown = this.turndownService.turndown(content.html() || '');
+      const extractedContent = this.extractIntelligentContent(markdown, detailLevel);
+      const needsTruncation = markdown.length > extractedContent.length;
 
-      const result = `# ${guide.title}\n\n**Level:** ${level}\n**Source:** ${guide.url}\n\n${markdown.substring(0, 1500)}...\n\nFor complete tutorial, visit: ${guide.url}`;
+      const result = `# ${guide.title}\n\n**Level:** ${level}\n**Detail Level:** ${detailLevel}\n**Source:** ${guide.url}\n\n${extractedContent}${needsTruncation ? '\n\n---\n*Content truncated. Use detail_level="full" for complete tutorial or visit the link above.*' : ''}`;
 
       this.cache.set(cacheKey, result);
       return result;

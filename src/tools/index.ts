@@ -90,13 +90,19 @@ export class ToolDefinitions {
       },
       {
         name: "get_spring_guide",
-        description: "Récupère le contenu complet d'un guide Spring Boot spécifique",
+        description: "Récupère le contenu d'un guide Spring Boot spécifique avec niveau de détail configurable",
         inputSchema: {
           type: "object",
           properties: {
             guideId: {
               type: "string",
               description: "L'identifiant du guide Spring Boot (par exemple: 'gs-rest-service', 'gs-accessing-data-jpa')",
+            },
+            detail_level: {
+              type: "string",
+              enum: ["summary", "medium", "full"],
+              description: "Niveau de détail: summary (1500 chars), medium (4000 chars), full (8000 chars)",
+              default: "medium",
             },
           },
           required: ["guideId"],
@@ -181,6 +187,12 @@ export class ToolDefinitions {
               enum: ["beginner", "intermediate", "advanced"],
               description: "Tutorial difficulty level",
               default: "beginner",
+            },
+            detail_level: {
+              type: "string",
+              enum: ["summary", "medium", "full"],
+              description: "Content detail: summary (1500 chars), medium (4000 chars), full (8000 chars)",
+              default: "medium",
             },
           },
           required: ["topic"],

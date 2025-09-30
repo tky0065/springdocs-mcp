@@ -29,6 +29,71 @@ export class SpringBootDocsServiceOptimized {
   }
 
   /**
+   * Extract content intelligently based on detail level
+   * Preserves code blocks, key sections, and structure
+   */
+  private extractIntelligentContent(markdown: string, detailLevel: string = 'medium'): string {
+    const limits: { [key: string]: number } = {
+      'summary': 1500,
+      'medium': 4000,
+      'full': 8000
+    };
+
+    const maxLength = limits[detailLevel] || limits['medium'];
+
+    // If content is smaller than limit, return as-is
+    if (markdown.length <= maxLength) {
+      return markdown;
+    }
+
+    // Extract important sections
+    const lines = markdown.split('\n');
+    let result = '';
+    let inCodeBlock = false;
+    let codeBlockContent = '';
+    let currentLength = 0;
+
+    for (const line of lines) {
+      // Track code blocks
+      if (line.trim().startsWith('```')) {
+        inCodeBlock = !inCodeBlock;
+        if (!inCodeBlock && codeBlockContent) {
+          // Keep complete code blocks
+          const blockToAdd = codeBlockContent + line + '\n';
+          if (currentLength + blockToAdd.length <= maxLength * 0.8) { // Reserve 20% for text
+            result += blockToAdd;
+            currentLength += blockToAdd.length;
+          }
+          codeBlockContent = '';
+        } else {
+          codeBlockContent = line + '\n';
+        }
+        continue;
+      }
+
+      if (inCodeBlock) {
+        codeBlockContent += line + '\n';
+        continue;
+      }
+
+      // Keep headers, important lines
+      if (line.startsWith('#') || line.startsWith('-') || line.startsWith('*') || line.trim().startsWith('>')) {
+        if (currentLength + line.length + 1 <= maxLength) {
+          result += line + '\n';
+          currentLength += line.length + 1;
+        }
+      } else if (line.trim() && currentLength + line.length + 1 <= maxLength) {
+        result += line + '\n';
+        currentLength += line.length + 1;
+      }
+
+      if (currentLength >= maxLength) break;
+    }
+
+    return result.trim();
+  }
+
+  /**
    * Search Spring projects with caching and retry logic - REAL API ONLY
    */
   async searchSpringProjects(query: string, limit: number = 10) {
@@ -179,15 +244,15 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Get specific guide content - REAL API ONLY
    */
-  async getGuide(guideId: string): Promise<string> {
-    const cacheKey = `guide:${guideId}`;
+  async getGuide(guideId: string, detailLevel: string = 'medium'): Promise<string> {
+    const cacheKey = `guide:${guideId}:${detailLevel}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
-      console.error(`✅ Cache hit for guide: ${guideId}`);
+      console.error(`✅ Cache hit for guide: ${guideId} (${detailLevel})`);
       return cached;
     }
 
-    console.error(`🔍 Fetching guide: ${guideId}`);
+    console.error(`🔍 Fetching guide: ${guideId} with detail level: ${detailLevel}`);
 
     // Try multiple sources for guides
     const sources = [
@@ -222,7 +287,7 @@ export class SpringBootDocsServiceOptimized {
     }
 
     try {
-      const result = this.processHtmlGuide(content, guideId, sourceUrl);
+      const result = this.processHtmlGuide(content, guideId, sourceUrl, detailLevel);
       this.cache.setLongTerm(cacheKey, result);
       return result;
     } catch (error) {
@@ -415,8 +480,8 @@ export class SpringBootDocsServiceOptimized {
     }
   }
 
-  private processHtmlGuide(content: string, guideId: string, sourceUrl: string): string {
-    console.log('Processing HTML content...');
+  private processHtmlGuide(content: string, guideId: string, sourceUrl: string, detailLevel: string = 'medium'): string {
+    console.log(`Processing HTML content with detail level: ${detailLevel}...`);
     const $ = cheerio.load(content);
 
     // Remove navigation and footer elements
@@ -425,15 +490,20 @@ export class SpringBootDocsServiceOptimized {
     // Get main content
     const mainContent = $('.content, .guide-content, main, .markdown-body, .guide-body, article').first();
 
+    let markdown: string;
     if (mainContent.length === 0) {
       console.log('No main content found, using body');
       $('script, style').remove();
-      const bodyMarkdown = this.turndownService.turndown($('body').html() || '');
-      return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n\n${bodyMarkdown.substring(0, 2000)}...\n\nFor complete guide, visit: ${sourceUrl}`;
+      markdown = this.turndownService.turndown($('body').html() || '');
+    } else {
+      markdown = this.turndownService.turndown(mainContent.html() || '');
     }
 
-    const markdown = this.turndownService.turndown(mainContent.html() || '');
-    return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n\n${markdown.substring(0, 2000)}...\n\nFor complete guide, visit: ${sourceUrl}`;
+    // Use intelligent extraction
+    const extractedContent = this.extractIntelligentContent(markdown, detailLevel);
+    const needsTruncation = markdown.length > extractedContent.length;
+
+    return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n**Detail Level:** ${detailLevel}\n\n${extractedContent}${needsTruncation ? '\n\n---\n*Content truncated for brevity. Use detail_level="full" for complete guide or visit the link above.*' : ''}`;
   }
 
   private async fetchWithRetry(url: string, timeout = this.REQUEST_TIMEOUT, retries = this.MAX_RETRIES): Promise<any> {
