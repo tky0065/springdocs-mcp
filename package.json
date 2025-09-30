@@ -1,6 +1,6 @@
 {
   "name": "@enokdev/springdocs-mcp",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Enhanced MCP server for accessing Spring Boot documentation with advanced features, intelligent caching, and comprehensive ecosystem coverage",
   "type": "module",
   "main": "build/index.js",
