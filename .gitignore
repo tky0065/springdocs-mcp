@@ -11,3 +11,7 @@ dist/
 *.tsbuildinfo
 .nyc_output
 coverage/
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
