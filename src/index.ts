@@ -218,13 +218,14 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleGetReference(args: any) {
-    const { section, subsection } = args;
+    const { project = "boot", section, subsection } = args;
 
     if (!section || typeof section !== "string") {
       throw new Error("The 'section' parameter is required and must be a string");
     }
 
-    const reference = await this.docsService.getReference(section, subsection);
+    // Use new multi-project method
+    const reference = await this.docsService.getSpringReference(project, section, subsection);
 
     return {
       content: [
@@ -269,7 +270,7 @@ class SpringBootMCPServerAdvanced {
       content: [
         {
           type: "text",
-          text: this.formatEcosystemResults(results),
+          text: results, // Already formatted by advancedService
         },
       ],
     };

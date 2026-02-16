@@ -56,6 +56,10 @@ export class AdvancedFeaturesService {
         results.categories.api = await this.searchAPI(query, limit);
       }
 
+      if (scope === 'all' || scope === 'ai') {
+        results.categories.ai = await this.searchSpringAI(query, limit);
+      }
+
       results.totalResults = Object.values(results.categories)
         .reduce((total: number, category: any) => total + (category?.length || 0), 0);
 
@@ -439,12 +443,72 @@ For complete documentation, visit: ${docUrl}`;
     }
   }
 
+  /**
+   * Search Spring AI documentation and resources
+   * Covers ChatClient, RAG, embeddings, vector stores, and LLM integrations
+   */
+  private async searchSpringAI(query: string, limit: number): Promise<any[]> {
+    try {
+      const aiDocsUrl = 'https://docs.spring.io/spring-ai/reference/';
+      const response = await this.fetchWithRetry(aiDocsUrl);
+
+      if (!response.ok) {
+        console.error('Failed to fetch Spring AI documentation');
+        return [];
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const aiDocs: any[] = [];
+
+      // Search in navigation, table of contents, and main links
+      $('nav a, .toc a, .nav-link, .sidebar a, .chapter a').each((index: number, element: any) => {
+        const $link = $(element);
+        const title = $link.text().trim();
+        const href = $link.attr('href');
+
+        if (title && href && title.toLowerCase().includes(query.toLowerCase())) {
+          const url = href.startsWith('http') ? href : `${aiDocsUrl}${href}`;
+          aiDocs.push({
+            title: `Spring AI: ${title}`,
+            url,
+            type: 'Spring AI Documentation'
+          });
+        }
+      });
+
+      // If no results from navigation, search in content headings
+      if (aiDocs.length === 0) {
+        $('h1, h2, h3, h4').each((index: number, element: any) => {
+          const $heading = $(element);
+          const title = $heading.text().trim();
+          const id = $heading.attr('id');
+
+          if (title && title.toLowerCase().includes(query.toLowerCase())) {
+            const url = id ? `${aiDocsUrl}#${id}` : aiDocsUrl;
+            aiDocs.push({
+              title: `Spring AI: ${title}`,
+              url,
+              type: 'Spring AI Documentation'
+            });
+          }
+        });
+      }
+
+      return aiDocs.slice(0, limit);
+    } catch (error) {
+      console.error('Error searching Spring AI documentation:', error);
+      return [];
+    }
+  }
+
   private async searchAPI(query: string, limit: number) {
     const apis = [
       { title: 'Spring Boot API Documentation', url: 'https://docs.spring.io/spring-boot/docs/current/api/', keywords: ['boot', 'autoconfiguration', 'starters'] },
       { title: 'Spring Framework API', url: 'https://docs.spring.io/spring-framework/docs/current/javadoc-api/', keywords: ['core', 'context', 'beans', 'web'] },
       { title: 'Spring Security API', url: 'https://docs.spring.io/spring-security/site/docs/current/api/', keywords: ['security', 'authentication', 'config'] },
-      { title: 'Spring Data JPA API', url: 'https://docs.spring.io/spring-data/jpa/docs/current/api/', keywords: ['jpa', 'repository', 'query'] }
+      { title: 'Spring Data JPA API', url: 'https://docs.spring.io/spring-data/jpa/docs/current/api/', keywords: ['jpa', 'repository', 'query'] },
+      { title: 'Spring AI API', url: 'https://docs.spring.io/spring-ai/reference/api/', keywords: ['ai', 'llm', 'rag', 'embeddings', 'chatclient', 'vector', 'openai', 'anthropic'] }
     ];
 
     const queryLower = query.toLowerCase();
@@ -490,10 +554,19 @@ For complete documentation, visit: ${docUrl}`;
     }
 
     if (results.categories.api?.length > 0) {
-      output += `## Api\n\n`;
+      output += `## API\n\n`;
       results.categories.api.forEach((api: any, index: number) => {
         output += `${index + 1}. **${api.title}**\n`;
         output += `   URL: ${api.url}\n\n`;
+      });
+    }
+
+    if (results.categories.ai?.length > 0) {
+      output += `## Spring AI\n\n`;
+      results.categories.ai.forEach((aiDoc: any, index: number) => {
+        output += `${index + 1}. **${aiDoc.title}**\n`;
+        if (aiDoc.description) output += `   ${aiDoc.description}\n`;
+        output += `   URL: ${aiDoc.url}\n\n`;
       });
     }
 

@@ -1,9 +1,240 @@
-# Changelog v1.2.3 - Enhanced Spring Documentation MCP Server
+# Changelog
 
-## 🚀 Major Release: Advanced Features & Performance Optimization
+## [1.3.0] - 2026-02-16 🐳 (Prepared - Pending Docker MCP Catalog Submission)
 
-**Release Date:** September 29, 2024
-**Version:** 1.2.3
+### 🎯 Overview
+**Major Addition:** Docker distribution with Docker MCP Catalog support
+
+**Release Date:** February 16, 2026 (Development Complete)
+**Breaking Changes:** None
+**Backward Compatibility:** ✅ Full
+
+### ✨ New Features
+
+#### Docker Distribution
+- **Production-ready Dockerfile** with multi-stage build
+- **Optimized Alpine Linux base** (Node 20) - ~220MB image size
+- **Non-root user execution** (UID 1001) for enhanced security
+- **Health checks** for container orchestration
+- **Zero-configuration** design - works out-of-the-box
+
+#### Docker MCP Catalog Artifacts
+- **server.yaml** - MCP Catalog server definition with comprehensive metadata
+- **tools.json** - Auto-generated static tool catalog (12 tools)
+- **docker/README.md** - Docker-specific installation and usage guide
+- **test-docker.sh** - Comprehensive validation test suite
+
+### 🏗️ Infrastructure
+
+#### New Files
+- `Dockerfile` - Multi-stage build optimized for production
+- `.dockerignore` - Build context optimization
+- `docker/server.yaml` - MCP Catalog submission metadata
+- `docker/tools.json` - Generated tool catalog for Docker
+- `docker/README.md` - Docker user documentation
+- `scripts/generate-tools-json.js` - Tool catalog generator
+- `test-docker.sh` - Docker validation test suite
+- `DOCKER.md` - Comprehensive Docker distribution guide
+
+#### New npm Scripts
+- `docker:tools` - Generate tools.json from tool definitions
+- `docker:build` - Build Docker image with version tag
+
+### 🔐 Security Features
+
+- **Non-root user** (mcp:1001) - prevents privilege escalation
+- **Minimal Alpine base** - reduced attack surface
+- **No shell in final image** - prevents shell-based attacks
+- **Read-only filesystem compatible** - enhanced security posture
+- **Health checks** - automatic container health monitoring
+
+### 🧪 Testing & Validation
+
+#### Docker Test Suite
+- Image build validation
+- Security checks (non-root user, minimal surface)
+- MCP protocol tests (all 12 tools)
+- Spring AI functionality tests
+- Performance tests (memory constraints, read-only mode)
+- Metadata validation (OCI labels)
+
+### 📖 Documentation
+
+- **DOCKER.md** - Complete Docker distribution guide
+- **docker/README.md** - Quick-start for Docker users
+- **README.md** - Updated with Docker installation options
+- **Submission instructions** - Step-by-step Docker MCP Catalog submission guide
+
+### 🔄 Docker MCP Catalog Submission
+
+**Status**: Ready for submission ✅
+
+**Artifacts Prepared**:
+- Server definition (server.yaml) with all required metadata
+- Static tool catalog (tools.json) - auto-generated from source
+- Docker-specific documentation
+- Validated Dockerfile with security best practices
+
+**Next Steps** (For Maintainers):
+1. Fork https://github.com/docker/mcp-registry
+2. Copy artifacts to `servers/springdocs-mcp*`
+3. Submit pull request to Docker team
+4. Wait for Docker team review (1-3 business days)
+5. Docker builds and publishes to `mcp/springdocs-mcp`
+
+### 📊 Image Specifications
+
+- **Base**: node:20-alpine
+- **Size**: ~220MB
+- **User**: mcp (UID 1001)
+- **Entry Point**: node build/index.js
+- **Protocol**: MCP stdio transport
+- **Health Check**: Yes (30s interval)
+
+### 🚀 Distribution Channels
+
+After Docker MCP Catalog approval:
+- **npm**: `@enokdev/springdocs-mcp` (existing)
+- **Docker**: `mcp/springdocs-mcp` (new - pending approval)
+
+### 🔧 Configuration
+
+All environment variables remain optional:
+- `REQUEST_TIMEOUT` - HTTP timeout (default: 10000ms)
+- `MAX_RETRIES` - Retry attempts (default: 3)
+- `NODE_OPTIONS` - Node.js settings (default: --max-old-space-size=4096)
+- `HTTP_PROXY` / `HTTPS_PROXY` - Proxy support
+
+### 🎯 Benefits of Docker Distribution
+
+- **Enhanced Security**: Cryptographic signatures, SBOMs, vulnerability scanning
+- **Isolated Execution**: Containerized environment prevents conflicts
+- **Centralized Management**: Docker Desktop integration
+- **Reduced Token Usage**: Optimized for Docker MCP gateway
+- **Automatic Updates**: Docker manages security patches
+
+---
+
+## [1.2.8] - 2026-02-16 🤖
+
+### 🎯 Overview
+**Major Addition:** Full Spring AI documentation support with multi-project architecture
+
+**Release Date:** February 16, 2026
+**Breaking Changes:** None
+**Backward Compatibility:** ✅ Full
+
+### ✨ New Features
+
+#### Spring AI Documentation Support
+- **Multi-project architecture** supporting Spring Boot, Spring AI, and Spring Framework
+- **Spring AI reference documentation** access via `get_spring_reference` with `project: "ai"`
+- **Spring AI ecosystem search** with dedicated "ai" scope
+- **Spring AI API documentation** included in ecosystem API searches
+- **Comprehensive Spring AI coverage:** ChatClient, RAG, embeddings, vector stores, LLM integrations
+
+#### Enhanced Tools
+1. **`get_spring_reference`**
+   - New `project` parameter (values: "boot", "ai", "framework")
+   - Defaults to "boot" for backward compatibility
+   - Supports all Spring AI sections: chatclient, chat-model, embedding-model, vector-stores, etc.
+
+2. **`search_spring_ecosystem`**
+   - New "ai" scope for Spring AI-specific searches
+   - Enhanced API search includes Spring AI keywords (ai, llm, rag, embeddings, chatclient, vector)
+   - Dedicated Spring AI results section in output
+
+### 🏗️ Architecture Improvements
+
+#### New Services & Components
+- **`SpringProjectsConfig`** - Centralized multi-project configuration service
+  - Single source of truth for all Spring projects
+  - Project-specific configurations (base URLs, versions, cache strategies)
+  - Easy addition of new Spring projects (Security, Data, Cloud, etc.)
+
+#### Refactored Services
+- **`SpringBootDocsServiceOptimized`**
+  - Now supports any Spring project via `SpringProjectsConfig`
+  - Removed hardcoded Spring Boot version
+  - Project-agnostic reference documentation retrieval
+  - Backward compatibility layer with deprecation warnings
+
+- **`AdvancedFeaturesService`**
+  - Added `searchSpringAI()` method for AI-specific searches
+  - Enhanced `searchAPI()` with Spring AI documentation
+  - Spring AI-aware ecosystem search
+
+### 🔧 Technical Details
+
+#### Project Configuration System
+```typescript
+// Spring AI configuration
+{
+  id: 'ai',
+  displayName: 'Spring AI',
+  baseDocUrl: 'https://docs.spring.io/spring-ai/reference/api',
+  latestVersion: '1.1.2',
+  hasVersionedDocs: false,
+  cacheStrategy: 'short', // 30min for rapidly evolving AI docs
+  scopes: ['ai', 'llm', 'rag', 'embeddings', 'vector', 'chatclient', ...]
+}
+```
+
+#### Cache Strategies
+- **Spring Boot:** Long-term cache (24h) for stable releases
+- **Spring AI:** Short-term cache (30min) for rapidly evolving documentation
+- **Spring Framework:** Long-term cache (24h) for stable releases
+
+### 📖 Updated Documentation
+- README updated with Spring AI examples
+- Tool descriptions enhanced to mention Spring AI support
+- New usage examples for Spring AI features
+- Updated tool tables with Spring AI references
+
+### 🧪 Testing
+- Added Spring AI reference tests to quick-test.js
+- Added Spring AI ecosystem search tests to test-enhanced.sh
+- Verified Spring AI API search functionality
+- Validated multi-project URL construction
+
+### 🔄 Migration Notes
+
+#### For Existing Users
+- **No action required** - fully backward compatible
+- Existing tools work exactly as before
+- New Spring AI features available immediately after update
+
+#### New Tool Usage
+```javascript
+// Get Spring AI documentation
+get_spring_reference({ project: "ai", section: "chatclient" })
+
+// Search Spring AI ecosystem
+search_spring_ecosystem({ query: "embeddings", scope: "ai" })
+
+// Search for Spring AI APIs
+search_spring_ecosystem({ query: "rag", scope: "api" })
+```
+
+### 🐛 Fixes
+- Fixed ecosystem search formatting error when handling undefined categories
+- Corrected Spring AI documentation URL structure (sections under `/api/`)
+- Improved error handling for project-specific reference lookups
+
+### 📊 Impact
+- **Zero breaking changes** - existing tools maintain full compatibility
+- **Instant availability** - Spring AI support works immediately
+- **Performance maintained** - cache strategies optimized per project
+- **Future-ready** - Easy addition of more Spring projects
+
+---
+
+# Previous Releases
+
+## [1.2.3] - 2024-09-29
+
+### 🚀 Major Release: Advanced Features & Performance Optimization
+
 **Breaking Changes:** None
 **Backward Compatibility:** ✅ Full
 

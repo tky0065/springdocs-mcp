@@ -78,10 +78,15 @@ test_tool "get_spring_guide" \
 '{"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "get_spring_guide", "arguments": {"guideId": "gs-rest-service"}}}' \
 "Get REST service guide"
 
-# Test 7: Get reference documentation
+# Test 7: Get reference documentation (Spring Boot)
 test_tool "get_spring_reference" \
-'{"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "get_spring_reference", "arguments": {"section": "web"}}}' \
-"Get web reference documentation"
+'{"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "get_spring_reference", "arguments": {"project": "boot", "section": "web"}}}' \
+"Get Spring Boot web reference documentation"
+
+# Test 7b: Get Spring AI reference documentation
+test_tool "get_spring_reference_ai" \
+'{"jsonrpc": "2.0", "id": "7b", "method": "tools/call", "params": {"name": "get_spring_reference", "arguments": {"project": "ai", "section": "chatclient"}}}' \
+"Get Spring AI ChatClient reference documentation"
 
 # Test 8: Search concepts
 test_tool "search_spring_concepts" \
@@ -95,6 +100,16 @@ echo "==============================="
 test_tool "search_spring_ecosystem" \
 '{"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": {"name": "search_spring_ecosystem", "arguments": {"query": "microservices", "scope": "all", "limit": 3}}}' \
 "Search Spring ecosystem"
+
+# Test 9b: Search Spring AI ecosystem
+test_tool "search_spring_ecosystem_ai" \
+'{"jsonrpc": "2.0", "id": "9b", "method": "tools/call", "params": {"name": "search_spring_ecosystem", "arguments": {"query": "embeddings", "scope": "ai", "limit": 3}}}' \
+"Search Spring AI ecosystem (embeddings)"
+
+# Test 9c: Search Spring AI via API scope
+test_tool "search_spring_ecosystem_ai_api" \
+'{"jsonrpc": "2.0", "id": "9c", "method": "tools/call", "params": {"name": "search_spring_ecosystem", "arguments": {"query": "chatclient", "scope": "api", "limit": 3}}}' \
+"Search Spring AI API documentation"
 
 # Test 10: Get tutorial
 test_tool "get_spring_tutorial" \

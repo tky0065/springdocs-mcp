@@ -110,17 +110,23 @@ export class ToolDefinitions {
       },
       {
         name: "get_spring_reference",
-        description: "Récupère une section spécifique de la documentation de référence Spring Boot",
+        description: "Get specific section of Spring reference documentation (supports Spring Boot, Spring AI, Spring Framework, etc.)",
         inputSchema: {
           type: "object",
           properties: {
+            project: {
+              type: "string",
+              enum: ["boot", "ai", "framework"],
+              description: "Spring project to search ('boot' for Spring Boot, 'ai' for Spring AI, 'framework' for Spring Framework)",
+              default: "boot",
+            },
             section: {
               type: "string",
-              description: "La section de la documentation de référence (par exemple: 'web', 'data', 'security')",
+              description: "Documentation section (e.g., 'web', 'data' for Boot; 'chatclient', 'rag' for AI; 'core', 'web' for Framework)",
             },
             subsection: {
               type: "string",
-              description: "Sous-section optionnelle pour une recherche plus précise",
+              description: "Optional subsection for more precise navigation",
             },
           },
           required: ["section"],
@@ -147,7 +153,7 @@ export class ToolDefinitions {
       },
       {
         name: "search_spring_ecosystem",
-        description: "Search across the entire Spring ecosystem including all projects, guides, and documentation",
+        description: "Search across the entire Spring ecosystem including all projects, guides, documentation, and Spring AI",
         inputSchema: {
           type: "object",
           properties: {
@@ -157,8 +163,8 @@ export class ToolDefinitions {
             },
             scope: {
               type: "string",
-              enum: ["all", "projects", "guides", "docs", "api"],
-              description: "Scope of search",
+              enum: ["all", "projects", "guides", "docs", "api", "ai"],
+              description: "Scope of search (use 'ai' for Spring AI specific searches)",
               default: "all",
             },
             limit: {

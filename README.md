@@ -5,7 +5,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Universal%20Compatible-brightgreen.svg)](https://modelcontextprotocol.io/)
 
-> **🚀 Enhanced v1.2.4:** 12 powerful tools with intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
+> **🚀 Enhanced v1.2.8:** 12 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
 >
 > **🌐 Universal MCP Compatibility:** Works with Claude Code, Gemini CLI, VS Code, JetBrains IDEs, and all MCP-compatible clients!
 
@@ -60,6 +60,23 @@ npm install -g @enokdev/springdocs-mcp
 # Then use: springdocs-mcp
 ```
 
+#### Docker (Coming Soon - Docker MCP Catalog)
+```bash
+# Via Docker MCP CLI (when available in catalog)
+docker mcp add springdocs-mcp
+
+# Via Docker directly
+docker pull mcp/springdocs-mcp:latest
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
+  docker run -i mcp/springdocs-mcp:latest
+```
+
+**Benefits of Docker distribution:**
+- Enhanced security with cryptographic signatures and SBOMs
+- Isolated execution environment
+- Reduced token usage in Docker Desktop
+- Automatic security updates
+
 **Config file locations:**
 - **Claude Desktop:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) / `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
 - **Claude Code:** `~/.claude-code/mcp-config.json`
@@ -78,13 +95,13 @@ npm install -g @enokdev/springdocs-mcp
 | `get_spring_project` | Get project details | "Get Spring Boot project info" |
 | `get_all_spring_guides` | List available guides | "Show all security guides" |
 | `get_spring_guide` | Get complete guide content | "Get gs-rest-service guide" |
-| `get_spring_reference` | Reference documentation | "Get web reference docs" |
+| `get_spring_reference` | Reference docs for Boot/AI/Framework | "Get Spring AI chatclient reference" |
 | `search_spring_concepts` | Explore Spring concepts | "Explain auto-configuration" |
 
 ### 🆕 **Advanced Tools (5 New)**
 | Tool | Purpose | Example Usage |
 |------|---------|---------------|
-| `search_spring_ecosystem` | Search entire ecosystem | "Find reactive programming resources" |
+| `search_spring_ecosystem` | Search entire ecosystem + Spring AI | "Find RAG and embeddings resources" |
 | `get_spring_tutorial` | Step-by-step tutorials | "Get intermediate REST API tutorial" |
 | `compare_spring_versions` | Version comparison & migration | "Compare Spring Boot 2.7 vs 3.0" |
 | `get_spring_best_practices` | Expert guidance by category | "Get security best practices" |
@@ -104,6 +121,14 @@ npm install -g @enokdev/springdocs-mcp
 ### Basic Search
 ```
 "Search for REST API documentation in Spring Boot"
+```
+
+### 🆕 Spring AI Support
+```
+"Get Spring AI ChatClient reference documentation"
+"Search for RAG and embeddings in Spring AI"
+"Show me Spring AI vector store documentation"
+"Find Spring AI LLM integration examples"
 ```
 
 ### Ecosystem Exploration

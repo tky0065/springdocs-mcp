@@ -2,22 +2,26 @@ import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
+import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 
 /**
- * Clean Spring Boot Documentation Service - uses ONLY real Spring documentation APIs
- * No mock data whatsoever - everything is fetched from actual Spring sources
+ * Spring Documentation Service - Supports multiple Spring projects (Boot, AI, Framework, etc.)
+ * Uses ONLY real Spring documentation APIs - no mock data
+ *
+ * Architecture: Configuration-driven multi-project support via SpringProjectsConfig
  */
 export class SpringBootDocsServiceOptimized {
   private readonly baseUrl = 'https://docs.spring.io';
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
-  private readonly springBootVersion = '3.5.6';
+  private projectsConfig: SpringProjectsConfig;
   private turndownService: TurndownService;
   private cache: CacheService;
   private readonly REQUEST_TIMEOUT = 10000;
   private readonly MAX_RETRIES = 3;
 
-  constructor() {
+  constructor(projectsConfig: SpringProjectsConfig = springProjectsConfig) {
+    this.projectsConfig = projectsConfig;
     this.turndownService = new TurndownService({
       headingStyle: 'atx',
       codeBlockStyle: 'fenced',
@@ -297,48 +301,80 @@ export class SpringBootDocsServiceOptimized {
   }
 
   /**
-   * Get Spring reference documentation - alias for backward compatibility
+   * Get Spring reference documentation - backward compatibility (defaults to Spring Boot)
+   * @deprecated Use getSpringReference('boot', section) instead
    */
   async getReference(section: string, subsection?: string): Promise<string> {
-    return this.getSpringReference(section, subsection);
+    console.warn('getReference() is deprecated. Use getSpringReference("boot", section) instead');
+    return this.getSpringReference('boot', section, subsection);
   }
 
   /**
-   * Get Spring reference documentation - REAL API ONLY
+   * Get Spring reference documentation for any Spring project
+   * Supports: Spring Boot, Spring AI, Spring Framework, and future projects
+   *
+   * @param projectId - Project identifier ('boot', 'ai', 'framework', etc.)
+   * @param section - Documentation section (e.g., 'web', 'chatclient', 'core')
+   * @param subsection - Optional subsection for deeper navigation
+   * @returns Formatted markdown documentation with source URL
    */
-  async getSpringReference(section: string, subsection?: string): Promise<string> {
-    const cacheKey = `reference:${section}:${subsection || 'main'}`;
+  async getSpringReference(
+    projectId: string,
+    section: string,
+    subsection?: string
+  ): Promise<string> {
+    const cacheKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
-      console.error(`✅ Cache hit for reference: ${section}`);
+      console.error(`✅ Cache hit for reference: ${projectId}/${section}`);
       return cached;
     }
 
-    console.error(`🔍 Fetching reference: ${section}`);
+    console.error(`🔍 Fetching reference: ${projectId}/${section}`);
     try {
-      const url = `${this.baseUrl}/spring-boot/docs/${this.springBootVersion}/reference/html/${section}.html`;
+      // Validate project exists
+      const project = this.projectsConfig.getProject(projectId);
+
+      // Validate section if project defines allowed sections
+      if (!this.projectsConfig.validateSection(projectId, section)) {
+        const availableSections = project.referenceSections?.join(', ') || 'any';
+        throw new Error(
+          `Invalid section "${section}" for ${project.displayName}. Available sections: ${availableSections}`
+        );
+      }
+
+      // Build URL using configuration
+      const url = this.projectsConfig.buildReferenceUrl(projectId, section);
       const response = await this.fetchWithRetry(url);
 
       if (!response.ok) {
-        throw new Error(`Reference section not found: ${section}`);
+        throw new Error(`Reference section not found: ${project.displayName} / ${section}`);
       }
 
       const html = await response.text();
       const $ = cheerio.load(html);
 
-      const content = $('.content, .section, main').first();
+      // Extract content (selector may vary by project)
+      const content = $('.content, .section, main, article').first();
 
       if (content.length === 0) {
-        throw new Error('No content found in reference documentation');
+        throw new Error(`No content found in ${project.displayName} reference documentation`);
       }
 
       const markdown = this.turndownService.turndown(content.html() || '');
-      const result = `# Spring Boot Reference: ${section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
+      const result = `# ${project.displayName} Reference: ${section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
 
-      this.cache.setLongTerm(cacheKey, result);
+      // Use project-specific cache strategy
+      const cacheTTL = this.projectsConfig.getCacheTTL(projectId);
+      if (project.cacheStrategy === 'long') {
+        this.cache.setLongTerm(cacheKey, result);
+      } else {
+        this.cache.set(cacheKey, result, cacheTTL);
+      }
+
       return result;
     } catch (error) {
-      console.error(`Error fetching reference ${section}:`, error);
+      console.error(`Error fetching reference ${projectId}/${section}:`, error);
       throw error;
     }
   }

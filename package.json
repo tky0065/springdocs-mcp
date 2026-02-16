@@ -1,7 +1,7 @@
 {
   "name": "@enokdev/springdocs-mcp",
   "version": "1.2.8",
-  "description": "Enhanced MCP server for accessing Spring Boot documentation with advanced features, intelligent caching, and comprehensive ecosystem coverage",
+  "description": "Enhanced MCP server for Spring Boot and Spring AI documentation with advanced features, intelligent caching, and comprehensive ecosystem coverage",
   "type": "module",
   "main": "build/index.js",
   "repository": {
@@ -29,6 +29,8 @@
     "prepublishOnly": "npm run build",
     "test": "bash test.sh",
     "test-npx": "./test-npx.sh",
+    "docker:tools": "node scripts/generate-tools-json.js",
+    "docker:build": "docker build -t mcp/springdocs-mcp:$(node -p \"require('./package.json').version\") .",
     "install-global": "npm install -g .",
     "version:patch": "npm version patch && git push origin main --follow-tags",
     "version:minor": "npm version minor && git push origin main --follow-tags",
