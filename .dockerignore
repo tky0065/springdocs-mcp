@@ -1,0 +1,80 @@
+# Docker build context exclusions for Spring Documentation MCP Server
+# Reduces image size and build time by excluding unnecessary files
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node modules (will be installed in container)
+node_modules
+
+# Build output (will be generated in container)
+build
+dist
+
+# Development files
+*.log
+*.pid
+*.seed
+*.pid.lock
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+test-results
+*.test.js
+test.sh
+test-enhanced.sh
+quick-test.js
+
+# Documentation (except README)
+CHANGELOG.md
+*.md
+!README.md
+docs/
+examples/
+
+# IDE and editor files
+.vscode
+.idea
+.eclipse
+.project
+.classpath
+.settings
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Environment files (should use Docker env vars instead)
+.env
+.env.*
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker files (no need to include these in the image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# NPM
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# Error logs and debugging artifacts
+error.png
+resul.md
+post.md
+test-tools.json
+test-tools-list.json
