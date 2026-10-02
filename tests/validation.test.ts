@@ -52,7 +52,7 @@ describe("validateToolArguments (#18)", () => {
     expect(() => validateToolArguments("nope", {})).toThrow(/Unknown tool: nope/);
   });
 
-  it("valide chacun des 16 tools avec ses seuls paramètres requis", () => {
+  it("valide chacun des 17 tools avec ses seuls paramètres requis", () => {
     for (const tool of ToolDefinitions.getToolList() as any[]) {
       const minimal = Object.fromEntries((tool.inputSchema.required ?? []).map((name: string) =>
         [name, tool.inputSchema.properties[name].enum?.[0] ?? "valeur"]));

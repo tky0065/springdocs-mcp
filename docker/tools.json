@@ -509,5 +509,30 @@
         "maxLength": 100
       }
     ]
+  },
+  {
+    "name": "find_spring_dependency",
+    "description": "Trouve les starters Spring correspondant à un besoin (mots-clés en anglais, ex. 'jpa', 'postgres', 'oauth2') et renvoie leurs coordonnées avec des snippets Maven et Gradle prêts à coller, d'après Spring Initializr",
+    "arguments": [
+      {
+        "name": "need",
+        "type": "string",
+        "required": true,
+        "description": "Besoin exprimé en mots-clés anglais (ex. 'jpa', 'postgres driver', 'oauth2 client')",
+        "maxLength": 100
+      },
+      {
+        "name": "build",
+        "type": "string",
+        "required": false,
+        "description": "Snippets à produire : Maven, Gradle ou les deux",
+        "enum": [
+          "maven",
+          "gradle",
+          "both"
+        ],
+        "default": "both"
+      }
+    ]
   }
 ]

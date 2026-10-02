@@ -1,0 +1,228 @@
+{
+ "bootVersion": "4.1.1",
+ "dependencies": {
+  "data-rest-explorer": {
+   "groupId": "org.springframework.data",
+   "artifactId": "spring-data-rest-hal-explorer",
+   "scope": "compile"
+  },
+  "session-data-redis": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-session-data-redis",
+   "scope": "compile"
+  },
+  "oauth2-authorization-server": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-security-oauth2-authorization-server",
+   "scope": "compile"
+  },
+  "spring-security-webauthn": {
+   "groupId": "org.springframework.security",
+   "artifactId": "spring-security-webauthn",
+   "scope": "compile"
+  },
+  "springdoc-openapi": {
+   "groupId": "org.springdoc",
+   "artifactId": "springdoc-openapi-starter-webmvc-ui",
+   "scope": "compile",
+   "version": "3.1.0"
+  },
+  "vaadin": {
+   "groupId": "com.vaadin",
+   "artifactId": "vaadin-spring-boot-starter",
+   "scope": "compile",
+   "bom": "vaadin"
+  },
+  "web": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-webmvc",
+   "scope": "compile"
+  },
+  "hsql": {
+   "groupId": "org.hsqldb",
+   "artifactId": "hsqldb",
+   "scope": "runtime"
+  },
+  "spring-restclient": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-restclient",
+   "scope": "compile"
+  },
+  "graphql": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-graphql",
+   "scope": "compile"
+  },
+  "oauth2-client": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-security-oauth2-client",
+   "scope": "compile"
+  },
+  "db2": {
+   "groupId": "com.ibm.db2",
+   "artifactId": "jcc",
+   "scope": "runtime"
+  },
+  "data-ldap": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-data-ldap",
+   "scope": "compile"
+  },
+  "spring-webclient": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-webclient",
+   "scope": "compile"
+  },
+  "okta": {
+   "groupId": "com.okta.spring",
+   "artifactId": "okta-spring-boot-starter",
+   "scope": "compile",
+   "version": "3.1.0"
+  },
+  "session-jdbc": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-session-jdbc",
+   "scope": "compile"
+  },
+  "data-rest": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-data-rest",
+   "scope": "compile"
+  },
+  "liquibase": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-liquibase",
+   "scope": "compile"
+  },
+  "ldap": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-ldap",
+   "scope": "compile"
+  },
+  "derby": {
+   "groupId": "org.apache.derby",
+   "artifactId": "derby",
+   "scope": "runtime"
+  },
+  "mysql": {
+   "groupId": "com.mysql",
+   "artifactId": "mysql-connector-j",
+   "scope": "runtime"
+  },
+  "web-services": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-webservices",
+   "scope": "compile"
+  },
+  "oracle": {
+   "groupId": "com.oracle.database.jdbc",
+   "artifactId": "ojdbc17",
+   "scope": "runtime"
+  },
+  "sqlite": {
+   "groupId": "org.xerial",
+   "artifactId": "sqlite-jdbc",
+   "scope": "runtime"
+  },
+  "flyway": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-flyway",
+   "scope": "compile"
+  },
+  "data-jpa": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-data-jpa",
+   "scope": "compile"
+  },
+  "data-jdbc": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-data-jdbc",
+   "scope": "compile"
+  },
+  "webflux": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-webflux",
+   "scope": "compile"
+  },
+  "data-r2dbc": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-data-r2dbc",
+   "scope": "compile"
+  },
+  "jdbc": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-jdbc",
+   "scope": "compile"
+  },
+  "h2": {
+   "groupId": "com.h2database",
+   "artifactId": "h2",
+   "scope": "runtime"
+  },
+  "security": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-security",
+   "scope": "compile"
+  },
+  "sqlserver": {
+   "groupId": "com.microsoft.sqlserver",
+   "artifactId": "mssql-jdbc",
+   "scope": "runtime"
+  },
+  "postgresql": {
+   "groupId": "org.postgresql",
+   "artifactId": "postgresql",
+   "scope": "runtime"
+  },
+  "jersey": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-jersey",
+   "scope": "compile"
+  },
+  "jooq": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-jooq",
+   "scope": "compile"
+  },
+  "hateoas": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-hateoas",
+   "scope": "compile"
+  },
+  "oauth2-resource-server": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-security-oauth2-resource-server",
+   "scope": "compile"
+  },
+  "security-saml2": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-security-saml2",
+   "scope": "compile",
+   "repository": "shibboleth-releases"
+  },
+  "mariadb": {
+   "groupId": "org.mariadb.jdbc",
+   "artifactId": "mariadb-java-client",
+   "scope": "runtime"
+  },
+  "r2dbc": {
+   "groupId": "org.springframework.boot",
+   "artifactId": "spring-boot-starter-r2dbc",
+   "scope": "compile"
+  }
+ },
+ "repositories": {
+  "shibboleth-releases": {
+   "name": "Shibboleth Releases Repository",
+   "url": "https://build.shibboleth.net/maven/releases",
+   "snapshotEnabled": false
+  }
+ },
+ "boms": {
+  "vaadin": {
+   "groupId": "com.vaadin",
+   "artifactId": "vaadin-bom",
+   "version": "25.3.0"
+  }
+ }
+}

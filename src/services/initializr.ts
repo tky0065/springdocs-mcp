@@ -1,11 +1,14 @@
 import { CacheService } from './cache.js';
 import { fetchWithRetry } from './http.js';
+import { BuildChoice, DependencyData, flattenCatalog, formatDependencyMatches, rankDependencies, searchWords } from './dependency-finder.js';
 
 // Reads the Spring Initializr metadata (https://start.spring.io/metadata/client):
 // build options and the list of available dependencies. Real API only, no mock data.
 
 const METADATA_URL = 'https://start.spring.io/metadata/client';
 const CACHE_KEY = 'initializr:metadata';
+const COORDINATES_URL = 'https://start.spring.io/dependencies';
+const COORDINATES_CACHE_KEY = 'initializr:dependencies';
 const MAX_MATCHES = 30;
 
 interface OptionValue { id: string; name?: string }
@@ -91,6 +94,33 @@ export class InitializrService {
   async getInitializr(section: 'options' | 'dependencies' = 'options', query?: string): Promise<string> {
     const meta = await this.loadMetadata();
     return section === 'dependencies' ? formatDependencies(meta, query) : formatOptions(meta);
+  }
+
+  async findDependency(need: string, build: BuildChoice = 'both'): Promise<string> {
+    const words = searchWords(need);
+    if (words.length === 0) {
+      throw new Error('The need must contain at least one searchable word (English keywords such as "jpa" or "oauth2")');
+    }
+    const meta = await this.loadMetadata();
+    const data = await this.loadCoordinates();
+    const ranked = rankDependencies(flattenCatalog(meta), words);
+    return formatDependencyMatches(need, ranked, data, build);
+  }
+
+  private async loadCoordinates(): Promise<DependencyData> {
+    const cached = this.cache.get<DependencyData>(COORDINATES_CACHE_KEY);
+    if (cached) return cached;
+
+    const response = await fetchWithRetry(COORDINATES_URL);
+    if (!response.ok) {
+      throw new Error(`Spring Initializr is unavailable (HTTP ${response.status})`);
+    }
+    const data = (await response.json()) as DependencyData;
+    if (!data || typeof data.dependencies !== 'object' || data.dependencies === null || Array.isArray(data.dependencies)) {
+      unexpected('dependencies');
+    }
+    this.cache.setLongTerm(COORDINATES_CACHE_KEY, data);
+    return data;
   }
 
   private async loadMetadata(): Promise<InitializrMetadata> {

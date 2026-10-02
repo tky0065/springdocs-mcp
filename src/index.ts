@@ -160,6 +160,10 @@ class SpringBootMCPServerAdvanced {
             result = await this.handleGetInitializr(args);
             break;
 
+          case "find_spring_dependency":
+            result = await this.handleFindDependency(args);
+            break;
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -407,6 +411,21 @@ class SpringBootMCPServerAdvanced {
     const { section = "options", query } = args;
 
     const text = await this.initializrService.getInitializr(section, query);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text,
+        },
+      ],
+    };
+  }
+
+  private async handleFindDependency(args: any) {
+    const { need, build = "both" } = args;
+
+    const text = await this.initializrService.findDependency(need, build);
 
     return {
       content: [

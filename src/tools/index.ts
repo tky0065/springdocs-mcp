@@ -402,6 +402,27 @@ export class ToolDefinitions {
           required: [],
         },
       },
+      {
+        name: "find_spring_dependency",
+        description: "Trouve les starters Spring correspondant à un besoin (mots-clés en anglais, ex. 'jpa', 'postgres', 'oauth2') et renvoie leurs coordonnées avec des snippets Maven et Gradle prêts à coller, d'après Spring Initializr",
+        inputSchema: {
+          type: "object",
+          properties: {
+            need: {
+              type: "string",
+              maxLength: 100,
+              description: "Besoin exprimé en mots-clés anglais (ex. 'jpa', 'postgres driver', 'oauth2 client')",
+            },
+            build: {
+              type: "string",
+              enum: ["maven", "gradle", "both"],
+              description: "Snippets à produire : Maven, Gradle ou les deux",
+              default: "both",
+            },
+          },
+          required: ["need"],
+        },
+      },
     ];
   }
 }
