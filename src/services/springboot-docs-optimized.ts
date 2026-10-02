@@ -163,6 +163,7 @@ export class SpringBootDocsServiceOptimized {
    * Get Spring project details - REAL API ONLY
    */
   async getSpringProject(projectName: string): Promise<string> {
+    const slug = assertSafeSegment(projectName.toLowerCase().replace(/\s+/g, '-'), 'project name');
     const cacheKey = `project:${projectName}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
@@ -172,7 +173,7 @@ export class SpringBootDocsServiceOptimized {
 
     console.error(`🔍 Fetching project: ${projectName}`);
     try {
-      const url = `${this.springProjectsUrl}/${projectName.toLowerCase().replace(/\s+/g, '-')}`;
+      const url = `${this.springProjectsUrl}/${slug}`;
       const response = await this.fetchWithRetry(url);
 
       if (!response.ok) {
@@ -189,7 +190,7 @@ export class SpringBootDocsServiceOptimized {
       }
 
       const markdown = this.turndownService.turndown(content.html() || '');
-      const projectUrl = `${this.springProjectsUrl}/${projectName.toLowerCase().replace(/\s+/g, '-')}`;
+      const projectUrl = `${this.springProjectsUrl}/${slug}`;
       const result = `# ${projectName}\n\n${markdown.substring(0, 1500)}...\n\nFor complete project info, visit: ${projectUrl}`;
 
       this.cache.setLongTerm(cacheKey, result);
@@ -336,6 +337,8 @@ export class SpringBootDocsServiceOptimized {
     section: string,
     subsection?: string
   ): Promise<string> {
+    const safeSection = assertSafeSegment(section, 'section');
+    if (subsection !== undefined) assertSafeSegment(subsection, 'subsection');
     const cacheKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
@@ -357,7 +360,7 @@ export class SpringBootDocsServiceOptimized {
       }
 
       // Build URL using configuration
-      const url = this.projectsConfig.buildReferenceUrl(projectId, section);
+      const url = this.projectsConfig.buildReferenceUrl(projectId, safeSection);
       const response = await this.fetchWithRetry(url);
 
       if (!response.ok) {
