@@ -171,6 +171,13 @@
         "default": 0,
         "minimum": 0,
         "maximum": 10000000
+      },
+      {
+        "name": "version",
+        "type": "string",
+        "required": false,
+        "description": "Version de la documentation (ex: '3.4' ou '3.4.2' ; le patch est ignoré). Omis ou 'current' = dernière version. Les anciennes versions peuvent ne pas être publiées.",
+        "maxLength": 20
       }
     ]
   },

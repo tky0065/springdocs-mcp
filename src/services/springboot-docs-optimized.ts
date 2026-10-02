@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
 import { turndownService, extractContent, pageMarkdown } from './markdown.js';
-import { absoluteSpringUrl, assertSafeSegment } from './url.js';
+import { absoluteSpringUrl, assertSafeSegment, normalizeVersion } from './url.js';
 
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 
@@ -252,17 +252,23 @@ export class SpringBootDocsServiceOptimized {
    * @param projectId - Project identifier ('boot', 'ai', 'framework', etc.)
    * @param section - Documentation section (e.g., 'web', 'chatclient', 'core')
    * @param subsection - Optional subsection for deeper navigation
+   * @param offset - Character offset for paginated reads
+   * @param version - Optional documentation version ('3.4' or '3.4.2'; omitted/'current' = latest)
    * @returns Formatted markdown documentation with source URL
    */
   async getSpringReference(
     projectId: string,
     section: string,
     subsection?: string,
-    offset = 0
+    offset = 0,
+    version?: string
   ): Promise<string> {
     const safeSection = assertSafeSegment(section, 'section');
     const safeSubsection = subsection ? assertSafeSegment(subsection, 'subsection') : undefined;
-    const cacheKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
+    // Validate the version before any cache or network access
+    const normalizedVersion = normalizeVersion(version);
+    const baseKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
+    const cacheKey = normalizedVersion ? `${baseKey}:v${normalizedVersion}` : baseKey;
     const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for reference: ${projectId}/${section}`);
@@ -283,10 +289,15 @@ export class SpringBootDocsServiceOptimized {
       }
 
       // Build URL using configuration
-      const url = this.projectsConfig.buildReferenceUrl(projectId, safeSection, safeSubsection);
+      const url = this.projectsConfig.buildReferenceUrl(projectId, safeSection, safeSubsection, normalizedVersion);
       const response = await this.fetchWithRetry(url);
 
       if (!response.ok) {
+        if (normalizedVersion) {
+          throw new Error(
+            `Reference not found for ${project.displayName} version ${normalizedVersion} (this version may not be published at the current documentation site; omit 'version' for the latest or try a more recent one)`
+          );
+        }
         throw new Error(`Reference section not found: ${project.displayName} / ${section}`);
       }
 

@@ -149,6 +149,11 @@ export class ToolDefinitions {
               default: 0,
               description: "Position (en caractères) pour lire la suite d'un document tronqué, fournie dans le pied de la réponse précédente",
             },
+            version: {
+              type: "string",
+              maxLength: 20,
+              description: "Version de la documentation (ex: '3.4' ou '3.4.2' ; le patch est ignoré). Omis ou 'current' = dernière version. Les anciennes versions peuvent ne pas être publiées.",
+            },
           },
           required: ["section"],
         },

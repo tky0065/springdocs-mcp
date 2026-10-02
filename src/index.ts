@@ -224,14 +224,14 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleGetReference(args: any) {
-    const { project = "boot", section, subsection, offset = 0 } = args;
+    const { project = "boot", section, subsection, offset = 0, version } = args;
 
     if (!section || typeof section !== "string") {
       throw new Error("The 'section' parameter is required and must be a string");
     }
 
     // Use new multi-project method
-    const reference = await this.docsService.getSpringReference(project, section, subsection, offset);
+    const reference = await this.docsService.getSpringReference(project, section, subsection, offset, version);
 
     return {
       content: [
