@@ -6,6 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, CallToolRequest, ListToo
 import { SpringBootDocsServiceOptimized } from "./services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "./services/advanced-features.js";
 import { CacheService } from "./services/cache.js";
+import { InitializrService } from "./services/initializr.js";
 import { ToolDefinitions } from "./tools/index.js";
 import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
@@ -18,6 +19,7 @@ class SpringBootMCPServerAdvanced {
   private docsService: SpringBootDocsServiceOptimized;
   private advancedService: AdvancedFeaturesService;
   private cache: CacheService;
+  private initializrService: InitializrService;
 
   constructor() {
     this.server = new Server(
@@ -35,6 +37,7 @@ class SpringBootMCPServerAdvanced {
     this.cache = new CacheService();
     this.docsService = new SpringBootDocsServiceOptimized(undefined, this.cache);
     this.advancedService = new AdvancedFeaturesService(this.cache);
+    this.initializrService = new InitializrService(this.cache);
     this.setupToolHandlers();
   }
 
@@ -118,6 +121,10 @@ class SpringBootMCPServerAdvanced {
 
           case "spring_cache_stats":
             result = this.handleCacheStats(args);
+            break;
+
+          case "get_spring_initializr":
+            result = await this.handleGetInitializr(args);
             break;
 
           default:
@@ -358,6 +365,21 @@ class SpringBootMCPServerAdvanced {
         {
           type: "text",
           text: guide,
+        },
+      ],
+    };
+  }
+
+  private async handleGetInitializr(args: any) {
+    const { section = "options", query } = args;
+
+    const text = await this.initializrService.getInitializr(section, query);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text,
         },
       ],
     };

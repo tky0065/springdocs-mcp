@@ -485,5 +485,29 @@
         "default": "none"
       }
     ]
+  },
+  {
+    "name": "get_spring_initializr",
+    "description": "Liste les options de Spring Initializr (start.spring.io : build, Java, langage, versions de Spring Boot) ou ses dépendances, avec filtre texte sur l'id, le nom ou la description",
+    "arguments": [
+      {
+        "name": "section",
+        "type": "string",
+        "required": false,
+        "description": "Ce qu'il faut lister : les options du projet ou les dépendances disponibles",
+        "enum": [
+          "options",
+          "dependencies"
+        ],
+        "default": "options"
+      },
+      {
+        "name": "query",
+        "type": "string",
+        "required": false,
+        "description": "Filtre texte sur les dépendances (id, nom, description), ex. 'jpa' ou 'security'. Ignoré pour section=options",
+        "maxLength": 100
+      }
+    ]
   }
 ]

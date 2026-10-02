@@ -7,6 +7,8 @@ import fetch from "node-fetch";
 import { CacheService } from "../src/services/cache.js";
 import { InitializrService, formatDependencies, formatOptions } from "../src/services/initializr.js";
 import { fakeResponse, settle } from "./helpers.js";
+import { ToolDefinitions } from "../src/tools/index.js";
+import { validateToolArguments } from "../src/validation.js";
 
 const mockedFetch = vi.mocked(fetch) as unknown as ReturnType<typeof vi.fn>;
 const meta = JSON.parse(readFileSync(new URL("./fixtures/initializr.json", import.meta.url), "utf8"));
@@ -112,5 +114,22 @@ describe("InitializrService", () => {
     const outcome = await settle(new InitializrService(cache).getInitializr("dependencies"));
     expect(outcome.ok).toBe(false);
     expect(cache.getStats().size).toBe(0);
+  });
+});
+
+describe("tool get_spring_initializr (#50)", () => {
+  it("est défini avec enum section et maxLength sur query", () => {
+    const tool = ToolDefinitions.getToolList().find((t: any) => t.name === "get_spring_initializr") as any;
+    expect(tool.inputSchema.properties.section.enum).toEqual(["options", "dependencies"]);
+    expect(tool.inputSchema.properties.query.maxLength).toBe(100);
+    expect(tool.inputSchema.required ?? []).toEqual([]);
+  });
+
+  it("valide les arguments", () => {
+    expect(() => validateToolArguments("get_spring_initializr", {})).not.toThrow();
+    expect(validateToolArguments("get_spring_initializr", { section: "dependencies", query: "web" }))
+      .toEqual({ section: "dependencies", query: "web" });
+    expect(() => validateToolArguments("get_spring_initializr", { section: "all" })).toThrow();
+    expect(() => validateToolArguments("get_spring_initializr", { query: "x".repeat(101) })).toThrow();
   });
 });

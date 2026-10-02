@@ -154,10 +154,10 @@ describe("get_migration_guide via stdio (#35)", () => {
   const init = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2024-11-05", capabilities: {}, clientInfo: { name: "t", version: "1" } } };
   const initialized = { jsonrpc: "2.0", method: "notifications/initialized" };
 
-  it("liste 15 tools dont get_migration_guide", async () => {
+  it("liste 16 tools dont get_migration_guide", async () => {
     const responses = await rpc([init, initialized, { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }]);
     const list = responses.find((r) => r.id === 2).result.tools;
-    expect(list).toHaveLength(15);
+    expect(list).toHaveLength(16);
     expect(list.map((t: any) => t.name)).toContain("get_migration_guide");
   });
 

@@ -381,6 +381,27 @@ export class ToolDefinitions {
           required: [],
         },
       },
+      {
+        name: "get_spring_initializr",
+        description: "Liste les options de Spring Initializr (start.spring.io : build, Java, langage, versions de Spring Boot) ou ses dépendances, avec filtre texte sur l'id, le nom ou la description",
+        inputSchema: {
+          type: "object",
+          properties: {
+            section: {
+              type: "string",
+              enum: ["options", "dependencies"],
+              description: "Ce qu'il faut lister : les options du projet ou les dépendances disponibles",
+              default: "options",
+            },
+            query: {
+              type: "string",
+              maxLength: 100,
+              description: "Filtre texte sur les dépendances (id, nom, description), ex. 'jpa' ou 'security'. Ignoré pour section=options",
+            },
+          },
+          required: [],
+        },
+      },
     ];
   }
 }
