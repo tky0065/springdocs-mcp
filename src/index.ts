@@ -6,6 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, CallToolRequest, ListToo
 import { SpringBootDocsServiceOptimized } from "./services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "./services/advanced-features.js";
 import { ToolDefinitions } from "./tools/index.js";
+import { VERSION } from "./version.js";
 
 /**
  * Enhanced Spring Documentation MCP Server with advanced features and optimizations
@@ -19,7 +20,7 @@ class SpringBootMCPServerAdvanced {
     this.server = new Server(
       {
         name: "springboot-mcp-server-advanced",
-        version: "1.2.4",
+        version: VERSION,
       },
       {
         capabilities: {

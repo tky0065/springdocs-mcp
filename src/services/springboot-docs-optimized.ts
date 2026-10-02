@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
+import { USER_AGENT } from '../version.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 
 /**
@@ -555,7 +556,7 @@ export class SpringBootDocsServiceOptimized {
         const response = await fetch(url, {
           signal: controller.signal,
           headers: {
-            'User-Agent': 'Spring-Docs-MCP/1.2.4',
+            'User-Agent': USER_AGENT,
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9'
           }
