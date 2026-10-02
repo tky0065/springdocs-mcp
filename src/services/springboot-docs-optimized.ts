@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
-import { turndownService, extractContent } from './markdown.js';
+import { turndownService, extractContent, pageMarkdown } from './markdown.js';
 import { absoluteSpringUrl, assertSafeSegment } from './url.js';
 
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
@@ -80,13 +80,13 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Get Spring project details - REAL API ONLY
    */
-  async getSpringProject(projectName: string): Promise<string> {
+  async getSpringProject(projectName: string, offset = 0): Promise<string> {
     const slug = assertSafeSegment(projectName.toLowerCase().replace(/\s+/g, '-'), 'project name');
     const cacheKey = `project:${projectName}`;
-    const cached = this.cache.get<string>(cacheKey);
+    const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for project: ${projectName}`);
-      return cached;
+      return this.formatPage(projectName, cached.markdown, cached.url, offset, 'For complete project info, visit');
     }
 
     console.error(`🔍 Fetching project: ${projectName}`);
@@ -109,10 +109,10 @@ export class SpringBootDocsServiceOptimized {
 
       const markdown = turndownService.turndown(content.html() || '');
       const projectUrl = `${this.springProjectsUrl}/${slug}`;
-      const result = `# ${projectName}\n\n${markdown.substring(0, 1500)}...\n\nFor complete project info, visit: ${projectUrl}`;
 
-      this.cache.setLongTerm(cacheKey, result);
-      return result;
+      // Cache the full markdown so later pages need no new fetch
+      this.cache.setLongTerm(cacheKey, { markdown, url: projectUrl });
+      return this.formatPage(projectName, markdown, projectUrl, offset, 'For complete project info, visit');
     } catch (error) {
       console.error(`Error fetching project ${projectName}:`, error);
       throw error;
@@ -257,15 +257,16 @@ export class SpringBootDocsServiceOptimized {
   async getSpringReference(
     projectId: string,
     section: string,
-    subsection?: string
+    subsection?: string,
+    offset = 0
   ): Promise<string> {
     const safeSection = assertSafeSegment(section, 'section');
     const safeSubsection = subsection ? assertSafeSegment(subsection, 'subsection') : undefined;
     const cacheKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
-    const cached = this.cache.get<string>(cacheKey);
+    const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for reference: ${projectId}/${section}`);
-      return cached;
+      return this.formatPage(this.referenceTitle(projectId, section, subsection), cached.markdown, cached.url, offset, 'For complete reference, visit');
     }
 
     console.error(`🔍 Fetching reference: ${projectId}/${section}`);
@@ -300,21 +301,41 @@ export class SpringBootDocsServiceOptimized {
       }
 
       const markdown = turndownService.turndown(content.html() || '');
-      const result = `# ${project.displayName} Reference: ${subsection ? `${section}/${subsection}` : section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
+      const entry = { markdown, url };
 
       // Use project-specific cache strategy
       const cacheTTL = this.projectsConfig.getCacheTTL(projectId);
       if (project.cacheStrategy === 'long') {
-        this.cache.setLongTerm(cacheKey, result);
+        this.cache.setLongTerm(cacheKey, entry);
       } else {
-        this.cache.set(cacheKey, result, cacheTTL);
+        this.cache.set(cacheKey, entry, cacheTTL);
       }
 
-      return result;
+      return this.formatPage(this.referenceTitle(projectId, section, subsection), markdown, url, offset, 'For complete reference, visit');
     } catch (error) {
       console.error(`Error fetching reference ${projectId}/${section}:`, error);
       throw error;
     }
+  }
+
+  private referenceTitle(projectId: string, section: string, subsection?: string): string {
+    const project = this.projectsConfig.getProject(projectId);
+    return `${project.displayName} Reference: ${subsection ? `${section}/${subsection}` : section}`;
+  }
+
+  /**
+   * Format one page of a full markdown document with a pagination footer
+   */
+  private formatPage(title: string, markdown: string, url: string, offset: number, linkLabel: string): string {
+    const page = pageMarkdown(markdown, offset);
+    if (offset >= page.total) {
+      return `No content at offset ${offset} (total: ${page.total} characters).`;
+    }
+    let result = `# ${title}\n\n${page.content}`;
+    if (page.nextOffset !== null) {
+      result += `\n\n---\nPartie ${page.start}–${page.end} sur ${page.total} caractères. Pour la suite, rappeler avec offset=${page.nextOffset}.`;
+    }
+    return `${result}\n\n${linkLabel}: ${url}`;
   }
 
   /**

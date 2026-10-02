@@ -66,6 +66,15 @@
         "required": true,
         "description": "Le nom du projet Spring (ex: 'spring-boot', 'spring-security', 'spring-data')",
         "maxLength": 100
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false,
+        "description": "Position (en caractères) pour lire la suite d'un document tronqué, fournie dans le pied de la réponse précédente",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 10000000
       }
     ]
   },
@@ -145,6 +154,15 @@
         "required": false,
         "description": "Optional subsection for more precise navigation",
         "maxLength": 100
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false,
+        "description": "Position (en caractères) pour lire la suite d'un document tronqué, fournie dans le pied de la réponse précédente",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 10000000
       }
     ]
   },
