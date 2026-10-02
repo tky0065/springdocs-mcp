@@ -6,8 +6,12 @@ const SAFE_SEGMENT = /^[\w.-]+$/;
 export function absoluteSpringUrl(link: string | undefined): string | undefined {
   const trimmed = link?.trim();
   if (!trimmed) return undefined;
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return `https://spring.io/${trimmed.replace(/^\/+/, '')}`;
+  try {
+    const resolved = new URL(trimmed, 'https://spring.io/');
+    return /^https?:$/.test(resolved.protocol) ? resolved.href : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

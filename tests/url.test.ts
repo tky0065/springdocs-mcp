@@ -11,6 +11,11 @@ describe("absoluteSpringUrl", () => {
     expect(absoluteSpringUrl("/projects/spring-boot")).toBe("https://spring.io/projects/spring-boot");
     expect(absoluteSpringUrl("projects/spring-boot")).toBe("https://spring.io/projects/spring-boot");
   });
+  it("gère les liens protocole-relatifs et ignore les schémas non HTTP", () => {
+    expect(absoluteSpringUrl("//cdn.example.com/x")).toBe("https://cdn.example.com/x");
+    expect(absoluteSpringUrl("mailto:a@b.c")).toBeUndefined();
+    expect(absoluteSpringUrl("javascript:void(0)")).toBeUndefined();
+  });
 });
 
 describe("assertSafeSegment", () => {

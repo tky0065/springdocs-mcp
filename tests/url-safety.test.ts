@@ -27,8 +27,12 @@ describe("segments d'URL fournis par l'utilisateur (#19)", () => {
   });
 
   it.each(["../x", "a?b", "a/b"])("getSpringReference rejette la section %j", async (section) => {
-    await expect(new SpringBootDocsServiceOptimized().getSpringReference("boot", section)).rejects.toThrow(/section/);
+    await expect(new SpringBootDocsServiceOptimized().getSpringReference("boot", section)).rejects.toThrow(/Invalid section: "/);
     expect(mockedFetch).not.toHaveBeenCalled();
+  });
+
+  it("getSpringReference ignore une subsection vide", async () => {
+    await expect(new SpringBootDocsServiceOptimized().getSpringReference("boot", "web", "")).resolves.toBeTypeOf("string");
   });
 
   it("getSpringReference rejette une subsection invalide", async () => {

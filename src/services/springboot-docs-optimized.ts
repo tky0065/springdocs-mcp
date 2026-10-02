@@ -338,7 +338,7 @@ export class SpringBootDocsServiceOptimized {
     subsection?: string
   ): Promise<string> {
     const safeSection = assertSafeSegment(section, 'section');
-    if (subsection !== undefined) assertSafeSegment(subsection, 'subsection');
+    if (subsection) assertSafeSegment(subsection, 'subsection');
     const cacheKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
