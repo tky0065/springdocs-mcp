@@ -95,7 +95,7 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 | `get_spring_project` | Get project details | "Get Spring Boot project info" |
 | `get_all_spring_guides` | List available guides | "Show all security guides" |
 | `get_spring_guide` | Get complete guide content | "Get gs-rest-service guide" |
-| `get_spring_reference` | Reference docs for Boot/AI/Framework | "Get Spring AI chatclient reference" |
+| `get_spring_reference` | Reference docs for 11 projects (Boot, AI, Framework, Security, Data JPA, Batch, Integration, Kafka, Modulith, Cloud Gateway, Cloud Config); optional `version` and `offset` (pagination) | "Get Spring AI chatclient reference" |
 | `get_migration_guide` | Spring Boot migration guide / upgrade notes (wiki, section filter) | "Get the Spring Boot 3.0 migration guide, jakarta section" |
 | `search_spring_concepts` | Explore Spring concepts | "Explain auto-configuration" |
 

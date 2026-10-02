@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- New tools `get_release_notes` (GitHub release notes with focus filter) and `get_migration_guide` (Spring Boot migration guides and upgrade notes)
+- `get_spring_reference`: 11 projects supported, new `version` and `offset` parameters
+- `get_spring_project`: new `offset` parameter
+
+### Changed
+- Pagination by pages of 4000 characters instead of truncation at 1500
+- `detail_level=full` goes from 8000 to 50000 characters for guides and tutorials (output change)
+- `diagnose_spring_issues`: local (offline) stack trace analysis instead of a 3-word search
+- HTTP responses are capped at 5 MiB
+- Internal refactor (`http.ts`, `markdown.ts`, shared cache)
+
 ## [1.3.0] - 2026-02-16 🐳 (Prepared - Pending Docker MCP Catalog Submission)
 
 ### 🎯 Overview

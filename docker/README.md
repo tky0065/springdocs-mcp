@@ -83,14 +83,15 @@ docker run -i \
 - `get_spring_project` - Get project details
 - `get_all_spring_guides` - List available guides
 - `get_spring_guide` - Get complete guide content
-- `get_spring_reference` - Get reference docs (Boot/AI/Framework)
+- `get_spring_reference` - Get reference docs for 11 projects (Boot, AI, Framework, Security, Data JPA, Batch, Integration, Kafka, Modulith, Cloud Gateway, Cloud Config); optional `version` and `offset` parameters
 - `get_migration_guide` - Spring Boot migration guide / upgrade notes
 - `search_spring_concepts` - Explore Spring concepts
 
-### Advanced Tools (5 Tools)
+### Advanced Tools (6 Tools)
 - `search_spring_ecosystem` - Search entire ecosystem + Spring AI
 - `get_spring_tutorial` - Step-by-step tutorials
 - `compare_spring_versions` - Version comparison & migration
+- `get_release_notes` - GitHub release notes (any project, with focus filter)
 - `get_spring_best_practices` - Expert guidance by category
 - `diagnose_spring_issues` - Intelligent error diagnosis
 

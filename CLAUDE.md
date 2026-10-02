@@ -49,9 +49,15 @@ npm run cicd:check   # Check CI/CD configuration status
 - All tool handlers route to either `docsService` or `advancedService`
 
 **Services Architecture**:
-- `SpringBootDocsServiceOptimized` (`src/services/springboot-docs-optimized.ts`): Handles the 8 core documentation tools (search docs, projects, guides, references, concepts)
-- `AdvancedFeaturesService` (`src/services/advanced-features.ts`): Handles the 6 advanced tools (ecosystem search, tutorials, version comparison, release notes, best practices, diagnostics)
+- `SpringBootDocsServiceOptimized` (`src/services/springboot-docs-optimized.ts`): Handles the 8 core documentation tools (search docs, projects, guides, references, concepts, `get_migration_guide`)
+- `AdvancedFeaturesService` (`src/services/advanced-features.ts`): Handles the 6 advanced tools (ecosystem search, tutorials, version comparison, `get_release_notes`, best practices, diagnostics)
 - `CacheService` (`src/services/cache.ts`): In-memory caching with TTL (30min default, 24h for stable content)
+
+- `src/services/http.ts`: `fetchWithRetry` (retry/backoff, timeouts, 5 MiB response size cap)
+- `src/services/markdown.ts`: shared turndown instance, `extractContent` (detail levels) and `pageMarkdown` (pagination)
+- `src/services/boot-wiki.ts`: Spring Boot wiki access (migration guides / upgrade notes)
+- `src/services/release-notes.ts`: GitHub release notes fetching and focus filtering
+- `src/services/diagnosis.ts`: local (offline) stack trace analysis used by `diagnose_spring_issues`
 
 **Tool Definitions** (`src/tools/index.ts`):
 - Centralized schema definitions for all 14 MCP tools
@@ -59,7 +65,7 @@ npm run cicd:check   # Check CI/CD configuration status
 
 ### Key Design Patterns
 
-1. **Real API Integration**: All data is fetched from actual Spring.io and docs.spring.io URLs using `node-fetch` and `cheerio` for HTML parsing
+1. **Real API Integration**: Data is fetched from actual Spring.io and docs.spring.io URLs using `node-fetch` and `cheerio` for HTML parsing. The exception is `diagnose_spring_issues`, a local (offline) analysis that points to real reference sections from the project registry
 2. **Intelligent Caching**: Two-tier caching system (short-term for dynamic content, long-term for stable content) provides 50-80% performance improvement
 3. **Retry Logic**: Built-in exponential backoff with 3 max retries and 10-second timeouts for resilience
 4. **MCP Protocol**: Implements the Model Context Protocol using `@modelcontextprotocol/sdk` for universal AI assistant compatibility
