@@ -45,7 +45,12 @@ export interface SpringProjectConfig {
    */
   referenceLayout: 'directory' | 'flat';
 
-  /** Sections living outside the standard layout, as a path relative to the docs root (directory layout only) */
+  /**
+   * Sections living outside the standard layout, as a path relative to the docs root (directory layout only).
+   * Limitation: in the 'directory' layout a subsection only reaches <dir>/<subsection>.html. A subsection that
+   * is itself a folder (e.g. oauth2/login/..., authentication/passwords/...) is not reachable, which is why
+   * such top-level sections are exposed through referencePaths instead.
+   */
   referencePaths?: Record<string, string>;
 }
 
@@ -160,6 +165,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       baseDocUrl: 'https://docs.spring.io/spring-security',
       referenceBaseUrl: 'https://docs.spring.io/spring-security',
       referenceLayout: 'directory',
+      // Directory layout: subsections only resolve to <dir>/<subsection>.html, so nested folders
+      // (oauth2/login/..., authentication/passwords/...) are not reachable; hence the top-level paths below.
       referencePaths: {
         'authentication': 'reference/servlet/authentication',
         'authorization': 'reference/servlet/authorization',
@@ -199,6 +206,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       referenceSections: [
         'jpa',
         'auditing',
+        // repositories.html alone returns 404 (verified): this section only works with a subsection, e.g. 'core-concepts'
         'repositories'
       ]
     }
