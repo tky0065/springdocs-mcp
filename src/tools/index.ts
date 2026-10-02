@@ -17,7 +17,7 @@ export class ToolDefinitions {
             },
             docType: {
               type: "string",
-              enum: ["guides", "reference", "api", "all"],
+              enum: ["guides", "reference", "projects", "all"],
               description: "Type de documentation à rechercher",
               default: "all",
             },

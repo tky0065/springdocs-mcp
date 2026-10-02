@@ -17,7 +17,7 @@
         "enum": [
           "guides",
           "reference",
-          "api",
+          "projects",
           "all"
         ],
         "default": "all"

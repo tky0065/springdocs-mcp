@@ -466,6 +466,10 @@ export class SpringBootDocsServiceOptimized {
    * Search documentation with real API
    */
   async searchSpringDocs(query: string, docType: string = 'all', limit: number = 10): Promise<any[]> {
+    const allowedDocTypes = ['guides', 'reference', 'projects', 'all'];
+    if (!allowedDocTypes.includes(docType)) {
+      throw new Error(`Invalid docType "${docType}". Allowed: ${allowedDocTypes.join(', ')}`);
+    }
     const cacheKey = `docs:${query}:${docType}:${limit}`;
     const cached = this.cache.get<any[]>(cacheKey);
     if (cached) return cached;
