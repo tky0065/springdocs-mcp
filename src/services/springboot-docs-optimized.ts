@@ -3,6 +3,13 @@ import * as cheerio from 'cheerio';
 import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
 import { USER_AGENT } from '../version.js';
+
+interface FetchResult {
+  ok: boolean;
+  status: number;
+  text(): Promise<string>;
+  json(): Promise<any>;
+}
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 
 /**
@@ -547,10 +554,11 @@ export class SpringBootDocsServiceOptimized {
     return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n**Detail Level:** ${detailLevel}\n\n${extractedContent}${needsTruncation ? '\n\n---\n*Content truncated for brevity. Use detail_level="full" for complete guide or visit the link above.*' : ''}`;
   }
 
-  private async fetchWithRetry(url: string, timeout = this.REQUEST_TIMEOUT, retries = this.MAX_RETRIES): Promise<any> {
+  private async fetchWithRetry(url: string, timeout = this.REQUEST_TIMEOUT, retries = this.MAX_RETRIES): Promise<FetchResult> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
+      let delayMs = 1000 * 2 ** (attempt - 1); // Exponential backoff
 
       try {
         const response = await fetch(url, {
@@ -561,15 +569,32 @@ export class SpringBootDocsServiceOptimized {
             'Accept-Language': 'en-US,en;q=0.9'
           }
         });
-        clearTimeout(timeoutId);
-        return response;
+        // Read the body before clearing the timeout so the timeout also covers it
+        const body = await response.text();
+        const result: FetchResult = {
+          ok: response.ok,
+          status: response.status,
+          text: async () => body,
+          json: async () => JSON.parse(body)
+        };
+
+        const retryable = response.status === 429 || response.status >= 500;
+        if (!retryable || attempt === retries) return result;
+
+        const retryAfterHeader = response.headers.get('retry-after');
+        const retryAfter = retryAfterHeader === null ? NaN : Number(retryAfterHeader);
+        if (Number.isFinite(retryAfter) && retryAfter >= 0) {
+          delayMs = Math.min(retryAfter * 1000, 10000);
+        }
+        console.error(`Retry ${attempt}/${retries} for ${url}: HTTP ${response.status}`);
       } catch (error) {
-        clearTimeout(timeoutId);
         if (attempt === retries) throw error;
 
         console.error(`Retry ${attempt}/${retries} for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+      } finally {
+        clearTimeout(timeoutId);
       }
+      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
     throw new Error('All retry attempts failed');
   }
