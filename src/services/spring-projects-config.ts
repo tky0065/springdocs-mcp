@@ -35,6 +35,18 @@ export interface SpringProjectConfig {
 
   /** Reference documentation sections available for this project (optional) */
   referenceSections?: string[];
+
+  /** Base URL of the reference documentation (always the current version, no version in the path) */
+  referenceBaseUrl: string;
+
+  /**
+   * How a section maps to a page:
+   * 'directory' -> <base>/reference/<section>/index.html, 'flat' -> <base>/<section>.html
+   */
+  referenceLayout: 'directory' | 'flat';
+
+  /** Sections living outside the standard layout, as a path relative to the docs root (directory layout only) */
+  referencePaths?: Record<string, string>;
 }
 
 /**
@@ -50,12 +62,21 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map([
       id: 'boot',
       displayName: 'Spring Boot',
       baseDocUrl: 'https://docs.spring.io/spring-boot/docs',
+      referenceBaseUrl: 'https://docs.spring.io/spring-boot',
+      referenceLayout: 'directory',
+      referencePaths: {
+        'deployment': 'how-to/deployment',
+        'native-image': 'reference/packaging/native-image',
+        'application-properties': 'appendix/application-properties'
+      },
       latestVersion: '3.5.6',
       apiPath: '/api',
       hasVersionedDocs: true,
       cacheStrategy: 'long', // Stable releases, cache aggressively
       scopes: ['boot', 'web', 'data', 'actuator', 'starters', 'autoconfiguration'],
       referenceSections: [
+        'features',
+        'using',
         'web',
         'data',
         'messaging',
@@ -74,6 +95,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map([
       id: 'ai',
       displayName: 'Spring AI',
       baseDocUrl: 'https://docs.spring.io/spring-ai/reference/api', // Sections are under /api/
+      referenceBaseUrl: 'https://docs.spring.io/spring-ai/reference/api',
+      referenceLayout: 'flat',
       latestVersion: '1.1.2',
       apiPath: '/api',
       hasVersionedDocs: false, // Spring AI docs don't have version in URL path
@@ -95,13 +118,13 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map([
       ],
       referenceSections: [
         'chatclient',
-        'chat-model',
-        'embedding-model',
-        'vector-stores',
+        'chatmodel',
+        'embeddings',
+        'vectordbs',
         'retrieval-augmented-generation',
-        'function-calling',
-        'prompt-templates',
-        'output-parsing'
+        'tools',
+        'prompt',
+        'structured-output'
       ]
     }
   ],
@@ -111,6 +134,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map([
       id: 'framework',
       displayName: 'Spring Framework',
       baseDocUrl: 'https://docs.spring.io/spring-framework/docs',
+      referenceBaseUrl: 'https://docs.spring.io/spring-framework/reference',
+      referenceLayout: 'flat',
       latestVersion: '6.2.6',
       apiPath: '/javadoc-api',
       hasVersionedDocs: true,
@@ -181,26 +206,22 @@ export class SpringProjectsConfig {
   }
 
   /**
-   * Build documentation reference URL for a project
+   * Build documentation reference URL for a project (current documentation version)
    *
    * @param projectId - Project identifier
-   * @param section - Documentation section (e.g., "web", "chatclient")
-   * @param version - Optional version override (defaults to latest)
-   * @returns Complete URL to documentation section
+   * @param section - Documentation section (e.g., "web", "chatclient"), already validated as a safe URL segment
+   * @param subsection - Optional page inside the section (e.g., "servlet" for boot/web)
+   * @returns Complete URL to the documentation page
    */
-  buildReferenceUrl(
-    projectId: string,
-    section: string,
-    version?: string
-  ): string {
+  buildReferenceUrl(projectId: string, section: string, subsection?: string): string {
     const project = this.getProject(projectId);
-    const targetVersion = version || project.latestVersion;
+    const base = project.referenceBaseUrl;
 
-    if (project.hasVersionedDocs) {
-      return `${project.baseDocUrl}/${targetVersion}/reference/html/${section}.html`;
-    } else {
-      return `${project.baseDocUrl}/${section}.html`;
+    if (project.referenceLayout === 'directory') {
+      const dir = project.referencePaths?.[section] ?? `reference/${section}`;
+      return `${base}/${dir}/${subsection ? `${subsection}.html` : 'index.html'}`;
     }
+    return subsection ? `${base}/${section}/${subsection}.html` : `${base}/${section}.html`;
   }
 
   /**

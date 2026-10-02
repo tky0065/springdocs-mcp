@@ -338,7 +338,7 @@ export class SpringBootDocsServiceOptimized {
     subsection?: string
   ): Promise<string> {
     const safeSection = assertSafeSegment(section, 'section');
-    if (subsection) assertSafeSegment(subsection, 'subsection');
+    const safeSubsection = subsection ? assertSafeSegment(subsection, 'subsection') : undefined;
     const cacheKey = `reference:${projectId}:${section}:${subsection || 'main'}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
@@ -360,7 +360,7 @@ export class SpringBootDocsServiceOptimized {
       }
 
       // Build URL using configuration
-      const url = this.projectsConfig.buildReferenceUrl(projectId, safeSection);
+      const url = this.projectsConfig.buildReferenceUrl(projectId, safeSection, safeSubsection);
       const response = await this.fetchWithRetry(url);
 
       if (!response.ok) {
@@ -378,7 +378,7 @@ export class SpringBootDocsServiceOptimized {
       }
 
       const markdown = this.turndownService.turndown(content.html() || '');
-      const result = `# ${project.displayName} Reference: ${section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
+      const result = `# ${project.displayName} Reference: ${subsection ? `${section}/${subsection}` : section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
 
       // Use project-specific cache strategy
       const cacheTTL = this.projectsConfig.getCacheTTL(projectId);
