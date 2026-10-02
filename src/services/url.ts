@@ -23,3 +23,18 @@ export function assertSafeSegment(value: string, label: string): string {
   }
   return encodeURIComponent(value);
 }
+
+const VERSION_PATTERN = /^\d+\.\d+(\.\d+)?$/;
+
+/**
+ * Normalizes a user-supplied documentation version to "major.minor" (the patch is ignored).
+ * Returns undefined for the current documentation (absent, empty or "current").
+ * Throws on any other format, before anything reaches a URL.
+ */
+export function normalizeVersion(version?: string): string | undefined {
+  if (version === undefined || version === '' || version === 'current') return undefined;
+  if (!VERSION_PATTERN.test(version)) {
+    throw new Error(`Invalid version "${version}": expected a version like "3.4" or "3.4.2", or "current"`);
+  }
+  return version.split('.').slice(0, 2).join('.');
+}

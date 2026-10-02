@@ -8,6 +8,8 @@
  * Data, Cloud, etc.) with zero code changes - only configuration updates.
  */
 
+import { normalizeVersion } from './url.js';
+
 export interface SpringProjectConfig {
   /** Unique project identifier (e.g., "boot", "ai", "security") */
   id: string;
@@ -52,6 +54,9 @@ export interface SpringProjectConfig {
    * such top-level sections are exposed through referencePaths instead.
    */
   referencePaths?: Record<string, string>;
+
+  /** Prefix of the unversioned reference URL after which "<version>/" is inserted to pin a documentation version */
+  versionInsertAfter?: string;
 }
 
 /**
@@ -65,6 +70,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'boot',
     {
       id: 'boot',
+      versionInsertAfter: 'https://docs.spring.io/spring-boot/',
       displayName: 'Spring Boot',
       baseDocUrl: 'https://docs.spring.io/spring-boot/docs',
       referenceBaseUrl: 'https://docs.spring.io/spring-boot',
@@ -98,13 +104,14 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'ai',
     {
       id: 'ai',
+      versionInsertAfter: 'https://docs.spring.io/spring-ai/reference/',
       displayName: 'Spring AI',
       baseDocUrl: 'https://docs.spring.io/spring-ai/reference/api', // Sections are under /api/
       referenceBaseUrl: 'https://docs.spring.io/spring-ai/reference/api',
       referenceLayout: 'flat',
       latestVersion: '1.1.2',
       apiPath: '/api',
-      hasVersionedDocs: false, // Spring AI docs don't have version in URL path
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-ai/reference/1.1/api/chatclient.html
       cacheStrategy: 'short', // AI documentation evolves rapidly, shorter cache
       scopes: [
         'ai',
@@ -137,6 +144,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'framework',
     {
       id: 'framework',
+      versionInsertAfter: 'https://docs.spring.io/spring-framework/reference/',
       displayName: 'Spring Framework',
       baseDocUrl: 'https://docs.spring.io/spring-framework/docs',
       referenceBaseUrl: 'https://docs.spring.io/spring-framework/reference',
@@ -161,6 +169,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'security',
     {
       id: 'security',
+      versionInsertAfter: 'https://docs.spring.io/spring-security/reference/',
       displayName: 'Spring Security',
       baseDocUrl: 'https://docs.spring.io/spring-security',
       referenceBaseUrl: 'https://docs.spring.io/spring-security',
@@ -196,6 +205,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'data-jpa',
     {
       id: 'data-jpa',
+      versionInsertAfter: 'https://docs.spring.io/spring-data/jpa/reference/',
       displayName: 'Spring Data JPA',
       baseDocUrl: 'https://docs.spring.io/spring-data/jpa',
       referenceBaseUrl: 'https://docs.spring.io/spring-data/jpa/reference',
@@ -215,6 +225,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'batch',
     {
       id: 'batch',
+      versionInsertAfter: 'https://docs.spring.io/spring-batch/reference/',
       displayName: 'Spring Batch',
       baseDocUrl: 'https://docs.spring.io/spring-batch',
       referenceBaseUrl: 'https://docs.spring.io/spring-batch/reference',
@@ -242,6 +253,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'integration',
     {
       id: 'integration',
+      versionInsertAfter: 'https://docs.spring.io/spring-integration/reference/',
       displayName: 'Spring Integration',
       baseDocUrl: 'https://docs.spring.io/spring-integration',
       referenceBaseUrl: 'https://docs.spring.io/spring-integration/reference',
@@ -270,6 +282,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'kafka',
     {
       id: 'kafka',
+      versionInsertAfter: 'https://docs.spring.io/spring-kafka/reference/',
       displayName: 'Spring for Apache Kafka',
       baseDocUrl: 'https://docs.spring.io/spring-kafka',
       referenceBaseUrl: 'https://docs.spring.io/spring-kafka/reference',
@@ -292,6 +305,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'modulith',
     {
       id: 'modulith',
+      versionInsertAfter: 'https://docs.spring.io/spring-modulith/reference/',
       displayName: 'Spring Modulith',
       baseDocUrl: 'https://docs.spring.io/spring-modulith',
       referenceBaseUrl: 'https://docs.spring.io/spring-modulith/reference',
@@ -313,6 +327,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'cloud-gateway',
     {
       id: 'cloud-gateway',
+      versionInsertAfter: 'https://docs.spring.io/spring-cloud-gateway/reference/',
       displayName: 'Spring Cloud Gateway',
       baseDocUrl: 'https://docs.spring.io/spring-cloud-gateway',
       referenceBaseUrl: 'https://docs.spring.io/spring-cloud-gateway/reference',
@@ -331,6 +346,7 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'cloud-config',
     {
       id: 'cloud-config',
+      versionInsertAfter: 'https://docs.spring.io/spring-cloud-config/reference/',
       displayName: 'Spring Cloud Config',
       baseDocUrl: 'https://docs.spring.io/spring-cloud-config',
       referenceBaseUrl: 'https://docs.spring.io/spring-cloud-config/reference',
@@ -403,17 +419,31 @@ export class SpringProjectsConfig {
    * @param projectId - Project identifier
    * @param section - Documentation section (e.g., "web", "chatclient"), already validated as a safe URL segment
    * @param subsection - Optional page inside the section (e.g., "servlet" for boot/web)
+   * @param version - Optional documentation version ("3.4" or "3.4.2"); omitted or "current" means the current docs
    * @returns Complete URL to the documentation page
    */
-  buildReferenceUrl(projectId: string, section: string, subsection?: string): string {
+  buildReferenceUrl(projectId: string, section: string, subsection?: string, version?: string): string {
+    const normalizedVersion = normalizeVersion(version);
     const project = this.getProject(projectId);
     const base = project.referenceBaseUrl;
 
+    let url: string;
     if (project.referenceLayout === 'directory') {
       const dir = project.referencePaths?.[section] ?? `reference/${section}`;
-      return `${base}/${dir}/${subsection ? `${subsection}.html` : 'index.html'}`;
+      url = `${base}/${dir}/${subsection ? `${subsection}.html` : 'index.html'}`;
+    } else {
+      url = subsection ? `${base}/${section}/${subsection}.html` : `${base}/${section}.html`;
     }
-    return subsection ? `${base}/${section}/${subsection}.html` : `${base}/${section}.html`;
+    if (!normalizedVersion) return url;
+
+    const prefix = project.versionInsertAfter;
+    if (!project.hasVersionedDocs || !prefix) {
+      throw new Error(`Project "${projectId}" does not support versioned documentation`);
+    }
+    if (!url.startsWith(prefix)) {
+      throw new Error(`Invalid configuration for project "${projectId}": versionInsertAfter is not a prefix of ${url}`);
+    }
+    return `${prefix}${normalizedVersion}/${url.slice(prefix.length)}`;
   }
 
   /**
