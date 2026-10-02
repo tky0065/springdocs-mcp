@@ -133,11 +133,19 @@
         "name": "project",
         "type": "string",
         "required": false,
-        "description": "Spring project to search ('boot' for Spring Boot, 'ai' for Spring AI, 'framework' for Spring Framework)",
+        "description": "Spring project to search ('boot' for Spring Boot, 'ai' for Spring AI, 'framework' for Spring Framework, 'security' for Spring Security, 'data-jpa' for Spring Data JPA, 'batch' for Spring Batch, 'integration' for Spring Integration, 'kafka' for Spring for Apache Kafka, 'modulith' for Spring Modulith, 'cloud-gateway' for Spring Cloud Gateway, 'cloud-config' for Spring Cloud Config)",
         "enum": [
           "boot",
           "ai",
-          "framework"
+          "framework",
+          "security",
+          "data-jpa",
+          "batch",
+          "integration",
+          "kafka",
+          "modulith",
+          "cloud-gateway",
+          "cloud-config"
         ],
         "default": "boot"
       },

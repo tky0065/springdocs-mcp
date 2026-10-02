@@ -29,7 +29,7 @@ describe("buildReferenceUrl (#16)", () => {
       for (const section of project.referenceSections ?? []) {
         const url = config.buildReferenceUrl(project.id, section);
         expect(url).toMatch(/^https:\/\/docs\.spring\.io\/[a-z-]+\//);
-        expect(url).not.toContain(project.latestVersion);
+        if (project.latestVersion) expect(url).not.toContain(project.latestVersion);
         expect(url).not.toContain("/html/");
       }
     }

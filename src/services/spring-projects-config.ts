@@ -18,8 +18,8 @@ export interface SpringProjectConfig {
   /** Base URL for project documentation */
   baseDocUrl: string;
 
-  /** Latest stable version (e.g., "3.5.6", "1.1.2") */
-  latestVersion: string;
+  /** Latest known stable version (optional, informational) */
+  latestVersion?: string;
 
   /** Path to API documentation relative to baseDocUrl (optional) */
   apiPath?: string;
@@ -55,7 +55,7 @@ export interface SpringProjectConfig {
  * Single source of truth for all supported Spring projects.
  * To add a new Spring project, simply add a new entry here - no code changes required.
  */
-export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map([
+export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string, SpringProjectConfig>([
   [
     'boot',
     {
@@ -151,9 +151,193 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map([
         'testing'
       ]
     }
+  ],
+  [
+    'security',
+    {
+      id: 'security',
+      displayName: 'Spring Security',
+      baseDocUrl: 'https://docs.spring.io/spring-security',
+      referenceBaseUrl: 'https://docs.spring.io/spring-security',
+      referenceLayout: 'directory',
+      referencePaths: {
+        'authentication': 'reference/servlet/authentication',
+        'authorization': 'reference/servlet/authorization',
+        'oauth2': 'reference/servlet/oauth2',
+        'exploits': 'reference/servlet/exploits',
+        'integrations': 'reference/servlet/integrations',
+        'testing': 'reference/servlet/test'
+      },
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-security/reference/6.5/index.html
+      cacheStrategy: 'long',
+      scopes: ['security', 'authentication', 'authorization', 'oauth2', 'csrf'],
+      referenceSections: [
+        'servlet',
+        'reactive',
+        'features',
+        'migration',
+        'authentication',
+        'authorization',
+        'oauth2',
+        'exploits',
+        'integrations',
+        'testing'
+      ]
+    }
+  ],
+  [
+    'data-jpa',
+    {
+      id: 'data-jpa',
+      displayName: 'Spring Data JPA',
+      baseDocUrl: 'https://docs.spring.io/spring-data/jpa',
+      referenceBaseUrl: 'https://docs.spring.io/spring-data/jpa/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-data/jpa/reference/3.5/index.html
+      cacheStrategy: 'long',
+      scopes: ['jpa', 'data', 'repository', 'hibernate', 'persistence'],
+      referenceSections: [
+        'jpa',
+        'auditing',
+        'repositories'
+      ]
+    }
+  ],
+  [
+    'batch',
+    {
+      id: 'batch',
+      displayName: 'Spring Batch',
+      baseDocUrl: 'https://docs.spring.io/spring-batch',
+      referenceBaseUrl: 'https://docs.spring.io/spring-batch/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-batch/reference/5.2/index.html
+      cacheStrategy: 'long',
+      scopes: ['batch', 'job', 'step', 'chunk', 'etl'],
+      referenceSections: [
+        'spring-batch-architecture',
+        'whatsnew',
+        'domain',
+        'job',
+        'step',
+        'readersAndWriters',
+        'processor',
+        'scalability',
+        'repeat',
+        'retry',
+        'testing',
+        'common-patterns'
+      ]
+    }
+  ],
+  [
+    'integration',
+    {
+      id: 'integration',
+      displayName: 'Spring Integration',
+      baseDocUrl: 'https://docs.spring.io/spring-integration',
+      referenceBaseUrl: 'https://docs.spring.io/spring-integration/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-integration/reference/6.5/index.html
+      cacheStrategy: 'long',
+      scopes: ['integration', 'eip', 'messaging', 'channel', 'endpoint'],
+      referenceSections: [
+        'overview',
+        'message',
+        'channel',
+        'endpoint',
+        'router',
+        'transformer',
+        'dsl',
+        'http',
+        'jms',
+        'amqp',
+        'kafka',
+        'testing',
+        'whats-new'
+      ]
+    }
+  ],
+  [
+    'kafka',
+    {
+      id: 'kafka',
+      displayName: 'Spring for Apache Kafka',
+      baseDocUrl: 'https://docs.spring.io/spring-kafka',
+      referenceBaseUrl: 'https://docs.spring.io/spring-kafka/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-kafka/reference/3.3/index.html
+      cacheStrategy: 'long',
+      scopes: ['kafka', 'streams', 'consumer', 'producer', 'retrytopic'],
+      referenceSections: [
+        'introduction',
+        'quick-tour',
+        'kafka',
+        'retrytopic',
+        'streams',
+        'testing',
+        'whats-new'
+      ]
+    }
+  ],
+  [
+    'modulith',
+    {
+      id: 'modulith',
+      displayName: 'Spring Modulith',
+      baseDocUrl: 'https://docs.spring.io/spring-modulith',
+      referenceBaseUrl: 'https://docs.spring.io/spring-modulith/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-modulith/reference/1.4/index.html
+      cacheStrategy: 'long',
+      scopes: ['modulith', 'modules', 'events', 'architecture'],
+      referenceSections: [
+        'fundamentals',
+        'events',
+        'testing',
+        'verification',
+        'documentation',
+        'appendix'
+      ]
+    }
+  ],
+  [
+    'cloud-gateway',
+    {
+      id: 'cloud-gateway',
+      displayName: 'Spring Cloud Gateway',
+      baseDocUrl: 'https://docs.spring.io/spring-cloud-gateway',
+      referenceBaseUrl: 'https://docs.spring.io/spring-cloud-gateway/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-cloud-gateway/reference/4.3/index.html
+      cacheStrategy: 'long',
+      scopes: ['gateway', 'cloud', 'routing', 'filters', 'proxy'],
+      referenceSections: [
+        'spring-cloud-gateway-server-webflux',
+        'spring-cloud-gateway-server-webmvc',
+        'appendix'
+      ]
+    }
+  ],
+  [
+    'cloud-config',
+    {
+      id: 'cloud-config',
+      displayName: 'Spring Cloud Config',
+      baseDocUrl: 'https://docs.spring.io/spring-cloud-config',
+      referenceBaseUrl: 'https://docs.spring.io/spring-cloud-config/reference',
+      referenceLayout: 'flat',
+      hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-cloud-config/reference/4.3/index.html
+      cacheStrategy: 'long',
+      scopes: ['config', 'cloud', 'configuration', 'server', 'client'],
+      referenceSections: [
+        'quickstart',
+        'server',
+        'client'
+      ]
+    }
   ]
-  // Future projects can be added here:
-  // 'security', 'data-jpa', 'cloud', 'batch', 'integration', etc.
+  // Future projects can be added here (e.g. 'cloud-*' siblings, 'data-*' modules, 'graphql', 'session').
 ]);
 
 /**

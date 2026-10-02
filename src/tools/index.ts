@@ -128,8 +128,8 @@ export class ToolDefinitions {
           properties: {
             project: {
               type: "string",
-              enum: ["boot", "ai", "framework"],
-              description: "Spring project to search ('boot' for Spring Boot, 'ai' for Spring AI, 'framework' for Spring Framework)",
+              enum: ["boot", "ai", "framework", "security", "data-jpa", "batch", "integration", "kafka", "modulith", "cloud-gateway", "cloud-config"],
+              description: "Spring project to search ('boot' for Spring Boot, 'ai' for Spring AI, 'framework' for Spring Framework, 'security' for Spring Security, 'data-jpa' for Spring Data JPA, 'batch' for Spring Batch, 'integration' for Spring Integration, 'kafka' for Spring for Apache Kafka, 'modulith' for Spring Modulith, 'cloud-gateway' for Spring Cloud Gateway, 'cloud-config' for Spring Cloud Config)",
               default: "boot",
             },
             section: {
