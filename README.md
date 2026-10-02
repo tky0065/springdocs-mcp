@@ -89,32 +89,7 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ### 📚 **Core Documentation (8 Enhanced Tools)**
 | Tool | Purpose | Example Usage |
-|------|---------|---------------|
-| `search_spring_docs` | Search documentation with caching | "Search for REST API security" |
-| `search_spring_projects` | Find Spring projects | "Search for microservices projects" |
-| `get_spring_project` | Get project details | "Get Spring Boot project info" |
-| `get_all_spring_guides` | List available guides | "Show all security guides" |
-| `get_spring_guide` | Get complete guide content | "Get gs-rest-service guide" |
-| `get_spring_reference` | Reference docs for 11 projects (Boot, AI, Framework, Security, Data JPA, Batch, Integration, Kafka, Modulith, Cloud Gateway, Cloud Config); optional `version` and `offset` (pagination) | "Get Spring AI chatclient reference" |
-| `get_migration_guide` | Spring Boot migration guide / upgrade notes (wiki, section filter) | "Get the Spring Boot 3.0 migration guide, jakarta section" |
-| `search_spring_concepts` | Explore Spring concepts | "Explain auto-configuration" |
-
-### 🆕 **Advanced Tools (6)**
-| Tool | Purpose | Example Usage |
-|------|---------|---------------|
-| `search_spring_ecosystem` | Search entire ecosystem + Spring AI | "Find RAG and embeddings resources" |
-| `get_spring_tutorial` | Step-by-step tutorials | "Get intermediate REST API tutorial" |
-| `compare_spring_versions` | Version comparison & migration | "Compare Spring Boot 2.7 vs 3.0" |
-| `get_release_notes` | GitHub release notes (any project, with focus filter) | "Get Spring Boot 3.5.0 release notes, breaking changes only" |
-| `get_spring_best_practices` | Expert guidance by category | "Get security best practices" |
-| `diagnose_spring_issues` | Intelligent error diagnosis | "Diagnose port 8080 error" |
-
-### ⚡ **Performance Features**
-- **50-80% faster** with intelligent caching
-- **85% cache hit rate** for popular queries
-- **Auto-retry logic** with exponential backoff
-- **Multiple data sources** for reliability
-- **Parallel processing** for complex searches
+|------|-
 
 ---
 
@@ -286,8 +261,8 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 
 ### 🆕 **Major Enhancements**
 - **5 new advanced tools** for comprehensive Spring ecosystem access
-- **50-80% performance improvement** with intelligent caching
-- **99.5% reliability** with auto-retry and fallback mechanisms
+- **In-memory caching** of repeated requests (30 min TTL, 24 h for stable content)
+- **Auto-retry** with exponential backoff and a 5 MiB response size cap
 - **Clean architecture** with modular services and optimized code
 
 ### 🎯 **New Capabilities**
@@ -297,9 +272,12 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 - **Expert best practices** categorized by domain and experience level
 - **Intelligent diagnostics** for common Spring Boot issues
 
-### ⚡ **Performance Improvements**
-| Metric | Before v1.2.3 | After v1.2.3 | Improvement |
-|--------|---------------|--------------|-------------|
+### ⚡ **Performance & Resilience**
+- Repeated requests are served from the in-memory cache (30 min TTL, 24 h for stable content) without a new network call
+- Retry with exponential backoff and request timeouts on all external HTTP calls
+- Responses larger than 5 MiB are rejected
+
+--------|---------------|--------------|-------------|
 | Response Time | 2-5 seconds | 0.5-2 seconds | **50-80% faster** |
 | Cache Hit Rate | 0% | 85% | **New feature** |
 | Success Rate | 90% | 99.5% | **10x more reliable** |

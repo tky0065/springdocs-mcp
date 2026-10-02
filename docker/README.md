@@ -70,7 +70,7 @@ docker run -i \
 
 - **14 Powerful Tools**: Search docs, get tutorials, compare versions, release notes, diagnose issues
 - **Spring AI Support**: ChatClient, RAG, embeddings, vector stores, LLM integrations
-- **Intelligent Caching**: 50-80% faster responses with 85% cache hit rate
+- **Intelligent Caching**: repeated requests are served from the in-memory cache (30 min TTL, 24 h for stable content)
 - **Zero Configuration**: Works out-of-the-box with no setup required
 - **Secure**: Runs as non-root user, minimal attack surface
 - **Lightweight**: ~220MB optimized Alpine-based image
@@ -164,7 +164,7 @@ docker run -i --read-only mcp/springdocs-mcp
 
 ### Slow responses
 - First request is slower (fetching docs)
-- Subsequent requests are 50-80% faster due to caching
+- Subsequent identical requests are served from the in-memory cache without a new network call
 - Ensure adequate memory allocation
 
 ## Documentation
