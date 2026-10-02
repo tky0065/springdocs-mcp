@@ -1,0 +1,748 @@
+{
+ "dependencies": {
+  "type": "hierarchical-multi-select",
+  "values": [
+   {
+    "name": "Web",
+    "values": [
+     {
+      "id": "web",
+      "name": "Spring Web",
+      "description": "Build web, including RESTful, applications using Spring MVC. Uses Apache Tomcat as the default embedded container.",
+      "_links": {
+       "guide": [
+        {
+         "href": "https://spring.io/guides/gs/rest-service/",
+         "title": "Building a RESTful Web Service"
+        },
+        {
+         "href": "https://spring.io/guides/gs/serving-web-content/",
+         "title": "Serving Web Content with Spring MVC"
+        },
+        {
+         "href": "https://spring.io/guides/tutorials/rest/",
+         "title": "Building REST services with Spring"
+        }
+       ],
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/servlet.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "webflux",
+      "name": "Spring Reactive Web",
+      "description": "Build reactive web applications with Spring WebFlux and Netty.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/reactive-rest-service/",
+        "title": "Building a Reactive RESTful Web Service"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/reactive.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "spring-restclient",
+      "name": "HTTP Client",
+      "description": "Spring Boot integration for RestClient and RestTemplate to make HTTP requests.",
+      "versionRange": "4.0.0.RELEASE",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/io/rest-client.html#io.rest-client.restclient",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "spring-webclient",
+      "name": "Reactive HTTP Client",
+      "description": "Spring Boot integration for WebClient to make reactive HTTP requests.",
+      "versionRange": "4.0.0.RELEASE",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/io/rest-client.html#io.rest-client.webclient",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "graphql",
+      "name": "Spring for GraphQL",
+      "description": "Build GraphQL applications with Spring for GraphQL and GraphQL Java.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/graphql-server/",
+        "title": "Building a GraphQL service"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-graphql.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "data-rest",
+      "name": "Rest Repositories",
+      "description": "Exposing Spring Data repositories over REST via Spring Data REST.",
+      "_links": {
+       "guide": [
+        {
+         "href": "https://spring.io/guides/gs/accessing-data-rest/",
+         "title": "Accessing JPA Data with REST"
+        },
+        {
+         "href": "https://spring.io/guides/gs/accessing-neo4j-data-rest/",
+         "title": "Accessing Neo4j Data with REST"
+        },
+        {
+         "href": "https://spring.io/guides/gs/accessing-mongodb-data-rest/",
+         "title": "Accessing MongoDB Data with REST"
+        }
+       ],
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/how-to/data-access.html#howto.data-access.exposing-spring-data-repositories-as-rest",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "session-data-mongodb",
+      "name": "Spring Session for Spring Data MongoDB",
+      "description": "Provides an API and a Spring Data MongoDB implementation for managing user session information.",
+      "versionRange": "[4.0.0.RELEASE,4.1.0.M1)",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-session/reference/"
+       }
+      }
+     },
+     {
+      "id": "session-data-redis",
+      "name": "Spring Session for Spring Data Redis",
+      "description": "Provides an API and a Spring Data Redis implementation for managing user session information.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-session/reference/"
+       }
+      }
+     },
+     {
+      "id": "session-hazelcast",
+      "name": "Spring Session for Hazelcast",
+      "description": "Provides an API and a Hazelcast implementation for managing user session information.",
+      "versionRange": "[4.0.0.RELEASE,4.1.0.M1)",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-session/reference/"
+       }
+      }
+     },
+     {
+      "id": "session-jdbc",
+      "name": "Spring Session for JDBC",
+      "description": "Provides an API and a JDBC implementation for managing user session information.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-session/reference/"
+       }
+      }
+     },
+     {
+      "id": "data-rest-explorer",
+      "name": "Rest Repositories HAL Explorer",
+      "description": "Browsing Spring Data REST repositories in your browser."
+     },
+     {
+      "id": "hateoas",
+      "name": "Spring HATEOAS",
+      "description": "Eases the creation of RESTful APIs that follow the HATEOAS principle when working with Spring / Spring MVC.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/rest-hateoas/",
+        "title": "Building a Hypermedia-Driven RESTful Web Service"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-hateoas.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "web-services",
+      "name": "Spring Web Services",
+      "description": "Facilitates contract-first SOAP development using Spring WS. Allows for the creation of flexible web services using one of the many ways to manipulate XML payloads.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/producing-web-service/",
+        "title": "Producing a SOAP web service"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/io/webservices.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "jersey",
+      "name": "Jersey",
+      "description": "Framework for developing RESTful Web Services in Java that provides support for JAX-RS APIs.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/servlet.html#web.servlet.jersey",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "vaadin",
+      "name": "Vaadin",
+      "description": "The full-stack web app platform for Spring. Build views fully in Java with Flow, or in React using Hilla.",
+      "versionRange": "[4.1.0.RELEASE,4.2.0.M1)",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/crud-with-vaadin/",
+        "title": "Creating CRUD UI with Vaadin"
+       },
+       "reference": {
+        "href": "https://vaadin.com/docs"
+       }
+      }
+     },
+     {
+      "id": "netflix-dgs",
+      "name": "Netflix DGS",
+      "description": "Build GraphQL applications with Netflix DGS and Spring for GraphQL.",
+      "versionRange": "[4.0.0.RELEASE,4.1.0.M1)",
+      "_links": {
+       "reference": {
+        "href": "https://netflix.github.io/dgs/"
+       }
+      }
+     },
+     {
+      "id": "htmx",
+      "name": "htmx",
+      "description": "Build modern user interfaces with the simplicity and power of hypertext.",
+      "versionRange": "[4.0.0.RELEASE,4.1.0.M1)",
+      "_links": {
+       "reference": {
+        "href": "https://github.com/wimdeblauwe/htmx-spring-boot"
+       },
+       "guide": {
+        "href": "https://www.youtube.com/watch?v=j-rfPoXe5aE"
+       }
+      }
+     },
+     {
+      "id": "springdoc-openapi",
+      "name": "SpringDoc OpenAPI",
+      "description": "Add OpenAPI / Swagger documentation to web-based Spring applications.",
+      "versionRange": "[4.0.0.RELEASE,4.2.0.M1)",
+      "_links": {
+       "reference": {
+        "href": "https://springdoc.org/"
+       },
+       "guide": {
+        "href": "https://github.com/springdoc/springdoc-openapi-demos/"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "name": "Security",
+    "values": [
+     {
+      "id": "security",
+      "name": "Spring Security",
+      "description": "Highly customizable authentication and access-control framework for Spring applications.",
+      "_links": {
+       "guide": [
+        {
+         "href": "https://spring.io/guides/gs/securing-web/",
+         "title": "Securing a Web Application"
+        },
+        {
+         "href": "https://spring.io/guides/tutorials/spring-boot-oauth2/",
+         "title": "Spring Boot and OAuth2"
+        },
+        {
+         "href": "https://spring.io/guides/gs/authenticating-ldap/",
+         "title": "Authenticating a User with LDAP"
+        }
+       ],
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-security.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "oauth2-client",
+      "name": "OAuth2 Client",
+      "description": "Spring Boot integration for Spring Security's OAuth2/OpenID Connect client features.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-security.html#web.security.oauth2.client",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "oauth2-authorization-server",
+      "name": "OAuth2 Authorization Server",
+      "description": "Spring Boot integration for Spring Authorization Server.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-security.html#web.security.oauth2.authorization-server",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "oauth2-resource-server",
+      "name": "OAuth2 Resource Server",
+      "description": "Spring Boot integration for Spring Security's OAuth2 resource server features.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-security.html#web.security.oauth2.server",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "security-saml2",
+      "name": "SAML 2.0",
+      "description": "Spring Boot integration for Spring Security's SAML 2.0 features.",
+      "versionRange": "4.0.0.RELEASE",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/web/spring-security.html#web.security.saml2",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "spring-security-webauthn",
+      "name": "WebAuthn for Spring Security",
+      "description": "Support for WebAuthn in Spring Security.",
+      "versionRange": "4.0.0.RELEASE",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-security/reference/servlet/authentication/passkeys.html"
+       }
+      }
+     },
+     {
+      "id": "ldap",
+      "name": "LDAP",
+      "description": "LDAP is an open, vendor-neutral, industry standard application protocol for accessing and maintaining distributed directory information services over an IP network.",
+      "versionRange": "4.0.0.RELEASE",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/nosql.html#data.nosql.ldap",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "data-ldap",
+      "name": "Spring Data LDAP",
+      "description": "Spring Data support for LDAP.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/nosql.html#data.nosql.ldap",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "okta",
+      "name": "Okta",
+      "description": "Okta specific configuration for Spring Security/Spring Boot OAuth2 features. Enable your Spring Boot application to work with Okta via OAuth 2.0/OIDC.",
+      "versionRange": "[4.0.0.RELEASE,4.2.0.M1)",
+      "_links": {
+       "guide": [
+        {
+         "href": "https://github.com/okta/samples-java-spring/tree/master/okta-hosted-login",
+         "title": "Okta-Hosted Login Page Example"
+        },
+        {
+         "href": "https://github.com/okta/samples-java-spring/tree/master/custom-login",
+         "title": "Custom Login Page Example"
+        },
+        {
+         "href": "https://github.com/okta/samples-java-spring/tree/master/resource-server",
+         "title": "Okta Spring Security Resource Server Example"
+        }
+       ],
+       "reference": {
+        "href": "https://github.com/okta/okta-spring-boot#readme",
+        "title": "Okta Spring Boot documentation"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "name": "SQL",
+    "values": [
+     {
+      "id": "jdbc",
+      "name": "JDBC API",
+      "description": "Database Connectivity API that defines how a client may connect and query a database.",
+      "_links": {
+       "guide": [
+        {
+         "href": "https://spring.io/guides/gs/relational-data-access/",
+         "title": "Accessing Relational Data using JDBC with Spring"
+        },
+        {
+         "href": "https://spring.io/guides/gs/managing-transactions/",
+         "title": "Managing Transactions"
+        }
+       ],
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/sql.html",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "r2dbc",
+      "name": "R2DBC API",
+      "description": "Reactive Database Connectivity API that defines how a client may connect and query a database.",
+      "versionRange": "4.0.0.RELEASE",
+      "_links": {
+       "home": {
+        "href": "https://r2dbc.io",
+        "title": "R2DBC Homepage"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/sql.html#data.sql.r2dbc",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "data-jpa",
+      "name": "Spring Data JPA",
+      "description": "Persist data in SQL stores with Java Persistence API using Spring Data and Hibernate.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/accessing-data-jpa/",
+        "title": "Accessing Data with JPA"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/sql.html#data.sql.jpa-and-spring-data",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "data-jdbc",
+      "name": "Spring Data JDBC",
+      "description": "Persist data in SQL stores with plain JDBC using Spring Data.",
+      "_links": {
+       "guide": {
+        "href": "https://github.com/spring-projects/spring-data-examples/tree/main/jdbc/basics",
+        "title": "Using Spring Data JDBC"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/sql.html#data.sql.jdbc",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "data-r2dbc",
+      "name": "Spring Data R2DBC",
+      "description": "Provides Reactive Relational Database Connectivity to persist data in SQL stores using Spring Data in reactive applications.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/accessing-data-r2dbc/",
+        "title": "Accessing data with R2DBC"
+       },
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/sql.html#data.sql.r2dbc",
+        "templated": true
+       },
+       "home": {
+        "href": "https://r2dbc.io",
+        "title": "R2DBC Homepage"
+       }
+      }
+     },
+     {
+      "id": "mybatis",
+      "name": "MyBatis Framework",
+      "description": "Persistence framework with support for custom SQL, stored procedures and advanced mappings. MyBatis couples objects with stored procedures or SQL statements using a XML descriptor or annotations.",
+      "versionRange": "[4.0.0.RELEASE,4.1.0.M1)",
+      "_links": {
+       "guide": {
+        "href": "https://github.com/mybatis/spring-boot-starter/wiki/Quick-Start",
+        "title": "MyBatis Quick Start"
+       },
+       "reference": {
+        "href": "https://mybatis.org/spring-boot-starter/mybatis-spring-boot-autoconfigure/"
+       }
+      }
+     },
+     {
+      "id": "liquibase",
+      "name": "Liquibase Migration",
+      "description": "Liquibase database migration and source control library.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/how-to/data-initialization.html#howto.data-initialization.migration-tool.liquibase",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "flyway",
+      "name": "Flyway Migration",
+      "description": "Version control for your database so you can migrate from any version (incl. an empty database) to the latest version of the schema.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/how-to/data-initialization.html#howto.data-initialization.migration-tool.flyway",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "jooq",
+      "name": "JOOQ Access Layer",
+      "description": "Generate Java code from your database and build type safe SQL queries through a fluent API.",
+      "_links": {
+       "reference": {
+        "href": "https://docs.spring.io/spring-boot/{bootVersion}/reference/data/sql.html#data.sql.jooq",
+        "templated": true
+       }
+      }
+     },
+     {
+      "id": "db2",
+      "name": "IBM DB2 Driver",
+      "description": "A JDBC driver that provides access to IBM DB2."
+     },
+     {
+      "id": "derby",
+      "name": "Apache Derby Database",
+      "description": "An open source relational database implemented entirely in Java."
+     },
+     {
+      "id": "h2",
+      "name": "H2 Database",
+      "description": "Provides a fast in-memory database that supports JDBC API and R2DBC access, with a small (2mb) footprint. Supports embedded and server modes as well as a browser based console application."
+     },
+     {
+      "id": "hsql",
+      "name": "HyperSQL Database",
+      "description": "Lightweight 100% Java SQL Database Engine."
+     },
+     {
+      "id": "mariadb",
+      "name": "MariaDB Driver",
+      "description": "MariaDB JDBC and R2DBC driver."
+     },
+     {
+      "id": "sqlserver",
+      "name": "MS SQL Server Driver",
+      "description": "A JDBC and R2DBC driver that provides access to Microsoft SQL Server and Azure SQL Database from any Java application."
+     },
+     {
+      "id": "mysql",
+      "name": "MySQL Driver",
+      "description": "MySQL JDBC driver.",
+      "_links": {
+       "guide": {
+        "href": "https://spring.io/guides/gs/accessing-data-mysql/",
+        "title": "Accessing data with MySQL"
+       }
+      }
+     },
+     {
+      "id": "oracle",
+      "name": "Oracle Driver",
+      "description": "A JDBC driver that provides access to Oracle."
+     },
+     {
+      "id": "postgresql",
+      "name": "PostgreSQL Driver",
+      "description": "A JDBC and R2DBC driver that allows Java programs to connect to a PostgreSQL database using standard, database independent Java code."
+     },
+     {
+      "id": "sqlite",
+      "name": "SQLite Driver",
+      "description": "JDBC driver for SQLite, a lightweight, embedded SQL database engine."
+     }
+    ]
+   }
+  ]
+ },
+ "type": {
+  "type": "action",
+  "default": "gradle-project",
+  "values": [
+   {
+    "id": "gradle-project",
+    "name": "Gradle - Groovy",
+    "description": "Generate a Gradle based project archive using the Groovy DSL.",
+    "action": "/starter.zip",
+    "tags": {
+     "build": "gradle",
+     "dialect": "groovy",
+     "format": "project"
+    }
+   },
+   {
+    "id": "gradle-project-kotlin",
+    "name": "Gradle - Kotlin",
+    "description": "Generate a Gradle based project archive using the Kotlin DSL.",
+    "action": "/starter.zip",
+    "tags": {
+     "build": "gradle",
+     "dialect": "kotlin",
+     "format": "project"
+    }
+   },
+   {
+    "id": "gradle-build",
+    "name": "Gradle Config",
+    "description": "Generate a Gradle build file.",
+    "action": "/build.gradle",
+    "tags": {
+     "build": "gradle",
+     "format": "build"
+    }
+   },
+   {
+    "id": "maven-project",
+    "name": "Maven",
+    "description": "Generate a Maven based project archive.",
+    "action": "/starter.zip",
+    "tags": {
+     "build": "maven",
+     "format": "project"
+    }
+   },
+   {
+    "id": "maven-build",
+    "name": "Maven POM",
+    "description": "Generate a Maven pom.xml.",
+    "action": "/pom.xml",
+    "tags": {
+     "build": "maven",
+     "format": "build"
+    }
+   }
+  ]
+ },
+ "packaging": {
+  "type": "single-select",
+  "default": "jar",
+  "values": [
+   {
+    "id": "jar",
+    "name": "Jar"
+   },
+   {
+    "id": "war",
+    "name": "War"
+   }
+  ]
+ },
+ "javaVersion": {
+  "type": "single-select",
+  "default": "17",
+  "values": [
+   {
+    "id": "27",
+    "name": "27"
+   },
+   {
+    "id": "25",
+    "name": "25"
+   },
+   {
+    "id": "21",
+    "name": "21"
+   },
+   {
+    "id": "17",
+    "name": "17"
+   }
+  ]
+ },
+ "language": {
+  "type": "single-select",
+  "default": "java",
+  "values": [
+   {
+    "id": "java",
+    "name": "Java"
+   },
+   {
+    "id": "kotlin",
+    "name": "Kotlin"
+   },
+   {
+    "id": "groovy",
+    "name": "Groovy"
+   }
+  ]
+ },
+ "bootVersion": {
+  "type": "single-select",
+  "default": "4.1.1.RELEASE",
+  "values": [
+   {
+    "id": "4.2.0.BUILD-SNAPSHOT",
+    "name": "4.2.0 (SNAPSHOT)"
+   },
+   {
+    "id": "4.2.0.M2",
+    "name": "4.2.0 (M2)"
+   },
+   {
+    "id": "4.1.2.BUILD-SNAPSHOT",
+    "name": "4.1.2 (SNAPSHOT)"
+   },
+   {
+    "id": "4.1.1.RELEASE",
+    "name": "4.1.1"
+   },
+   {
+    "id": "4.0.9.BUILD-SNAPSHOT",
+    "name": "4.0.9 (SNAPSHOT)"
+   }
+  ]
+ },
+ "groupId": {
+  "type": "text",
+  "default": "com.example"
+ },
+ "artifactId": {
+  "type": "text",
+  "default": "demo"
+ },
+ "version": {
+  "type": "text",
+  "default": "0.0.1-SNAPSHOT"
+ },
+ "name": {
+  "type": "text"
+ },
+ "description": {
+  "type": "text"
+ },
+ "packageName": {
+  "type": "text",
+  "default": "com.example.demo"
+ }
+}
