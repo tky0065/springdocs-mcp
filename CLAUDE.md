@@ -78,7 +78,7 @@ npm run cicd:check   # Check CI/CD configuration status
 - **No Mock Data**: The codebase emphasizes using ONLY real Spring documentation APIs - comments explicitly state this throughout service files
 - **TypeScript Configuration**: Uses Node16 module resolution with ES2022 target, outputs to `build/` directory
 - **Binary Entry Point**: The compiled `build/index.js` has a shebang (`#!/usr/bin/env node`) and is marked executable
-- **MCP Protocol Version**: Server version is read from `package.json` (see `src/version.ts`), implements MCP protocol version "2024-11-05"
+- **MCP Protocol Version**: Server version is read from `package.json` (see `src/version.ts`), uses `@modelcontextprotocol/sdk` 1.x (low-level `Server`), which negotiates the protocol version with the client (2024-11-05 and later)
 - **Node Version**: Requires Node.js 18+
 
 ## Common Development Patterns
