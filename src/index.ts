@@ -469,10 +469,13 @@ async function main() {
 }
 
 // Error handling
-process.on("SIGINT", async () => {
-  console.error("🛑 Shutting down server...");
+function shutdown(signal: NodeJS.Signals): void {
+  console.error(`🛑 Shutting down server (${signal})...`);
   process.exit(0);
-});
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
   console.error("💥 Unhandled promise rejection:", reason);

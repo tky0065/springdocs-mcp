@@ -108,3 +108,31 @@ describe("validation des arguments via stdio (#18)", () => {
     expect(result.content[0].text).toMatch(/guideId/);
   });
 });
+
+describe("arrêt propre (#38)", () => {
+  it.each(["SIGTERM", "SIGINT"] as const)("sort avec le code 0 sur %s sans polluer stdout", async (signal) => {
+    const child = spawn("node", [ENTRY], { stdio: ["pipe", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+
+    // Wait until the server is up (it logs on stderr), then ask it to stop.
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("server did not start")), 8000);
+      child.stderr.once("data", () => { clearTimeout(timer); resolve(); });
+    });
+
+    const exit = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolve) =>
+      child.on("exit", (code, sig) => resolve({ code, signal: sig })));
+    child.kill(signal);
+    const result = await Promise.race([
+      exit,
+      new Promise<never>((_, reject) => setTimeout(() => { child.kill("SIGKILL"); reject(new Error("no exit after signal")); }, 5000)),
+    ]);
+
+    expect(result).toEqual({ code: 0, signal: null });
+    expect(stderr).toContain(signal);
+    for (const line of stdout.split("\n").filter(Boolean)) expect(() => JSON.parse(line)).not.toThrow();
+  });
+});
