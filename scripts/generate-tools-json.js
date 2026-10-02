@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { buildDockerTools } from './docker-tools.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,45 +40,7 @@ try {
   console.log(`Found ${tools.length} tools to export\n`);
 
   // Transform tool definitions to Docker MCP Catalog format
-  const dockerTools = tools.map(tool => {
-    const simplified = {
-      name: tool.name,
-      description: tool.description,
-      arguments: []
-    };
-
-    // Extract argument definitions
-    if (tool.inputSchema && tool.inputSchema.properties) {
-      simplified.arguments = Object.entries(tool.inputSchema.properties).map(([name, prop]) => {
-        const arg = {
-          name,
-          type: prop.type,
-          required: tool.inputSchema.required?.includes(name) || false,
-          description: prop.description || ''
-        };
-
-        // Add enum values if present
-        if (prop.enum) {
-          arg.enum = prop.enum;
-        }
-
-        // Add default value if present
-        if (prop.default !== undefined) {
-          arg.default = prop.default;
-        }
-
-        // Add min/max for numbers
-        if (prop.type === 'number') {
-          if (prop.minimum !== undefined) arg.minimum = prop.minimum;
-          if (prop.maximum !== undefined) arg.maximum = prop.maximum;
-        }
-
-        return arg;
-      });
-    }
-
-    return simplified;
-  });
+  const dockerTools = buildDockerTools(tools);
 
   // Write to docker/tools.json
   const outputPath = join(projectRoot, 'docker', 'tools.json');

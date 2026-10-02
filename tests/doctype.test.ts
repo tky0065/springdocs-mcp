@@ -32,3 +32,22 @@ describe("docType (#14)", () => {
     expect(tool.inputSchema.properties.docType.enum).toEqual(["guides", "reference", "projects", "all"]);
   });
 });
+
+describe("sources de recherche en parallèle (#31)", () => {
+  it("lance les sources sans attendre la précédente et conserve l'ordre guides, projects, reference", async () => {
+    const service = new SpringBootDocsServiceOptimized() as any;
+    const started: string[] = [];
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    service.getAllSpringGuides = async () => { started.push("guides"); await gate; return [{ title: "boot guide", description: "" }]; };
+    service.searchSpringProjects = async () => { started.push("projects"); return [{ title: "boot project" }]; };
+    service.searchInReference = async () => { started.push("reference"); return [{ title: "boot ref" }]; };
+
+    const pending = service.searchSpringDocs("boot", "all", 10);
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(started).toEqual(["guides", "projects", "reference"]);
+    release();
+    const results = await pending;
+    expect(results.map((r: any) => r.title)).toEqual(["boot guide", "boot project", "boot ref"]);
+  });
+});
