@@ -70,7 +70,7 @@ export class CacheService {
   /**
    * Get cache statistics
    */
-  getStats(): { size: number; expired: number } {
+  getStats(): { size: number; expired: number; maxEntries: number } {
     const now = Date.now();
     let expired = 0;
 
@@ -80,7 +80,7 @@ export class CacheService {
       }
     }
 
-    return { size: this.cache.size, expired };
+    return { size: this.cache.size, expired, maxEntries: this.MAX_ENTRIES };
   }
 
   /**
@@ -88,5 +88,36 @@ export class CacheService {
    */
   clear(): void {
     this.cache.clear();
+  }
+
+  /**
+   * Remove expired entries or everything; returns how many entries were removed
+   */
+  purge(mode: "expired" | "all"): number {
+    const before = this.cache.size;
+    if (mode === "all") {
+      this.clear();
+    } else {
+      this.cleanup();
+    }
+    return before - this.cache.size;
+  }
+
+  /**
+   * Markdown report of the cache state, optionally purging first
+   */
+  statsReport(purge: "none" | "expired" | "all" = "none"): string {
+    const removed = purge === "none" ? null : this.purge(purge);
+    const { size, expired, maxEntries } = this.getStats();
+    const lines = [
+      "# Cache statistics",
+      "",
+      `- Entries: ${size} / ${maxEntries}`,
+      `- Expired (awaiting cleanup): ${expired}`,
+    ];
+    if (removed !== null) {
+      lines.push(`- Removed by purge (${purge}): ${removed}`);
+    }
+    return lines.join("\n");
   }
 }
