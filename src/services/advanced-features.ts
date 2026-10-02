@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
 import { USER_AGENT } from '../version.js';
+import { absoluteSpringUrl } from './url.js';
 
 interface FetchResult {
   ok: boolean;
@@ -379,11 +380,9 @@ For complete documentation, visit: ${docUrl}`;
         const $project = $(element);
         const name = $project.find('h2, h3, .title, .project-title, .card-title').first().text().trim();
         const description = $project.find('p, .description, .summary, .card-text').first().text().trim();
-        const link = $project.find('a').first().attr('href');
+        const url = absoluteSpringUrl($project.find('a').first().attr('href'));
 
-        if (name && description) {
-          const url = link?.startsWith('http') ? link : `https://spring.io${link}`;
-
+        if (name && description && url) {
           if (name.toLowerCase().includes(query.toLowerCase()) ||
               description.toLowerCase().includes(query.toLowerCase())) {
             projects.push({ name, description, url, type: 'project' });
@@ -413,12 +412,10 @@ For complete documentation, visit: ${docUrl}`;
         const $guide = $(element);
         const title = $guide.find('h2, h3, .title, .guide-title, .card-title, a').first().text().trim();
         const description = $guide.find('p, .description, .summary, .card-text').first().text().trim();
-        const link = $guide.find('a').first().attr('href');
+        const url = absoluteSpringUrl($guide.find('a').first().attr('href'));
         const type = $guide.find('.badge, .label, .type').first().text().trim() || 'Guide';
 
-        if (title) {
-          const url = link?.startsWith('http') ? link : `https://spring.io${link}`;
-
+        if (title && url) {
           if (title.toLowerCase().includes(query.toLowerCase()) ||
               description.toLowerCase().includes(query.toLowerCase())) {
             guides.push({ title, description: description || 'Spring Boot guide', url, type });

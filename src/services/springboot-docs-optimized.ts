@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
 import { USER_AGENT } from '../version.js';
+import { absoluteSpringUrl, assertSafeSegment } from './url.js';
 
 interface FetchResult {
   ok: boolean;
@@ -134,9 +135,9 @@ export class SpringBootDocsServiceOptimized {
         const $project = $(element);
         const title = $project.find('h2, h3, .title, .project-title').first().text().trim();
         const description = $project.find('p, .description, .summary').first().text().trim();
-        const link = $project.find('a').first().attr('href');
+        const url = absoluteSpringUrl($project.find('a').first().attr('href'));
 
-        if (title && (
+        if (url && title && (
           title.toLowerCase().includes(query.toLowerCase()) ||
           description.toLowerCase().includes(query.toLowerCase())
         )) {
@@ -144,7 +145,7 @@ export class SpringBootDocsServiceOptimized {
             type: 'spring-project',
             title: title,
             description: description,
-            url: link?.startsWith('http') ? link : `https://spring.io${link}`,
+            url: url,
           });
         }
       });
@@ -229,16 +230,16 @@ export class SpringBootDocsServiceOptimized {
         const title = $guide.find('h2, h3, .title, .guide-title, a').first().text().trim();
         const description = $guide.find('p, .description, .summary').first().text().trim();
         const guideCategory = $guide.find('.category, .badge, .label').first().text().trim();
-        const link = $guide.find('a').first().attr('href');
+        const url = absoluteSpringUrl($guide.find('a').first().attr('href'));
 
-        if (title) {
+        if (title && url) {
           if (!category || guideCategory.toLowerCase().includes(category.toLowerCase())) {
             guides.push({
               type: 'spring-guide',
               title: title,
               description: description || 'Spring guide',
               category: guideCategory || 'General',
-              url: link?.startsWith('http') ? link : `https://spring.io${link}`,
+              url: url,
             });
           }
         }
