@@ -26,9 +26,10 @@ describe("cache de diagnoseIssues (#23)", () => {
 
   it("ne mélange pas deux stack traces", async () => {
     const service = new AdvancedFeaturesService();
-    await service.diagnoseIssues(MESSAGE);
-    const second = await service.diagnoseIssues(MESSAGE, undefined, "at com.example.Foo");
-    expect(second).toContain("Stack Trace Analysis");
+    const first = await service.diagnoseIssues(MESSAGE);
+    const second = await service.diagnoseIssues(MESSAGE, undefined, "java.lang.IllegalStateException: boom\n\tat com.example.Foo.bar(Foo.java:10)");
+    expect(second).not.toBe(first);
+    expect(second).toContain("**Your code:**");
   });
 
   it("sert le cache pour une requête identique", async () => {

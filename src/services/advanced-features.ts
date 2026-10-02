@@ -5,6 +5,7 @@ import { fetchWithRetry, FetchResult } from './http.js';
 import { turndownService, extractContent } from './markdown.js';
 import { absoluteSpringUrl } from './url.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
+import { renderDiagnosis } from './diagnosis.js';
 import { ReleaseFocus, filterReleaseBody, normalizeReleaseVersion } from './release-notes.js';
 
 /** Raw GitHub release data kept in the cache (the focus filter is applied on read). */
@@ -337,46 +338,10 @@ For complete documentation, visit: ${docUrl}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
-    try {
-      // Search for the error in Spring Boot documentation
-      const searchQuery = errorMessage.split(' ').slice(0, 3).join(' ');
-      const docs = await this.searchDocumentation(searchQuery, 3);
-
-      let result = `# Spring Boot Issue Diagnosis\n\n**Error:** ${errorMessage}\n`;
-
-      if (component) {
-        result += `**Component:** ${component}\n`;
-      }
-
-      result += `\n## Relevant Documentation\n\n`;
-
-      if (docs.length > 0) {
-        docs.forEach((doc, index) => {
-          result += `${index + 1}. **${doc.title}**\n   ${doc.url}\n\n`;
-        });
-      } else {
-        result += `No specific documentation found for this error.\n\n`;
-      }
-
-      result += `## General Troubleshooting Steps\n\n`;
-      result += `1. Check the Spring Boot documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/\n`;
-      result += `2. Search Spring Boot issues: https://github.com/spring-projects/spring-boot/issues\n`;
-      result += `3. Enable debug logging: \`logging.level.org.springframework=DEBUG\`\n`;
-      result += `4. Check actuator health endpoint: \`/actuator/health\`\n\n`;
-
-      if (stackTrace) {
-        result += `## Stack Trace Analysis\n\nFor detailed stack trace analysis, consider:\n`;
-        result += `- Looking for the root cause in the stack trace\n`;
-        result += `- Checking for configuration issues\n`;
-        result += `- Verifying dependency versions\n\n`;
-      }
-
-      this.cache.set(cacheKey, result);
-      return result;
-    } catch (error) {
-      console.error('Error diagnosing issue:', error);
-      throw error;
-    }
+    // Local analysis: no network call, bounded and deterministic
+    const result = renderDiagnosis({ errorMessage, component, stackTrace });
+    this.cache.set(cacheKey, result);
+    return result;
   }
 
   // Real implementation methods (no mock data)

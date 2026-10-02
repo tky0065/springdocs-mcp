@@ -120,7 +120,7 @@ describe("AdvancedFeaturesService", () => {
     ["getTutorial", (s: AdvancedFeaturesService) => s.getTutorial("boot")],
     ["compareVersions", (s: AdvancedFeaturesService) => s.compareVersions("3.4", "3.5")],
     ["getBestPractices", (s: AdvancedFeaturesService) => s.getBestPractices("testing")],
-    ["diagnoseIssues", (s: AdvancedFeaturesService) => s.diagnoseIssues("BeanCreationException boot failure")],
+    // diagnoseIssues is local now: covered by tests/diagnose-offline.test.ts
   ])("%s rejects when the network is down", async (_name, run) => {
     down = ALL;
     await rejected(run(new AdvancedFeaturesService()));
