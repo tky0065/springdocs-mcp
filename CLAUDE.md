@@ -19,7 +19,6 @@ npm run watch        # Watch mode for development
 ### Testing
 ```bash
 npm test             # Build, then run the vitest suite in tests/ (no network; stdio test spawns build/index.js)
-npm run test-npx     # Test the npx package execution
 ./test-enhanced.sh   # Enhanced test suite with multiple tool tests
 ```
 
