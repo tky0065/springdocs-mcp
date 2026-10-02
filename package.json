@@ -27,8 +27,6 @@
     "dev": "npm run build && node build/index.js",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "test": "bash test.sh",
-    "test-npx": "./test-npx.sh",
     "docker:tools": "node scripts/generate-tools-json.js",
     "docker:build": "docker build -t mcp/springdocs-mcp:$(node -p \"require('./package.json').version\") .",
     "install-global": "npm install -g .",

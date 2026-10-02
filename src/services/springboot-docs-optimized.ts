@@ -458,12 +458,12 @@ export class SpringBootDocsServiceOptimized {
 
     try {
       if (docType === 'all' || docType === 'guides') {
-        const guides = await this.getAllSpringGuides(undefined, limit);
+        const guides = await this.getAllSpringGuides(undefined, Number.MAX_SAFE_INTEGER);
         const filteredGuides = guides.filter(guide =>
           guide.title.toLowerCase().includes(query.toLowerCase()) ||
           guide.description.toLowerCase().includes(query.toLowerCase())
         );
-        results.push(...filteredGuides);
+        results.push(...filteredGuides.slice(0, limit));
       }
 
       if (docType === 'all' || docType === 'projects') {
@@ -517,7 +517,7 @@ export class SpringBootDocsServiceOptimized {
   }
 
   private processHtmlGuide(content: string, guideId: string, sourceUrl: string, detailLevel: string = 'medium'): string {
-    console.log(`Processing HTML content with detail level: ${detailLevel}...`);
+    console.error(`Processing HTML content with detail level: ${detailLevel}...`);
     const $ = cheerio.load(content);
 
     // Remove navigation and footer elements
@@ -528,7 +528,7 @@ export class SpringBootDocsServiceOptimized {
 
     let markdown: string;
     if (mainContent.length === 0) {
-      console.log('No main content found, using body');
+      console.error('No main content found, using body');
       $('script, style').remove();
       markdown = this.turndownService.turndown($('body').html() || '');
     } else {

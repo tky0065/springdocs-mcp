@@ -250,7 +250,7 @@ class SpringBootMCPServerAdvanced {
       content: [
         {
           type: "text",
-          text: this.formatConceptResults(results),
+          text: results,
         },
       ],
     };
@@ -368,31 +368,6 @@ class SpringBootMCPServerAdvanced {
 `;
       })
       .join("\n");
-  }
-
-  private formatConceptResults(results: any): string {
-    if (!results || Object.keys(results).length === 0) {
-      return "No concepts found.";
-    }
-
-    let formatted = `# Spring Boot Concepts\n\n`;
-
-    for (const [category, concepts] of Object.entries(results)) {
-      formatted += `## ${category}\n\n`;
-
-      if (Array.isArray(concepts)) {
-        concepts.forEach((concept: any) => {
-          formatted += `- **${concept.name}**: ${concept.description}\n`;
-          if (concept.examples && concept.examples.length > 0) {
-            formatted += `  Examples: ${concept.examples.join(", ")}\n`;
-          }
-        });
-      }
-
-      formatted += "\n";
-    }
-
-    return formatted;
   }
 
   private formatEcosystemResults(results: any): string {
