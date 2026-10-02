@@ -78,17 +78,30 @@ export function getPrompt(name: string, rawArgs: Record<string, string> | undefi
     const fromRaw = optionalText(args, "from_version", LIMITS.version);
     const from = fromRaw === undefined ? undefined : version(fromRaw, "from_version");
     const release = to.split(".").length === 2 ? `${to}.0` : to;
-    const jakarta = Number(to.split(".")[0]) >= 3;
+    const major = (v: string) => Number(v.split(".")[0]);
+    const toMajor = major(to);
+    const fromMajor = from === undefined ? undefined : major(from);
+    // Major versions crossed by the upgrade (3.0 and 4.0 have their own migration guide)
+    const crossed: string[] = [];
+    if (fromMajor !== undefined) {
+      for (let m = fromMajor + 1; m <= toMajor; m++) {
+        if (m >= 3 && `${m}.0` !== to) crossed.push(`${m}.0`);
+      }
+    }
+    const jakarta = (fromMajor === undefined || fromMajor < 3) && toMajor >= 3;
     const steps = [
       `Help me upgrade a Spring Boot application${from ? ` from ${from}` : ""} to ${to}. Use the Spring documentation tools, in this order:`,
       "",
-      `1. Call \`get_migration_guide\` with version "${to}" and read the migration steps.`,
-      `2. Call \`get_release_notes\` with project "boot", version "${release}" and focus "breaking-changes".`,
-      "3. Call `get_spring_reference` for the configuration sections affected by the changes you found.",
-      ...(jakarta ? ["4. Check the javax -> jakarta namespace migration: call `get_migration_guide` with section \"jakarta\"."] : []),
+      `Call \`get_migration_guide\` with version "${to}" and read the migration steps.`,
+      ...crossed.map((v) => `Also call \`get_migration_guide\` with version "${v}": the upgrade crosses that major version.`),
+      `Call \`get_release_notes\` with project "boot", version "${release}" and focus "breaking-changes".`,
+      "Call `get_spring_reference` for the configuration sections affected by the changes you found.",
+      ...(jakarta ? ["Check the javax -> jakarta namespace migration: call `get_migration_guide` with version \"3.0\" and section \"jakarta\"."] : []),
+    ].map((line, i) => (i >= 2 ? `${i - 1}. ${line}` : line));
+    steps.push(
       "",
       "Finish with an ordered upgrade checklist: dependency and property changes first, then code changes, then verification steps. Cite which tool each point comes from.",
-    ];
+    );
     return userMessage(`Spring Boot upgrade plan to ${to}`, steps.join("\n"));
   }
 

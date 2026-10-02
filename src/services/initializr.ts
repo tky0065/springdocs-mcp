@@ -132,8 +132,12 @@ export class InitializrService {
       throw new Error(`Spring Initializr is unavailable (HTTP ${response.status})`);
     }
     const meta = (await response.json()) as InitializrMetadata;
-    if (!meta || !Array.isArray(meta.dependencies?.values) || !Array.isArray(meta.bootVersion?.values)) {
-      unexpected('dependencies or bootVersion');
+    const optionsOk = meta && [meta.type, meta.javaVersion, meta.language, meta.packaging, meta.bootVersion]
+      .every(group => Array.isArray(group?.values));
+    const dependenciesOk = meta && Array.isArray(meta.dependencies?.values)
+      && meta.dependencies.values.every(group => Array.isArray(group?.values));
+    if (!optionsOk || !dependenciesOk) {
+      unexpected('options or dependencies');
     }
     this.cache.setLongTerm(CACHE_KEY, meta);
     return meta;

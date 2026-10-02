@@ -108,6 +108,22 @@ describe("InitializrService", () => {
     await expect(service.getInitializr()).resolves.toContain("options");
   });
 
+  it("métadonnées incomplètes (options ou groupes sans values) : erreur claire, rien en cache", async () => {
+    const broken = [
+      { ...meta, type: undefined },
+      { ...meta, javaVersion: { default: "17" } },
+      { ...meta, dependencies: { values: [{ name: "Web" }] } },
+    ];
+    for (const body of broken) {
+      mockedFetch.mockResolvedValue(fakeResponse(200, JSON.stringify(body)) as any);
+      const cache = new CacheService();
+      const outcome = await settle(new InitializrService(cache).getInitializr("options"));
+      expect(outcome.ok).toBe(false);
+      expect(String((outcome as any).error)).toMatch(/unexpected response/i);
+      expect(cache.getStats().size).toBe(0);
+    }
+  });
+
   it("JSON invalide ou inattendu : erreur, rien en cache", async () => {
     mockedFetch.mockResolvedValue(fakeResponse(200, "{}") as any);
     const cache = new CacheService();

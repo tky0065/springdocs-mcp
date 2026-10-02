@@ -48,6 +48,29 @@ describe("migrate-boot-version", () => {
     expect(full).not.toContain("3.4.2.0");
   });
 
+  it("2.7 -> 3.4 : lit le guide 3.0 (jakarta) avec version, pas la 3.4 seule", () => {
+    const text = textOf(getPrompt("migrate-boot-version", { to_version: "3.4", from_version: "2.7" }));
+    expect(text).toContain('version "3.0"');
+    expect(text).toMatch(/section "jakarta"/);
+    expect(text).toMatch(/get_migration_guide.*version "3\.0".*section "jakarta"|version "3\.0".*jakarta/s);
+  });
+
+  it("3.3 -> 3.4 : pas d'étape jakarta (déjà migré)", () => {
+    expect(textOf(getPrompt("migrate-boot-version", { to_version: "3.4", from_version: "3.3" }))).not.toMatch(/jakarta/i);
+  });
+
+  it("sans from_version et cible >= 3 : étape jakarta avec version 3.0", () => {
+    const text = textOf(getPrompt("migrate-boot-version", { to_version: "3.4" }));
+    expect(text).toMatch(/jakarta/i);
+    expect(text).toContain('version "3.0"');
+  });
+
+  it("2.7 -> 4.0 : demande les guides des majeures franchies (3.0 et 4.0)", () => {
+    const text = textOf(getPrompt("migrate-boot-version", { to_version: "4.0", from_version: "2.7" }));
+    expect(text).toContain('version "3.0"');
+    expect(text).toContain('version "4.0"');
+  });
+
   it("from_version est optionnelle", () => {
     expect(() => getPrompt("migrate-boot-version", { to_version: "4.0" })).not.toThrow();
   });
