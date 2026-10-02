@@ -5,6 +5,7 @@ export class CacheService {
   private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
   private readonly DEFAULT_TTL = 30 * 60 * 1000; // 30 minutes
   private readonly LONG_TTL = 24 * 60 * 60 * 1000; // 24 hours for stable content
+  private readonly MAX_ENTRIES = 500;
 
   /**
    * Get cached data if available and not expired
@@ -18,6 +19,10 @@ export class CacheService {
       return null;
     }
 
+    // Refresh recency: Map iterates in insertion order, so re-insert at the end
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+
     return entry.data as T;
   }
 
@@ -25,6 +30,12 @@ export class CacheService {
    * Store data in cache with optional custom TTL
    */
   set<T>(key: string, data: T, ttl?: number): void {
+    this.cache.delete(key);
+    while (this.cache.size >= this.MAX_ENTRIES) {
+      const oldest = this.cache.keys().next().value;
+      if (oldest === undefined) break;
+      this.cache.delete(oldest);
+    }
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
