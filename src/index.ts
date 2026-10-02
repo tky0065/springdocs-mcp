@@ -17,6 +17,7 @@ class SpringBootMCPServerAdvanced {
   private server: Server;
   private docsService: SpringBootDocsServiceOptimized;
   private advancedService: AdvancedFeaturesService;
+  private cache: CacheService;
 
   constructor() {
     this.server = new Server(
@@ -31,9 +32,9 @@ class SpringBootMCPServerAdvanced {
       }
     );
 
-    const cache = new CacheService();
-    this.docsService = new SpringBootDocsServiceOptimized(undefined, cache);
-    this.advancedService = new AdvancedFeaturesService(cache);
+    this.cache = new CacheService();
+    this.docsService = new SpringBootDocsServiceOptimized(undefined, this.cache);
+    this.advancedService = new AdvancedFeaturesService(this.cache);
     this.setupToolHandlers();
   }
 
@@ -113,6 +114,10 @@ class SpringBootMCPServerAdvanced {
 
           case "diagnose_spring_issues":
             result = await this.handleDiagnoseIssues(args);
+            break;
+
+          case "spring_cache_stats":
+            result = this.handleCacheStats(args);
             break;
 
           default:
@@ -353,6 +358,19 @@ class SpringBootMCPServerAdvanced {
         {
           type: "text",
           text: guide,
+        },
+      ],
+    };
+  }
+
+  private handleCacheStats(args: any) {
+    const { purge = "none" } = args;
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: this.cache.statsReport(purge),
         },
       ],
     };

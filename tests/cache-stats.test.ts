@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CacheService } from "../src/services/cache.js";
+import { ToolDefinitions } from "../src/tools/index.js";
+import { validateToolArguments } from "../src/validation.js";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -49,5 +51,25 @@ describe("CacheService stats et purge (#49)", () => {
     expect(text).toMatch(/removed.*1/i);
     expect(text).toContain("1 / 500");
     expect(text).toMatch(/expired.*0/i);
+  });
+});
+
+describe("tool spring_cache_stats (#49)", () => {
+  it("est défini avec un enum fermé pour purge", () => {
+    const tool = ToolDefinitions.getToolList().find((t: any) => t.name === "spring_cache_stats") as any;
+    expect(tool.inputSchema.properties.purge.enum).toEqual(["none", "expired", "all"]);
+    expect(tool.inputSchema.required ?? []).toEqual([]);
+  });
+
+  it("accepte l'absence d'argument et les trois modes", () => {
+    expect(() => validateToolArguments("spring_cache_stats", {})).not.toThrow();
+    for (const purge of ["none", "expired", "all"]) {
+      expect(validateToolArguments("spring_cache_stats", { purge })).toEqual({ purge });
+    }
+  });
+
+  it("rejette une purge invalide", () => {
+    expect(() => validateToolArguments("spring_cache_stats", { purge: "everything" })).toThrow();
+    expect(() => validateToolArguments("spring_cache_stats", { purge: 1 })).toThrow();
   });
 });

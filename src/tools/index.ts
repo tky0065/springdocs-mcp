@@ -365,6 +365,22 @@ export class ToolDefinitions {
           required: ["error_message"],
         },
       },
+      {
+        name: "spring_cache_stats",
+        description: "Affiche les statistiques du cache du serveur (entrées, expirées, capacité) et permet de purger les entrées expirées ou tout le cache",
+        inputSchema: {
+          type: "object",
+          properties: {
+            purge: {
+              type: "string",
+              enum: ["none", "expired", "all"],
+              description: "Purge à effectuer avant d'afficher les statistiques : aucune (lecture seule), entrées expirées, ou tout le cache",
+              default: "none",
+            },
+          },
+          required: [],
+        },
+      },
     ];
   }
 }
