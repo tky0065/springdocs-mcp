@@ -68,7 +68,7 @@ docker run -i \
 
 ## Features
 
-- **12 Powerful Tools**: Search docs, get tutorials, compare versions, diagnose issues
+- **13 Powerful Tools**: Search docs, get tutorials, compare versions, release notes, diagnose issues
 - **Spring AI Support**: ChatClient, RAG, embeddings, vector stores, LLM integrations
 - **Intelligent Caching**: 50-80% faster responses with 85% cache hit rate
 - **Zero Configuration**: Works out-of-the-box with no setup required
