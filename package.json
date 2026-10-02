@@ -26,6 +26,7 @@
     "start": "node build/index.js",
     "dev": "npm run build && node build/index.js",
     "watch": "tsc --watch",
+    "test": "npm run build && vitest run",
     "prepublishOnly": "npm run build",
     "docker:tools": "node scripts/generate-tools-json.js",
     "docker:build": "docker build -t mcp/springdocs-mcp:$(node -p \"require('./package.json').version\") .",
@@ -74,6 +75,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/turndown": "^5.0.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.7"
   }
 }
