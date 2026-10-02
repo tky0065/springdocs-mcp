@@ -72,12 +72,12 @@ describe("MCP server over stdio", () => {
     expect(response.result.serverInfo.version).toBe(pkg.version);
   });
 
-  it("lists the 13 tools with object input schemas", async () => {
+  it("lists the 14 tools with object input schemas", async () => {
     client = new Client();
     await client.initialize("2024-11-05");
     const { result } = await client.request("tools/list", {});
 
-    expect(result.tools).toHaveLength(13);
+    expect(result.tools).toHaveLength(14);
     for (const tool of result.tools) expect(tool.inputSchema.type).toBe("object");
   });
 

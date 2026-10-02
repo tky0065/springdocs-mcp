@@ -287,6 +287,39 @@ export class ToolDefinitions {
         },
       },
       {
+        name: "get_migration_guide",
+        description: "Récupère le guide de migration ou les notes de version d'upgrade de Spring Boot pour une version cible, avec filtre par section (ex: jakarta)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            version: {
+              type: "string",
+              maxLength: 20,
+              description: "Version cible de Spring Boot (ex. '3.0', '3.4' ou '3.4.2' ; le patch est ignoré)",
+            },
+            document: {
+              type: "string",
+              enum: ["auto", "migration-guide", "release-notes"],
+              description: "Document à lire : auto (guide de migration pour les versions x.0, notes de version sinon), guide de migration ou notes de version",
+              default: "auto",
+            },
+            section: {
+              type: "string",
+              maxLength: 50,
+              description: "Mot-clé de titre : ne renvoie que les sections correspondantes (ex. 'jakarta')",
+            },
+            offset: {
+              type: "number",
+              minimum: 0,
+              maximum: 10000000,
+              description: "Décalage en caractères pour lire la suite d'une page paginée",
+              default: 0,
+            },
+          },
+          required: ["version"],
+        },
+      },
+      {
         name: "get_spring_best_practices",
         description: "Get best practices and recommendations for Spring Boot development",
         inputSchema: {

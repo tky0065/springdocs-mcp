@@ -23,7 +23,7 @@ about:
   title: Spring Documentation MCP Server
   description: >
     Comprehensive MCP server providing access to Spring Boot, Spring AI, and
-    Spring Framework documentation with 13 powerful tools. Features intelligent
+    Spring Framework documentation with 14 powerful tools. Features intelligent
     caching (50-80% faster responses, 85% cache hit rate), advanced tutorials,
     ecosystem search, version comparison, best practices, and intelligent issue
     diagnosis. Supports Spring AI documentation including ChatClient, RAG,

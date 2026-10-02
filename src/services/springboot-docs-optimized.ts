@@ -4,6 +4,7 @@ import { fetchWithRetry, FetchResult } from './http.js';
 import { turndownService, extractContent, pageMarkdown } from './markdown.js';
 import { absoluteSpringUrl, assertSafeSegment, normalizeVersion } from './url.js';
 
+import { WikiDocument, resolveWikiDocument, wikiPageName, wikiPageUrl, expectedWikiTitle, extractWikiMarkdown, selectSections } from './boot-wiki.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 
 /**
@@ -327,6 +328,51 @@ export class SpringBootDocsServiceOptimized {
       console.error(`Error fetching reference ${projectId}/${section}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Get the Spring Boot migration guide or upgrade release notes from the GitHub wiki
+   *
+   * @param version - Target version ('3.0', '3.4' or '3.4.2'; the patch is ignored)
+   * @param document - 'auto' (migration guide for x.0, release notes otherwise) or an explicit document
+   * @param section - Optional keyword; only matching headings (with sub-sections) are returned
+   * @param offset - Character offset for paginated reads
+   */
+  async getMigrationGuide(
+    version: string,
+    document: 'auto' | WikiDocument = 'auto',
+    section?: string,
+    offset = 0
+  ): Promise<string> {
+    // Resolve version and document before any cache or network access
+    const normalizedVersion = normalizeVersion(version);
+    if (!normalizedVersion) {
+      throw new Error('A target Spring Boot version is required (e.g. "3.0", "3.4" or "4.0")');
+    }
+    const resolved = resolveWikiDocument(normalizedVersion, document);
+    const keyword = section?.trim() || undefined;
+    const cacheKey = `migration:${resolved}:${normalizedVersion}`;
+
+    let entry = this.cache.get<{ markdown: string; url: string; title: string }>(cacheKey);
+    if (entry) {
+      console.error(`✅ Cache hit for migration page: ${cacheKey}`);
+    } else {
+      const url = wikiPageUrl(wikiPageName(normalizedVersion, resolved));
+      console.error(`🔍 Fetching migration page: ${url}`);
+      const response = await this.fetchWithRetry(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Spring Boot wiki page: ${response.status}`);
+      }
+      const html = await response.text();
+      const { markdown, title } = extractWikiMarkdown(html, expectedWikiTitle(normalizedVersion, resolved), url);
+      entry = { markdown, url, title };
+      // Only successful, verified pages are cached
+      this.cache.setLongTerm(cacheKey, entry);
+    }
+
+    const markdown = keyword ? selectSections(entry.markdown, keyword, entry.title) : entry.markdown;
+    const title = keyword ? `${entry.title} (section: ${keyword})` : entry.title;
+    return this.formatPage(title, markdown, entry.url, offset, 'For the complete page, visit');
   }
 
   private referenceTitle(projectId: string, section: string, subsection?: string): string {

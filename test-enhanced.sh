@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Enhanced Spring Documentation MCP Server Test Script
-# Tests all 13 tools with various scenarios
+# Tests all 14 tools with various scenarios
 
 echo "🧪 Testing Enhanced Spring Documentation MCP Server"
 echo "================================================="

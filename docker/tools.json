@@ -362,6 +362,47 @@
     ]
   },
   {
+    "name": "get_migration_guide",
+    "description": "Récupère le guide de migration ou les notes de version d'upgrade de Spring Boot pour une version cible, avec filtre par section (ex: jakarta)",
+    "arguments": [
+      {
+        "name": "version",
+        "type": "string",
+        "required": true,
+        "description": "Version cible de Spring Boot (ex. '3.0', '3.4' ou '3.4.2' ; le patch est ignoré)",
+        "maxLength": 20
+      },
+      {
+        "name": "document",
+        "type": "string",
+        "required": false,
+        "description": "Document à lire : auto (guide de migration pour les versions x.0, notes de version sinon), guide de migration ou notes de version",
+        "enum": [
+          "auto",
+          "migration-guide",
+          "release-notes"
+        ],
+        "default": "auto"
+      },
+      {
+        "name": "section",
+        "type": "string",
+        "required": false,
+        "description": "Mot-clé de titre : ne renvoie que les sections correspondantes (ex. 'jakarta')",
+        "maxLength": 50
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false,
+        "description": "Décalage en caractères pour lire la suite d'une page paginée",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 10000000
+      }
+    ]
+  },
+  {
     "name": "get_spring_best_practices",
     "description": "Get best practices and recommendations for Spring Boot development",
     "arguments": [

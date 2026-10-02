@@ -103,6 +103,10 @@ class SpringBootMCPServerAdvanced {
             result = await this.handleGetReleaseNotes(args);
             break;
 
+          case "get_migration_guide":
+            result = await this.handleGetMigrationGuide(args);
+            break;
+
           case "get_spring_best_practices":
             result = await this.handleGetBestPractices(args);
             break;
@@ -334,6 +338,21 @@ class SpringBootMCPServerAdvanced {
         {
           type: "text",
           text: notes,
+        },
+      ],
+    };
+  }
+
+  private async handleGetMigrationGuide(args: any) {
+    const { version, document = "auto", section, offset = 0 } = args;
+
+    const guide = await this.docsService.getMigrationGuide(version, document, section, offset);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: guide,
         },
       ],
     };

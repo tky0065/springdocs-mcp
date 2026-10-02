@@ -16,7 +16,7 @@ The Spring Documentation MCP Server is available as a Docker image optimized for
 - Dockerfile optimized for production use
 - Multi-stage build with Node 20 Alpine
 - Security best practices implemented
-- All 13 tools fully functional in Docker
+- All 14 tools fully functional in Docker
 
 **Docker MCP Catalog Submission** 🚧
 - Ready for submission to Docker MCP Catalog
@@ -140,7 +140,7 @@ npm run docker:tools
 2. **Validation**
    - All tests passing: `./test-docker.sh`
    - Image builds successfully
-   - All 13 tools functional
+   - All 14 tools functional
 
 3. **Documentation**
    - README.md updated
@@ -223,12 +223,12 @@ Pre-submission validation:
 
 - [ ] Docker image builds successfully
 - [ ] Image size is reasonable (~220MB)
-- [ ] All 13 tools are listed via `tools/list`
+- [ ] All 14 tools are listed via `tools/list`
 - [ ] Sample tool calls work correctly
 - [ ] Runs as non-root user (UID 1001)
 - [ ] Works with 512MB memory limit
 - [ ] `server.yaml` validates against Docker schema
-- [ ] `tools.json` is valid JSON with all 13 tools
+- [ ] `tools.json` is valid JSON with all 14 tools
 - [ ] `docker/README.md` includes Docker examples
 - [ ] Repository is clean and tagged
 - [ ] CHANGELOG.md documents Docker support

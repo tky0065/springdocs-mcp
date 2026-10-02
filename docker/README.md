@@ -68,7 +68,7 @@ docker run -i \
 
 ## Features
 
-- **13 Powerful Tools**: Search docs, get tutorials, compare versions, release notes, diagnose issues
+- **14 Powerful Tools**: Search docs, get tutorials, compare versions, release notes, diagnose issues
 - **Spring AI Support**: ChatClient, RAG, embeddings, vector stores, LLM integrations
 - **Intelligent Caching**: 50-80% faster responses with 85% cache hit rate
 - **Zero Configuration**: Works out-of-the-box with no setup required
@@ -77,13 +77,14 @@ docker run -i \
 
 ## Tools Available
 
-### Core Documentation (7 Tools)
+### Core Documentation (8 Tools)
 - `search_spring_docs` - Search Spring Boot documentation
 - `search_spring_projects` - Find Spring projects
 - `get_spring_project` - Get project details
 - `get_all_spring_guides` - List available guides
 - `get_spring_guide` - Get complete guide content
 - `get_spring_reference` - Get reference docs (Boot/AI/Framework)
+- `get_migration_guide` - Spring Boot migration guide / upgrade notes
 - `search_spring_concepts` - Explore Spring concepts
 
 ### Advanced Tools (5 Tools)

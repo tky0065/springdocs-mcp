@@ -5,7 +5,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Universal%20Compatible-brightgreen.svg)](https://modelcontextprotocol.io/)
 
-> **🚀 Enhanced v1.2.8:** 13 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
+> **🚀 Enhanced v1.2.8:** 14 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
 >
 > **🌐 Universal MCP Compatibility:** Works with Claude Code, Gemini CLI, VS Code, JetBrains IDEs, and all MCP-compatible clients!
 
@@ -22,7 +22,7 @@ This server works with **ALL MCP-compatible clients**:
     "spring-docs": {
       "command": "npx",
       "args": ["@enokdev/springdocs-mcp@latest"],
-      "description": "Spring Documentation MCP Server with 13 powerful tools"
+      "description": "Spring Documentation MCP Server with 14 powerful tools"
     }
   }
 }
@@ -87,7 +87,7 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ## ✨ Features & Tools
 
-### 📚 **Core Documentation (7 Enhanced Tools)**
+### 📚 **Core Documentation (8 Enhanced Tools)**
 | Tool | Purpose | Example Usage |
 |------|---------|---------------|
 | `search_spring_docs` | Search documentation with caching | "Search for REST API security" |
@@ -96,6 +96,7 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 | `get_all_spring_guides` | List available guides | "Show all security guides" |
 | `get_spring_guide` | Get complete guide content | "Get gs-rest-service guide" |
 | `get_spring_reference` | Reference docs for Boot/AI/Framework | "Get Spring AI chatclient reference" |
+| `get_migration_guide` | Spring Boot migration guide / upgrade notes (wiki, section filter) | "Get the Spring Boot 3.0 migration guide, jakarta section" |
 | `search_spring_concepts` | Explore Spring concepts | "Explain auto-configuration" |
 
 ### 🆕 **Advanced Tools (6)**

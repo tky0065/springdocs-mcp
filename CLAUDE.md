@@ -45,16 +45,16 @@ npm run cicd:check   # Check CI/CD configuration status
 **Server Entry Point** (`src/index.ts`):
 - `SpringBootMCPServerAdvanced` class orchestrates the entire MCP server
 - Uses MCP SDK's `Server` class with stdio transport for communication
-- Handles 13 tools split between core documentation and advanced features
+- Handles 14 tools split between core documentation and advanced features
 - All tool handlers route to either `docsService` or `advancedService`
 
 **Services Architecture**:
-- `SpringBootDocsServiceOptimized` (`src/services/springboot-docs-optimized.ts`): Handles the 7 core documentation tools (search docs, projects, guides, references, concepts)
+- `SpringBootDocsServiceOptimized` (`src/services/springboot-docs-optimized.ts`): Handles the 8 core documentation tools (search docs, projects, guides, references, concepts)
 - `AdvancedFeaturesService` (`src/services/advanced-features.ts`): Handles the 6 advanced tools (ecosystem search, tutorials, version comparison, release notes, best practices, diagnostics)
 - `CacheService` (`src/services/cache.ts`): In-memory caching with TTL (30min default, 24h for stable content)
 
 **Tool Definitions** (`src/tools/index.ts`):
-- Centralized schema definitions for all 13 MCP tools
+- Centralized schema definitions for all 14 MCP tools
 - Defines input validation, types, and descriptions for each tool
 
 ### Key Design Patterns
