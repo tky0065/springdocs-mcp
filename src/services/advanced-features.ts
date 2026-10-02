@@ -18,6 +18,9 @@ export class AdvancedFeaturesService {
 
   constructor() {
     this.cache = new CacheService();
+
+    // Cleanup cache every hour
+    setInterval(() => this.cache.cleanup(), 60 * 60 * 1000).unref();
     this.turndownService = new TurndownService({
       headingStyle: 'atx',
       codeBlockStyle: 'fenced',
@@ -40,25 +43,21 @@ export class AdvancedFeaturesService {
     };
 
     try {
-      if (scope === 'all' || scope === 'projects') {
-        results.categories.projects = await this.searchProjects(query, limit);
-      }
+      const searches: Array<[string, string, () => Promise<any[]>]> = [
+        ['projects', 'projects', () => this.searchProjects(query, limit)],
+        ['guides', 'guides', () => this.searchGuides(query, limit)],
+        ['docs', 'documentation', () => this.searchDocumentation(query, limit)],
+        ['api', 'api', () => this.searchAPI(query, limit)],
+        ['ai', 'ai', () => this.searchSpringAI(query, limit)],
+      ];
+      const selected = searches.filter(([name]) => scope === 'all' || scope === name);
 
-      if (scope === 'all' || scope === 'guides') {
-        results.categories.guides = await this.searchGuides(query, limit);
-      }
-
-      if (scope === 'all' || scope === 'docs') {
-        results.categories.documentation = await this.searchDocumentation(query, limit);
-      }
-
-      if (scope === 'all' || scope === 'api') {
-        results.categories.api = await this.searchAPI(query, limit);
-      }
-
-      if (scope === 'all' || scope === 'ai') {
-        results.categories.ai = await this.searchSpringAI(query, limit);
-      }
+      // Run the searches concurrently; a failed one yields an empty category
+      const settled = await Promise.allSettled(selected.map(([, , run]) => run()));
+      selected.forEach(([, category], index) => {
+        const outcome = settled[index];
+        results.categories[category] = outcome.status === 'fulfilled' ? outcome.value : [];
+      });
 
       results.totalResults = Object.values(results.categories)
         .reduce((total: number, category: any) => total + (category?.length || 0), 0);
