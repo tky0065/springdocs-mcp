@@ -215,26 +215,35 @@ export class AdvancedFeaturesService {
    * Compare Spring Boot versions using real release notes
    */
   async compareVersions(version1: string, version2: string, focus: string = 'all') {
-    const cacheKey = `versions:${version1}:${version2}:${focus}`;
+    const cacheKey = 'versions:' + JSON.stringify([version1, version2, focus]);
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
     try {
-      // Fetch release notes from GitHub
-      const releaseNotesUrl = `https://api.github.com/repos/spring-projects/spring-boot/releases`;
-      const response = await this.fetchWithRetry(releaseNotesUrl);
+      // Fetch release notes from GitHub, paginating until both exact tags are found
+      const MAX_PAGES = 5;
+      const matches = (r: any, version: string) =>
+        r.tag_name === version || r.tag_name === `v${version}`;
+      let release1: any;
+      let release2: any;
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch release data: ${response.status}`);
+      for (let page = 1; page <= MAX_PAGES && !(release1 && release2); page++) {
+        const releaseNotesUrl = `https://api.github.com/repos/spring-projects/spring-boot/releases?per_page=100&page=${page}`;
+        const response = await this.fetchWithRetry(releaseNotesUrl);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch release data: ${response.status}`);
+        }
+
+        const releases = await response.json();
+        if (!Array.isArray(releases) || releases.length === 0) break;
+
+        release1 = release1 ?? releases.find((r: any) => matches(r, version1));
+        release2 = release2 ?? releases.find((r: any) => matches(r, version2));
       }
 
-      const releases = await response.json();
-
-      const release1 = releases.find((r: any) => r.tag_name.includes(version1));
-      const release2 = releases.find((r: any) => r.tag_name.includes(version2));
-
       if (!release1 || !release2) {
-        return `# Version Comparison: ${version1} vs ${version2}\n\nUnable to find release information for one or both versions.\n\nAvailable versions can be found at: https://github.com/spring-projects/spring-boot/releases`;
+        return `# Version Comparison: ${version1} vs ${version2}\n\nUnable to find release information for one or both versions. Versions must match a release tag exactly, in the X.Y.Z format (e.g. 3.5.0, not 3.5).\n\nAvailable versions can be found at: https://github.com/spring-projects/spring-boot/releases`;
       }
 
       const result = `# Spring Boot Version Comparison: ${version1} vs ${version2}
@@ -243,13 +252,13 @@ export class AdvancedFeaturesService {
 **Released:** ${new Date(release1.published_at).toLocaleDateString()}
 **Release Notes:** ${release1.html_url}
 
-${release1.body.substring(0, 1000)}...
+${(release1.body ?? '').substring(0, 1000)}...
 
 ## Version ${version2}
 **Released:** ${new Date(release2.published_at).toLocaleDateString()}
 **Release Notes:** ${release2.html_url}
 
-${release2.body.substring(0, 1000)}...
+${(release2.body ?? '').substring(0, 1000)}...
 
 ## Migration Recommendations
 1. Review the full release notes at the URLs above
