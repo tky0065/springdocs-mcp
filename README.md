@@ -287,13 +287,13 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 
 ## 🔮 Roadmap
 
-### v1.3.0 (Next)
+### v1.4.0 (Next)
 - Interactive Spring Boot project generator
 - Real-time error analysis
 - Spring Initializr integration
 - Custom tutorial creation
 
-### v1.4.0 (Future)
+### v1.5.0 (Future)
 - AI-powered code suggestions
 - Performance bottleneck detection
 - Security vulnerability scanning

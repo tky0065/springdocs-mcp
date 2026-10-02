@@ -22,8 +22,8 @@ npm install
 # Compiler le projet
 npm run build
 
-# Exécuter les tests
-./test.sh
+# Exécuter les tests (build + vitest, sans réseau)
+npm test
 ```
 
 ## 📝 Structure du projet
@@ -47,7 +47,7 @@ springdocsmcp/
 ### Scripts disponibles
 - `npm run build` - Compile le TypeScript
 - `npm run dev` - Mode développement avec rechargement automatique
-- `npm run test` - Exécute les tests (ou utilisez `./test.sh`)
+- `npm test` - Compile puis exécute la suite vitest (sans accès réseau)
 - `npm run lint` - Vérifie le style de code
 
 ### Ajouter un nouvel outil
@@ -95,9 +95,9 @@ case "nouveau_outil":
 ## 🧪 Tests
 
 ### Tests automatisés
-Exécutez le script de test pour vérifier que tous les outils fonctionnent :
+Exécutez la suite de tests (build puis vitest, sans accès réseau) pour vérifier que tous les outils fonctionnent :
 ```bash
-./test.sh
+npm test
 ```
 
 ### Tests manuels
@@ -185,7 +185,7 @@ Autres solutions que vous avez envisagées.
 
 ### Checklist pour les Pull Requests
 - [ ] Le code compile sans erreur (`npm run build`)
-- [ ] Les tests passent (`./test.sh`)
+- [ ] Les tests passent (`npm test`)
 - [ ] La documentation est mise à jour si nécessaire
 - [ ] Les nouveaux outils sont documentés
 - [ ] Le code suit les standards du projet
