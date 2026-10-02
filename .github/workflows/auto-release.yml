@@ -9,6 +9,8 @@ on:
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     # 1. Checkout
@@ -28,13 +30,15 @@ jobs:
     # 3. Vérifier si le tag existe déjà
     - name: Check if tag exists
       id: tag_check
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
       run: |
-        if git rev-parse "refs/tags/${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+        if git rev-parse "refs/tags/$VERSION" >/dev/null 2>&1; then
           echo "exists=true" >> $GITHUB_OUTPUT
-          echo "Tag ${{ steps.version.outputs.version }} already exists"
+          echo "Tag $VERSION already exists"
         else
           echo "exists=false" >> $GITHUB_OUTPUT
-          echo "Tag ${{ steps.version.outputs.version }} does not exist"
+          echo "Tag $VERSION does not exist"
         fi
     
     # 4. Créer le tag et la release seulement si le tag n'existe pas
@@ -42,17 +46,18 @@ jobs:
       if: steps.tag_check.outputs.exists == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VERSION: ${{ steps.version.outputs.version }}
       run: |
         # Créer le tag
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git tag ${{ steps.version.outputs.version }}
-        git push origin ${{ steps.version.outputs.version }}
+        git tag "$VERSION"
+        git push origin "$VERSION"
         
         # Créer la release avec GitHub CLI
-        gh release create ${{ steps.version.outputs.version }} \
-          --title "Release ${{ steps.version.outputs.version }}" \
-          --notes "## 🚀 Changes in ${{ steps.version.outputs.version }}
+        gh release create "$VERSION" \
+          --title "Release $VERSION" \
+          --notes "## 🚀 Changes in $VERSION
         
         - Automatic release from package.json version bump
         - Check [CHANGELOG.md](CHANGELOG.md) for detailed changes

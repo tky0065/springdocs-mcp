@@ -102,7 +102,7 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ### Image Details
 
-- **Base Image**: node:20-alpine
+- **Base Image**: node:22-alpine
 - **Size**: ~220MB
 - **User**: mcp (UID 1001)
 - **Entry Point**: node build/index.js
