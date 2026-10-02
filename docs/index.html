@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spring Documentation MCP Server - v1.3.0 with Spring AI & Docker</title>
+    <title>Spring Documentation MCP Server — Spring Boot, Framework & AI docs for AI assistants</title>
+    <meta name="description" content="MCP server giving AI assistants real-time access to Spring Boot, Spring Framework and Spring AI documentation through 14 tools.">
+    <meta name="theme-color" content="#3473da">
+    <meta property="og:title" content="Spring Documentation MCP Server — Spring Boot, Framework & AI docs for AI assistants">
+    <meta property="og:description" content="MCP server giving AI assistants real-time access to Spring Boot, Spring Framework and Spring AI documentation through 14 tools.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Spring Documentation MCP Server — Spring Boot, Framework & AI docs for AI assistants">
+    <meta name="twitter:description" content="MCP server giving AI assistants real-time access to Spring Boot, Spring Framework and Spring AI documentation through 14 tools.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -118,7 +126,7 @@
         .badge-new { background: #dbeafe; color: #1e40af; }
         .badge-enhanced { background: #fef3c7; color: #92400e; }
         .version-badge {
-            background: #3b82f6;
+            background: #3473da;
             color: white;
             padding: 6px 14px;
             border-radius: 6px;
@@ -221,7 +229,7 @@
             flex-shrink: 0;
         }
         .tool-icon.new { background: #3b82f6; }
-        .tool-icon.enhanced { background: #f59e0b; }
+        .tool-icon.enhanced { background: #ce8509; }
         .tool-icon svg {
             width: 18px;
             height: 18px;
@@ -245,7 +253,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #3b82f6;
+            background: #3473da;
             color: white;
             padding: 12px 24px;
             text-decoration: none;
@@ -260,9 +268,9 @@
             background: #2563eb;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
-        .btn-success { background: #10b981; }
+        .btn-success { background: #0c875e; }
         .btn-success:hover {
-            background: #059669;
+            background: #0a7a54;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
 
@@ -308,7 +316,7 @@
 
         /* Update banner */
         .update-banner {
-            background: #3b82f6;
+            background: #3473da;
             color: white;
             padding: 14px 0;
             text-align: center;
@@ -355,7 +363,7 @@
             font-weight: 700;
         }
         .changelog h4 {
-            color: #3b82f6;
+            color: #3370d5;
         }
         .changelog ul { margin-left: 24px; }
         .changelog li {
@@ -373,7 +381,7 @@
             text-align: center;
         }
         footer a {
-            color: #3b82f6;
+            color: #3370d5;
             text-decoration: none;
             font-weight: 500;
         }
@@ -391,14 +399,55 @@
             .stats { grid-template-columns: repeat(2, 1fr); }
             .compatibility-icons { justify-content: center; }
         }
+        @media (max-width: 480px) {
+            .container { padding: 0 16px; }
+            header { padding: 40px 0; }
+            h1 { font-size: 1.625rem; gap: 10px; }
+            h2 { font-size: 1.5rem; }
+            .section { padding: 48px 0; }
+            .feature-grid, .stats { grid-template-columns: 1fr; gap: 16px; margin: 32px 0; }
+            .feature, .changelog { padding: 20px; }
+            .tool { padding: 16px; }
+            .code-section { padding: 16px; }
+            .code-block { padding: 14px; max-width: 100%; overflow-x: auto; }
+            .code-block code, pre { white-space: pre; }
+            pre { overflow-x: auto; max-width: 100%; }
+            .compatibility-banner { padding: 16px; }
+            .version-badge { margin-left: 0; }
+            .btn { margin: 6px 0; }
+        }
+
+        /* Accessibility */
+        .skip-link {
+            position: absolute;
+            left: 8px;
+            top: -100px;
+            z-index: 100;
+            background: #111827;
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .skip-link:focus { top: 8px; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto !important; }
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                scroll-behavior: auto !important;
+            }
+        }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <div class="update-banner">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
             <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
         </svg>
         NEW: v1.3.0 - Spring AI Documentation Support + Docker Distribution Ready!
@@ -407,18 +456,20 @@
     <header>
         <div class="container">
             <h1>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="fill: #3b82f6;">
+                <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" style="fill: #3b82f6;">
                     <path d="M12 2L15.5 8.5L22 9L16.5 14L18 22L12 18.5L6 22L7.5 14L2 9L8.5 8.5L12 2Z" fill="currentColor"/>
                 </svg>
                 Spring Documentation MCP Server
                 <span class="version-badge">v1.3.0</span>
             </h1>
             <p class="subtitle">
-                12 powerful tools with Spring AI support, intelligent caching, and Docker distribution<br>
+                14 powerful tools with Spring AI support, intelligent caching, and Docker distribution<br>
                 Universal MCP Compatible: Claude Code, Gemini CLI, VS Code, JetBrains IDEs + Docker
             </p>
         </div>
     </header>
+
+    <main id="main" tabindex="-1">
 
     <section class="section section-alt">
         <div class="container">
@@ -427,13 +478,13 @@
                 <p style="font-size: 1.125rem; color: #6b7280; max-width: 700px; margin: 0 auto; line-height: 1.7;">A comprehensive Model Context Protocol server providing intelligent access to Spring Boot, Spring AI, and Spring Framework documentation with advanced tutorials, intelligent caching, and Docker distribution support.</p>
                 <div style="margin-top: 40px;">
                     <a href="#install" class="btn btn-success">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
                         </svg>
                         Get Started Now
                     </a>
                     <a href="https://github.com/tky0065/springdocs-mcp" class="btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 0C5.37 0 0 5.37 0 12C0 17.31 3.435 21.795 8.205 23.385C8.805 23.49 9.03 23.13 9.03 22.815C9.03 22.53 9.015 21.585 9.015 20.58C6 21.135 5.22 19.845 4.98 19.17C4.845 18.825 4.26 17.76 3.75 17.475C3.33 17.25 2.73 16.695 3.735 16.68C4.68 16.665 5.355 17.55 5.58 17.91C6.66 19.725 8.385 19.215 9.075 18.9C9.18 18.12 9.495 17.595 9.84 17.295C7.17 16.995 4.38 15.96 4.38 11.37C4.38 10.065 4.845 8.985 5.61 8.145C5.49 7.845 5.07 6.615 5.73 4.965C5.73 4.965 6.735 4.65 9.03 6.195C9.99 5.925 11.01 5.79 12.03 5.79C13.05 5.79 14.07 5.925 15.03 6.195C17.325 4.635 18.33 4.965 18.33 4.965C18.99 6.615 18.57 7.845 18.45 8.145C19.215 8.985 19.68 10.05 19.68 11.37C19.68 15.975 16.875 16.995 14.205 17.295C14.64 17.67 15.015 18.39 15.015 19.515C15.015 21.12 15 22.41 15 22.815C15 23.13 15.225 23.505 15.825 23.385C20.565 21.795 24 17.295 24 12C24 5.37 18.63 0 12 0Z" fill="currentColor"/>
                         </svg>
                         View on GitHub
@@ -451,7 +502,7 @@
             <div class="stats">
                 <div class="stat">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.5 8.5H22L16.5 13L18 20L12 16L6 20L7.5 13L2 8.5H10.5L12 2Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -460,7 +511,7 @@
                 </div>
                 <div class="stat">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -469,7 +520,7 @@
                 </div>
                 <div class="stat">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -478,7 +529,7 @@
                 </div>
                 <div class="stat">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM17 12C17 14.76 14.76 17 12 17S7 14.76 7 12S9.24 7 12 7S17 9.24 17 12Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -497,7 +548,7 @@
             <div class="feature-grid">
                 <div class="feature">
                     <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L15.5 8.5L22 9L16.5 14L18 22L12 18.5L6 22L7.5 14L2 9L8.5 8.5L12 2Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -508,8 +559,8 @@
                     <p>Access all Spring projects with intelligent caching: Boot, Security, Data, Cloud, and more. Get detailed information with enhanced performance.</p>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon" style="background: #10b981;">
-                        <svg viewBox="0 0 24 24" fill="none">
+                    <div class="feature-icon" style="background: #0c875e;">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -520,8 +571,8 @@
                     <p>Complete Spring AI documentation including ChatClient, RAG, embeddings, vector stores, and LLM integrations (OpenAI, Anthropic, Azure, Ollama).</p>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon" style="background: #10b981;">
-                        <svg viewBox="0 0 24 24" fill="none">
+                    <div class="feature-icon" style="background: #0c875e;">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -533,7 +584,7 @@
                 </div>
                 <div class="feature">
                     <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -545,7 +596,7 @@
                 </div>
                 <div class="feature">
                     <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5S5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L20 21.49L21.49 20L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -557,7 +608,7 @@
                 </div>
                 <div class="feature">
                     <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M22.7 19L13.6 9.9C14.5 7.6 14 4.9 12 2.9C10 0.9 7 0.5 4.6 1.8L9 6.1L6.1 9L1.8 4.7C0.5 7.1 0.9 10.1 2.9 12.1C4.8 14 7.5 14.5 9.8 13.6L18.9 22.7C19.3 23.1 19.9 23.1 20.3 22.7L22.6 20.4C23.1 20 23.1 19.3 22.7 19Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -569,7 +620,7 @@
                 </div>
                 <div class="feature">
                     <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -581,7 +632,7 @@
                 </div>
                 <div class="feature">
                     <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M9 12L11 14L15 10M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                         </svg>
                     </div>
@@ -603,7 +654,7 @@
 
             <div class="compatibility-banner">
                 <h3 style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 700;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
                         <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
                     </svg>
                     Universal MCP Compatibility
@@ -612,31 +663,31 @@
 
                 <div class="compatibility-icons">
                     <div class="compatibility-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
                         </svg>
                         Claude Code
                     </div>
                     <div class="compatibility-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
                         </svg>
                         Gemini CLI
                     </div>
                     <div class="compatibility-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M9.4 16.6L4.8 12L6.2 10.6L9.4 13.8L17.8 5.4L19.2 6.8L9.4 16.6Z" fill="currentColor"/>
                         </svg>
                         VS Code MCP
                     </div>
                     <div class="compatibility-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
                         </svg>
                         JetBrains IDEs
                     </div>
                     <div class="compatibility-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20Z" fill="currentColor"/>
                         </svg>
                         Custom APIs
@@ -646,7 +697,7 @@
 
             <div class="code-section">
                 <h3 style="color: #111827; margin-bottom: 20px; font-size: 1.25rem; font-weight: 600;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
                         <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/>
                     </svg>
                     Universal Configuration (Works with ANY MCP Client)
@@ -665,7 +716,7 @@ npx @enokdev/springdocs-mcp@latest</code>
     "spring-docs": {
       "command": "npx",
       "args": ["@enokdev/springdocs-mcp@latest"],
-      "description": "Spring Documentation MCP Server with 12 powerful tools"
+      "description": "Spring Documentation MCP Server with 14 powerful tools"
     }
   }
 }</code>
@@ -699,7 +750,7 @@ npx @enokdev/springdocs-mcp@latest</code>
 
             <div class="code-section">
                 <h3 style="color: #111827; margin-bottom: 20px; font-size: 1.25rem; font-weight: 600;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
                         <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
                     </svg>
                     Global Installation Option
@@ -721,7 +772,7 @@ npx @enokdev/springdocs-mcp@latest</code>
 
             <div class="code-section">
                 <h3 style="color: #111827; margin-bottom: 20px; font-size: 1.25rem; font-weight: 600;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
                         <path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20Z" fill="currentColor"/>
                     </svg>
                     Docker Distribution (Coming Soon)
@@ -751,7 +802,7 @@ services:
 
             <div class="code-section">
                 <h3 style="color: #111827; margin-bottom: 20px; font-size: 1.25rem; font-weight: 600;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: inline; margin-right: 8px;">
                         <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/>
                     </svg>
                     Performance Optimization
@@ -776,21 +827,21 @@ services:
     <section class="section section-alt">
         <div class="container">
             <div style="text-align: center; margin-bottom: 60px;">
-                <h2 style="margin-bottom: 16px;">All 12 Available Tools</h2>
+                <h2 style="margin-bottom: 16px;">All 14 Available Tools</h2>
             </div>
 
             <h3 style="color: #3b82f6; margin: 40px 0 20px 0; font-size: 1.5rem; font-weight: 700;
                         display: flex; align-items: center; gap: 12px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2L15.5 8.5L22 9L16.5 14L18 22L12 18.5L6 22L7.5 14L2 9L8.5 8.5L12 2Z" fill="currentColor"/>
                 </svg>
-                Enhanced Original Tools (7)
+                Enhanced Original Tools (8)
             </h3>
 
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5S5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L20 21.49L21.49 20L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -804,7 +855,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L15.5 8.5L22 9L16.5 14L18 22L12 18.5L6 22L7.5 14L2 9L8.5 8.5L12 2Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -818,7 +869,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -832,7 +883,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -846,7 +897,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM16 11H13V18H16V11ZM12 11H9V18H12V11Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -860,7 +911,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -874,7 +925,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon enhanced">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -885,18 +936,32 @@ services:
                 <p>Explore Spring Boot concepts with extended database and better keyword matching.</p>
             </div>
 
-            <h3 style="color: #10b981; margin: 36px 0 18px 0; font-size: 1.25rem; font-weight: 600;
+            <div class="tool">
+                <div class="tool-header">
+                    <div class="tool-icon enhanced">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>get_migration_guide <span class="badge badge-enhanced">Enhanced</span></h3>
+                    </div>
+                </div>
+                <p>Get the Spring Boot migration guide or upgrade release notes for a target version, optionally filtered by section (e.g. jakarta).</p>
+            </div>
+
+            <h3 style="color: #0b835c; margin: 36px 0 18px 0; font-size: 1.25rem; font-weight: 600;
                         display: flex; align-items: center; gap: 12px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
                 </svg>
-                Advanced New Tools (5)
+                Advanced New Tools (6)
             </h3>
 
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon new">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -910,7 +975,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon new">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -924,7 +989,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon new">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -938,7 +1003,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon new">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M9 12L11 14L15 10M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                         </svg>
                     </div>
@@ -952,7 +1017,7 @@ services:
             <div class="tool">
                 <div class="tool-header">
                     <div class="tool-icon new">
-                        <svg viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                             <path d="M22.7 19L13.6 9.9C14.5 7.6 14 4.9 12 2.9C10 0.9 7 0.5 4.6 1.8L9 6.1L6.1 9L1.8 4.7C0.5 7.1 0.9 10.1 2.9 12.1C4.8 14 7.5 14.5 9.8 13.6L18.9 22.7C19.3 23.1 19.9 23.1 20.3 22.7L22.6 20.4C23.1 20 23.1 19.3 22.7 19Z" fill="currentColor"/>
                         </svg>
                     </div>
@@ -961,6 +1026,20 @@ services:
                     </div>
                 </div>
                 <p>Intelligent diagnosis of common Spring Boot issues with automated solutions, troubleshooting steps, and prevention strategies.</p>
+            </div>
+
+            <div class="tool">
+                <div class="tool-header">
+                    <div class="tool-icon new">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>get_release_notes <span class="badge badge-new">New</span></h3>
+                    </div>
+                </div>
+                <p>Fetch GitHub release notes for a Spring project (a specific version or the latest), filtered on breaking changes, new features or deprecations.</p>
             </div>
         </div>
     </section>
@@ -976,7 +1055,7 @@ services:
                 <div style="display: grid; gap: 12px;">
                     <div style="background: white; padding: 16px 20px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 14px;">
                         <div style="width: 32px; height: 32px; background: #eff6ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                                 <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5S5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L20 21.49L21.49 20L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14Z" fill="#3b82f6"/>
                             </svg>
                         </div>
@@ -988,7 +1067,7 @@ services:
 
                     <div style="background: white; padding: 16px 20px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 14px;">
                         <div style="width: 32px; height: 32px; background: #eff6ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 19L6 22L8 14L2 9L10.91 8.26L12 2Z" fill="#3b82f6"/>
                             </svg>
                         </div>
@@ -1000,7 +1079,7 @@ services:
 
                     <div style="background: white; padding: 16px 20px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 14px;">
                         <div style="width: 32px; height: 32px; background: #eff6ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                                 <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9Z" fill="#3b82f6"/>
                             </svg>
                         </div>
@@ -1012,7 +1091,7 @@ services:
 
                     <div style="background: white; padding: 16px 20px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 14px;">
                         <div style="width: 32px; height: 32px; background: #eff6ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="#3b82f6"/>
                             </svg>
                         </div>
@@ -1024,7 +1103,7 @@ services:
 
                     <div style="background: white; padding: 16px 20px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 14px;">
                         <div style="width: 32px; height: 32px; background: #eff6ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                                 <path d="M22.7 19L13.6 9.9C14.5 7.6 14 4.9 12 2.9C10 0.9 7 0.5 4.6 1.8L9 6.1L6.1 9L1.8 4.7C0.5 7.1 0.9 10.1 2.9 12.1C4.8 14 7.5 14.5 9.8 13.6L18.9 22.7C19.3 23.1 19.9 23.1 20.3 22.7L22.6 20.4C23.1 20 23.1 19.3 22.7 19Z" fill="#3b82f6"/>
                             </svg>
                         </div>
@@ -1101,19 +1180,19 @@ services:
                 </p>
                 <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
                     <a href="#install" class="btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L15.5 8.5L22 9L16.5 14L18 22L12 18.5L6 22L7.5 14L2 9L8.5 8.5L12 2Z" fill="currentColor"/>
                         </svg>
                         Quick Installation
                     </a>
                     <a href="https://www.npmjs.com/package/@enokdev/springdocs-mcp" style="display: inline-flex; align-items: center; gap: 8px; color: #6b7280; background: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 0.9375rem; transition: all 0.2s ease; border: 1px solid #e5e7eb;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C17.52 2 22 6.48 22 12C2 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2Z" fill="currentColor"/>
                         </svg>
                         View on NPM
                     </a>
                     <a href="https://github.com/tky0065/springdocs-mcp" style="display: inline-flex; align-items: center; gap: 8px; color: #6b7280; background: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 0.9375rem; transition: all 0.2s ease; border: 1px solid #e5e7eb;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M12 0C5.37 0 0 5.37 0 12C0 17.31 3.435 21.795 8.205 23.385C8.805 23.49 9.03 23.13 9.03 22.815C9.03 22.53 9.015 21.585 9.015 20.58C6 21.135 5.22 19.845 4.98 19.17C4.845 18.825 4.26 17.76 3.75 17.475C3.33 17.25 2.73 16.695 3.735 16.68C4.68 16.665 5.355 17.55 5.58 17.91C6.66 19.725 8.385 19.215 9.075 18.9C9.18 18.12 9.495 17.595 9.84 17.295C7.17 16.995 4.38 15.96 4.38 11.37C4.38 10.065 4.845 8.985 5.61 8.145C5.49 7.845 5.07 6.615 5.73 4.965C5.73 4.965 6.735 4.65 9.03 6.195C9.99 5.925 11.01 5.79 12.03 5.79C13.05 5.79 14.07 5.925 15.03 6.195C17.325 4.635 18.33 4.965 18.33 4.965C18.99 6.615 18.57 7.845 18.45 8.145C19.215 8.985 19.68 10.05 19.68 11.37C19.68 15.975 16.875 16.995 14.205 17.295C14.64 17.67 15.015 18.39 15.015 19.515C15.015 21.12 15 22.41 15 22.815C15 23.13 15.225 23.505 15.825 23.385C20.565 21.795 24 17.295 24 12C24 5.37 18.63 0 12 0Z" fill="currentColor"/>
                         </svg>
                         GitHub
@@ -1122,6 +1201,8 @@ services:
             </div>
         </div>
     </section>
+
+    </main>
 
     <footer>
         <div class="container">
@@ -1136,8 +1217,8 @@ services:
                     <a href="https://github.com/tky0065/springdocs-mcp/issues" style="color: #6b7280; text-decoration: none;">Report Issue</a>
                     <a href="https://github.com/tky0065/springdocs-mcp#readme" style="color: #6b7280; text-decoration: none;">Documentation</a>
                 </div>
-                <p style="color: #9ca3af; margin: 0; font-size: 0.8125rem;">
-                    &copy; 2025 <a href="https://github.com/tky0065" style="color: #9ca3af; text-decoration: none;">EnokDev</a> · MIT License
+                <p style="color: #6f747c; margin: 0; font-size: 0.8125rem;">
+                    &copy; 2025 <a href="https://github.com/tky0065" style="color: #6f747c;text-decoration: none;">EnokDev</a> · MIT License
                 </p>
             </div>
         </div>
