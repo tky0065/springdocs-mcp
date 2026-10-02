@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema, CallToolRequest, ListToolsRequest } from "@modelcontextprotocol/sdk/types.js";
 import { SpringBootDocsServiceOptimized } from "./services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "./services/advanced-features.js";
+import { CacheService } from "./services/cache.js";
 import { ToolDefinitions } from "./tools/index.js";
 import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
@@ -30,8 +31,9 @@ class SpringBootMCPServerAdvanced {
       }
     );
 
-    this.docsService = new SpringBootDocsServiceOptimized();
-    this.advancedService = new AdvancedFeaturesService();
+    const cache = new CacheService();
+    this.docsService = new SpringBootDocsServiceOptimized(undefined, cache);
+    this.advancedService = new AdvancedFeaturesService(cache);
     this.setupToolHandlers();
   }
 

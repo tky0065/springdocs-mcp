@@ -7,6 +7,11 @@ export class CacheService {
   private readonly LONG_TTL = 24 * 60 * 60 * 1000; // 24 hours for stable content
   private readonly MAX_ENTRIES = 500;
 
+  constructor() {
+    // Drop expired entries every hour; unref so the timer never keeps the process alive
+    setInterval(() => this.cleanup(), 60 * 60 * 1000).unref();
+  }
+
   /**
    * Get cached data if available and not expired
    */

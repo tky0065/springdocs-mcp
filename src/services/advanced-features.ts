@@ -15,11 +15,8 @@ export class AdvancedFeaturesService {
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
 
-  constructor() {
-    this.cache = new CacheService();
-
-    // Cleanup cache every hour
-    setInterval(() => this.cache.cleanup(), 60 * 60 * 1000).unref();
+  constructor(cache: CacheService = new CacheService()) {
+    this.cache = cache;
   }
 
   /**

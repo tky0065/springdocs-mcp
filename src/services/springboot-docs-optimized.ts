@@ -19,12 +19,9 @@ export class SpringBootDocsServiceOptimized {
   private projectsConfig: SpringProjectsConfig;
   private cache: CacheService;
 
-  constructor(projectsConfig: SpringProjectsConfig = springProjectsConfig) {
+  constructor(projectsConfig: SpringProjectsConfig = springProjectsConfig, cache: CacheService = new CacheService()) {
     this.projectsConfig = projectsConfig;
-    this.cache = new CacheService();
-
-    // Cleanup cache every hour
-    setInterval(() => this.cache.cleanup(), 60 * 60 * 1000);
+    this.cache = cache;
   }
 
   /**
