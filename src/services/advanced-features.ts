@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import TurndownService from 'turndown';
@@ -317,7 +318,10 @@ For complete documentation, visit: ${docUrl}`;
    * Diagnose issues using Spring Boot documentation
    */
   async diagnoseIssues(errorMessage: string, component?: string, stackTrace?: string) {
-    const cacheKey = `diagnosis:${errorMessage.substring(0, 50)}`;
+    const digest = createHash('sha256')
+      .update(JSON.stringify([errorMessage, component ?? '', stackTrace ?? '']))
+      .digest('hex');
+    const cacheKey = `diagnosis:${digest}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
