@@ -421,13 +421,6 @@ export class SpringProjectsConfig {
   }
 
   /**
-   * Check if a project is supported
-   */
-  hasProject(projectId: string): boolean {
-    return this.projects.has(projectId);
-  }
-
-  /**
    * Get all supported project IDs
    */
   getAllProjectIds(): string[] {
@@ -472,43 +465,6 @@ export class SpringProjectsConfig {
       throw new Error(`Invalid configuration for project "${projectId}": versionInsertAfter is not a prefix of ${url}`);
     }
     return `${prefix}${normalizedVersion}/${url.slice(prefix.length)}`;
-  }
-
-  /**
-   * Build API documentation URL for a project
-   *
-   * @param projectId - Project identifier
-   * @param version - Optional version override (defaults to latest)
-   * @returns Complete URL to API documentation
-   */
-  buildApiUrl(projectId: string, version?: string): string {
-    const project = this.getProject(projectId);
-
-    if (!project.apiPath) {
-      throw new Error(`Project "${projectId}" does not have API documentation configured`);
-    }
-
-    const targetVersion = version || project.latestVersion;
-
-    if (project.hasVersionedDocs) {
-      return `${project.baseDocUrl}/${targetVersion}${project.apiPath}/`;
-    } else {
-      return `${project.baseDocUrl}${project.apiPath}/`;
-    }
-  }
-
-  /**
-   * Find projects by scope/keyword
-   * Useful for routing queries to appropriate projects
-   *
-   * @param scope - Search scope keyword (e.g., "ai", "boot", "security")
-   * @returns Array of matching project configurations
-   */
-  findProjectsByScope(scope: string): SpringProjectConfig[] {
-    const scopeLower = scope.toLowerCase();
-    return this.getAllProjects().filter(project =>
-      project.scopes.some(s => s.toLowerCase().includes(scopeLower))
-    );
   }
 
   /**
