@@ -5,14 +5,20 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
@@ -24,38 +30,11 @@ jobs:
         run: npm test
         
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            ## Changes in this release
-            
-            - Check the [CHANGELOG.md](CHANGELOG.md) for details
-            
-            ## Installation
-            
-            ```bash
-            npm install -g @springdocs/mcp-server
-            ```
-            
-            ## Configuration for Claude Desktop
-            
-            ```json
-            {
-              "mcpServers": {
-                "spring-docs": {
-                  "command": "springdocs-mcp"
-                }
-              }
-            }
-            ```
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
