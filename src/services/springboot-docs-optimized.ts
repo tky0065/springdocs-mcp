@@ -495,14 +495,15 @@ export class SpringBootDocsServiceOptimized {
 
     // A failing source must not be hidden nor cached: fail if all fail, otherwise return partial results uncached
     const failures: string[] = [];
-    for (const [name, run] of sources) {
-      try {
-        results.push(...await run());
-      } catch (error) {
-        failures.push(name);
-        console.error(`Documentation source "${name}" failed:`, error instanceof Error ? error.message : error);
+    const settled = await Promise.allSettled(sources.map(([, run]) => run()));
+    settled.forEach((outcome, index) => {
+      if (outcome.status === 'fulfilled') {
+        results.push(...outcome.value);
+      } else {
+        failures.push(sources[index][0]);
+        console.error(`Documentation source "${sources[index][0]}" failed:`, outcome.reason instanceof Error ? outcome.reason.message : outcome.reason);
       }
-    }
+    });
 
     if (sources.length > 0 && failures.length === sources.length) {
       throw new Error(`Unable to search documentation: all sources failed (${failures.join(', ')})`);
