@@ -79,15 +79,15 @@ export class SpringBootDocsServiceOptimized {
   }
 
   /**
-   * Get Spring project details - REAL API ONLY
+   * Get the full markdown of a Spring project page (cached) - REAL API ONLY
    */
-  async getSpringProject(projectName: string, offset = 0): Promise<string> {
+  async getProjectMarkdown(projectName: string): Promise<{ markdown: string; url: string }> {
     const slug = assertSafeSegment(projectName.toLowerCase().replace(/\s+/g, '-'), 'project name');
     const cacheKey = `project:${projectName}`;
     const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for project: ${projectName}`);
-      return this.formatPage(projectName, cached.markdown, cached.url, offset, 'For complete project info, visit');
+      return cached;
     }
 
     console.error(`🔍 Fetching project: ${projectName}`);
@@ -109,15 +109,23 @@ export class SpringBootDocsServiceOptimized {
       }
 
       const markdown = turndownService.turndown(content.html() || '');
-      const projectUrl = `${this.springProjectsUrl}/${slug}`;
 
       // Cache the full markdown so later pages need no new fetch
-      this.cache.setLongTerm(cacheKey, { markdown, url: projectUrl });
-      return this.formatPage(projectName, markdown, projectUrl, offset, 'For complete project info, visit');
+      const entry = { markdown, url };
+      this.cache.setLongTerm(cacheKey, entry);
+      return entry;
     } catch (error) {
       console.error(`Error fetching project ${projectName}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Get Spring project details - REAL API ONLY
+   */
+  async getSpringProject(projectName: string, offset = 0): Promise<string> {
+    const { markdown, url } = await this.getProjectMarkdown(projectName);
+    return this.formatPage(projectName, markdown, url, offset, 'For complete project info, visit');
   }
 
   /**
