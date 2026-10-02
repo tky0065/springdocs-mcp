@@ -249,6 +249,10 @@ export class SpringBootDocsServiceOptimized {
    * Get specific guide content - REAL API ONLY
    */
   async getGuide(guideId: string, detailLevel: string = 'medium'): Promise<string> {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(guideId) || guideId.includes('..')) {
+      throw new Error(`Invalid guideId "${guideId}": only letters, digits, '.', '_' and '-' are allowed`);
+    }
+    const safeId = encodeURIComponent(guideId);
     const cacheKey = `guide:${guideId}:${detailLevel}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
@@ -260,9 +264,9 @@ export class SpringBootDocsServiceOptimized {
 
     // Try multiple sources for guides
     const sources = [
-      { name: 'Spring.io', url: `${this.springGuideUrl}/${guideId}/` },
-      { name: 'GitHub', url: `https://github.com/spring-guides/${guideId}` },
-      { name: 'Spring.io alt', url: `${this.springGuideUrl}/gs/${guideId}/` }
+      { name: 'Spring.io', url: `${this.springGuideUrl}/${safeId}/` },
+      { name: 'GitHub', url: `https://github.com/spring-guides/${safeId}` },
+      { name: 'Spring.io alt', url: `${this.springGuideUrl}/gs/${safeId}/` }
     ];
 
     let content = '';
