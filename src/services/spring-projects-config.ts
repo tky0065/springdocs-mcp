@@ -14,6 +14,12 @@ export interface SpringProjectConfig {
   /** Unique project identifier (e.g., "boot", "ai", "security") */
   id: string;
 
+  /** GitHub repository (owner/name) hosting the releases */
+  githubRepo?: string;
+
+  /** Prefix of the release tag, e.g. "v" for v3.5.0 */
+  githubTagPrefix?: string;
+
   /** Human-readable display name (e.g., "Spring Boot", "Spring AI") */
   displayName: string;
 
@@ -70,6 +76,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'boot',
     {
       id: 'boot',
+      githubRepo: 'spring-projects/spring-boot',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-boot/',
       displayName: 'Spring Boot',
       baseDocUrl: 'https://docs.spring.io/spring-boot/docs',
@@ -104,6 +112,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'ai',
     {
       id: 'ai',
+      githubRepo: 'spring-projects/spring-ai',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-ai/reference/',
       displayName: 'Spring AI',
       baseDocUrl: 'https://docs.spring.io/spring-ai/reference/api', // Sections are under /api/
@@ -144,6 +154,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'framework',
     {
       id: 'framework',
+      githubRepo: 'spring-projects/spring-framework',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-framework/reference/',
       displayName: 'Spring Framework',
       baseDocUrl: 'https://docs.spring.io/spring-framework/docs',
@@ -169,6 +181,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'security',
     {
       id: 'security',
+      githubRepo: 'spring-projects/spring-security',
+      githubTagPrefix: '',
       versionInsertAfter: 'https://docs.spring.io/spring-security/reference/',
       displayName: 'Spring Security',
       baseDocUrl: 'https://docs.spring.io/spring-security',
@@ -205,6 +219,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'data-jpa',
     {
       id: 'data-jpa',
+      githubRepo: 'spring-projects/spring-data-jpa',
+      githubTagPrefix: '',
       versionInsertAfter: 'https://docs.spring.io/spring-data/jpa/reference/',
       displayName: 'Spring Data JPA',
       baseDocUrl: 'https://docs.spring.io/spring-data/jpa',
@@ -225,6 +241,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'batch',
     {
       id: 'batch',
+      githubRepo: 'spring-projects/spring-batch',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-batch/reference/',
       displayName: 'Spring Batch',
       baseDocUrl: 'https://docs.spring.io/spring-batch',
@@ -253,6 +271,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'integration',
     {
       id: 'integration',
+      githubRepo: 'spring-projects/spring-integration',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-integration/reference/',
       displayName: 'Spring Integration',
       baseDocUrl: 'https://docs.spring.io/spring-integration',
@@ -282,6 +302,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'kafka',
     {
       id: 'kafka',
+      githubRepo: 'spring-projects/spring-kafka',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-kafka/reference/',
       displayName: 'Spring for Apache Kafka',
       baseDocUrl: 'https://docs.spring.io/spring-kafka',
@@ -305,6 +327,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'modulith',
     {
       id: 'modulith',
+      githubRepo: 'spring-projects/spring-modulith',
+      githubTagPrefix: '',
       versionInsertAfter: 'https://docs.spring.io/spring-modulith/reference/',
       displayName: 'Spring Modulith',
       baseDocUrl: 'https://docs.spring.io/spring-modulith',
@@ -327,6 +351,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'cloud-gateway',
     {
       id: 'cloud-gateway',
+      githubRepo: 'spring-cloud/spring-cloud-gateway',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-cloud-gateway/reference/',
       displayName: 'Spring Cloud Gateway',
       baseDocUrl: 'https://docs.spring.io/spring-cloud-gateway',
@@ -346,6 +372,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
     'cloud-config',
     {
       id: 'cloud-config',
+      githubRepo: 'spring-cloud/spring-cloud-config',
+      githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-cloud-config/reference/',
       displayName: 'Spring Cloud Config',
       baseDocUrl: 'https://docs.spring.io/spring-cloud-config',

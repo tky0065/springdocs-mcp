@@ -52,4 +52,22 @@ describe("registre de projets (#32)", () => {
   it("un registre construit avec un Map vide ne connaît aucun projet", () => {
     expect(() => new SpringProjectsConfig(new Map()).getProject("boot")).toThrow(/Unknown Spring project/);
   });
+
+  it.each([
+    ["boot", "spring-projects/spring-boot", "v"],
+    ["ai", "spring-projects/spring-ai", "v"],
+    ["framework", "spring-projects/spring-framework", "v"],
+    ["security", "spring-projects/spring-security", ""],
+    ["data-jpa", "spring-projects/spring-data-jpa", ""],
+    ["batch", "spring-projects/spring-batch", "v"],
+    ["integration", "spring-projects/spring-integration", "v"],
+    ["kafka", "spring-projects/spring-kafka", "v"],
+    ["modulith", "spring-projects/spring-modulith", ""],
+    ["cloud-gateway", "spring-cloud/spring-cloud-gateway", "v"],
+    ["cloud-config", "spring-cloud/spring-cloud-config", "v"],
+  ])("%s : repo GitHub %s et préfixe de tag %j (#33)", (id, repo, prefix) => {
+    const project = springProjectsConfig.getProject(id);
+    expect(project.githubRepo).toBe(repo);
+    expect(project.githubTagPrefix).toBe(prefix);
+  });
 });
