@@ -6,6 +6,7 @@ import fetch from "node-fetch";
 import { SpringBootDocsServiceOptimized } from "../src/services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "../src/services/advanced-features.js";
 import { fakeResponse, settle } from "./helpers.js";
+import { MAX_RESPONSE_BYTES } from "../src/services/http.js";
 
 const mockedFetch = vi.mocked(fetch) as unknown as ReturnType<typeof vi.fn>;
 const URL_UNDER_TEST = "https://example.test/page";
@@ -140,5 +141,56 @@ describe.each([
 
     expect(!outcome.ok && (outcome.error as Error).message).toBe("ECONNRESET");
     expect(mockedFetch).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("plafond de taille des réponses (#21)", () => {
+  const call = () => (new AdvancedFeaturesService() as any).fetchWithRetry(URL_UNDER_TEST);
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockedFetch.mockReset();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it("passe le plafond à node-fetch via l'option size", async () => {
+    mockedFetch.mockResolvedValue(fakeResponse(200, "ok"));
+
+    await settle(call());
+
+    expect(mockedFetch).toHaveBeenCalledWith(URL_UNDER_TEST, expect.objectContaining({ size: MAX_RESPONSE_BYTES }));
+  });
+
+  it("rejette sans retry quand la lecture dépasse le plafond (max-size)", async () => {
+    const tooBig = { ...fakeResponse(200), text: async () => { throw Object.assign(new Error("over"), { type: "max-size" }); } };
+    mockedFetch.mockResolvedValue(tooBig);
+
+    const outcome = await settle(call());
+
+    expect(!outcome.ok && (outcome.error as Error).message).toBe(`Response from ${URL_UNDER_TEST} exceeds the 5 MiB limit`);
+    expect(mockedFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejette sans lire le corps quand content-length dépasse le plafond", async () => {
+    const text = vi.fn(async () => "x");
+    mockedFetch.mockResolvedValue({ ...fakeResponse(200, "x", { "content-length": String(MAX_RESPONSE_BYTES + 1) }), text });
+
+    const outcome = await settle(call());
+
+    expect(!outcome.ok && (outcome.error as Error).message).toMatch(/exceeds the 5 MiB limit/);
+    expect(text).not.toHaveBeenCalled();
+    expect(mockedFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignore un content-length non numérique", async () => {
+    mockedFetch.mockResolvedValue(fakeResponse(200, "ok", { "content-length": "abc" }));
+
+    const outcome = await settle(call());
+
+    expect(outcome.ok && await outcome.value.text()).toBe("ok");
   });
 });
