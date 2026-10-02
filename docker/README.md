@@ -97,6 +97,11 @@ docker run -i \
 - `spring_cache_stats` - Cache statistics and optional purge
 - `get_spring_initializr` - Spring Initializr options and dependencies (start.spring.io)
 
+## Prompts
+
+- `migrate-boot-version` (`to_version`, optional `from_version`) - Spring Boot upgrade plan using the migration and release notes tools
+- `explain-error` (`error_message`, optional `stack_trace`) - Spring error explanation using the diagnosis and reference tools
+
 ## Example Usage
 
 ```bash

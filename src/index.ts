@@ -2,7 +2,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, CallToolRequest, ListToolsRequest } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ListPromptsRequestSchema, GetPromptRequestSchema, CallToolRequest, ListToolsRequest } from "@modelcontextprotocol/sdk/types.js";
 import { SpringBootDocsServiceOptimized } from "./services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "./services/advanced-features.js";
 import { CacheService } from "./services/cache.js";
@@ -10,6 +10,7 @@ import { InitializrService } from "./services/initializr.js";
 import { ToolDefinitions } from "./tools/index.js";
 import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
+import { listPrompts, getPrompt } from "./prompts.js";
 
 /**
  * Enhanced Spring Documentation MCP Server with advanced features and optimizations
@@ -30,6 +31,7 @@ class SpringBootMCPServerAdvanced {
       {
         capabilities: {
           tools: {},
+          prompts: {},
         },
       }
     );
@@ -39,6 +41,18 @@ class SpringBootMCPServerAdvanced {
     this.advancedService = new AdvancedFeaturesService(this.cache);
     this.initializrService = new InitializrService(this.cache);
     this.setupToolHandlers();
+    this.setupPromptHandlers();
+  }
+
+  private setupPromptHandlers() {
+    this.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+      prompts: listPrompts(),
+    }));
+
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
+      return getPrompt(name, args);
+    });
   }
 
   private setupToolHandlers() {

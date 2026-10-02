@@ -93,6 +93,11 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ---
 
+### 💬 **Prompts**
+
+- `migrate-boot-version` (`to_version`, optional `from_version`): plans a Spring Boot upgrade by chaining `get_migration_guide`, `get_release_notes` and `get_spring_reference`
+- `explain-error` (`error_message`, optional `stack_trace`): explains a Spring error by chaining `diagnose_spring_issues` and `get_spring_reference`
+
 ## 📖 Usage Examples
 
 ### Basic Search

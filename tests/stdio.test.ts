@@ -89,6 +89,31 @@ describe("MCP server over stdio", () => {
     expect(result.content[0].text).toContain("Entries: 0 / 500");
   });
 
+  it("annonce la capacité prompts et liste les 2 prompts", async () => {
+    client = new Client();
+    const init = await client.initialize("2024-11-05");
+    expect(init.result.capabilities.prompts).toBeDefined();
+    const { result } = await client.request("prompts/list", {});
+    expect(result.prompts.map((p: any) => p.name)).toEqual(["migrate-boot-version", "explain-error"]);
+  });
+
+  it("prompts/get renvoie un message user sans réseau", async () => {
+    client = new Client();
+    await client.initialize("2024-11-05");
+    const { result } = await client.request("prompts/get", { name: "migrate-boot-version", arguments: { to_version: "3.0" } });
+    expect(result.messages[0].role).toBe("user");
+    expect(result.messages[0].content.text).toContain("get_migration_guide");
+  });
+
+  it("prompts/get rejette un prompt inconnu et un argument invalide", async () => {
+    client = new Client();
+    await client.initialize("2024-11-05");
+    const unknown = await client.request("prompts/get", { name: "nope" });
+    expect(unknown.error?.code).toBe(-32602);
+    const bad = await client.request("prompts/get", { name: "migrate-boot-version", arguments: { to_version: "../x" } });
+    expect(bad.error?.code).toBe(-32602);
+  });
+
   it("reports invalid tool arguments as isError", async () => {
     client = new Client();
     await client.initialize("2024-11-05");
