@@ -97,6 +97,11 @@ docker run -i \
 - `spring_cache_stats` - Cache statistics and optional purge
 - `get_spring_initializr` - Spring Initializr options and dependencies (start.spring.io)
 
+## Resources
+
+- `spring://project/<slug>` - Spring project page as complete markdown (the 11 registry projects are listed, any spring.io project works)
+- `spring://guide/<id>` - Spring getting-started guide as complete markdown
+
 ## Prompts
 
 - `migrate-boot-version` (`to_version`, optional `from_version`) - Spring Boot upgrade plan using the migration and release notes tools

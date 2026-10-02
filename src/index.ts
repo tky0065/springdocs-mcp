@@ -2,7 +2,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, ListPromptsRequestSchema, GetPromptRequestSchema, CallToolRequest, ListToolsRequest } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ListPromptsRequestSchema, GetPromptRequestSchema, ListResourcesRequestSchema, ListResourceTemplatesRequestSchema, ReadResourceRequestSchema, CallToolRequest, ListToolsRequest } from "@modelcontextprotocol/sdk/types.js";
 import { SpringBootDocsServiceOptimized } from "./services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "./services/advanced-features.js";
 import { CacheService } from "./services/cache.js";
@@ -11,6 +11,7 @@ import { ToolDefinitions } from "./tools/index.js";
 import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
 import { listPrompts, getPrompt } from "./prompts.js";
+import { ResourcesService } from "./resources.js";
 
 /**
  * Enhanced Spring Documentation MCP Server with advanced features and optimizations
@@ -21,6 +22,7 @@ class SpringBootMCPServerAdvanced {
   private advancedService: AdvancedFeaturesService;
   private cache: CacheService;
   private initializrService: InitializrService;
+  private resourcesService: ResourcesService;
 
   constructor() {
     this.server = new Server(
@@ -32,16 +34,33 @@ class SpringBootMCPServerAdvanced {
         capabilities: {
           tools: {},
           prompts: {},
+          resources: {},
         },
       }
     );
 
     this.cache = new CacheService();
     this.docsService = new SpringBootDocsServiceOptimized(undefined, this.cache);
+    this.resourcesService = new ResourcesService(this.docsService);
     this.advancedService = new AdvancedFeaturesService(this.cache);
     this.initializrService = new InitializrService(this.cache);
     this.setupToolHandlers();
     this.setupPromptHandlers();
+    this.setupResourceHandlers();
+  }
+
+  private setupResourceHandlers() {
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+      resources: this.resourcesService.listResources(),
+    }));
+
+    this.server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+      resourceTemplates: this.resourcesService.listTemplates(),
+    }));
+
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      return this.resourcesService.readResource(request.params.uri);
+    });
   }
 
   private setupPromptHandlers() {

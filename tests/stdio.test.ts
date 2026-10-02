@@ -114,6 +114,24 @@ describe("MCP server over stdio", () => {
     expect(bad.error?.code).toBe(-32602);
   });
 
+  it("annonce la capacité resources et liste projets et templates", async () => {
+    client = new Client();
+    const init = await client.initialize("2024-11-05");
+    expect(init.result.capabilities.resources).toBeDefined();
+    const list = await client.request("resources/list", {});
+    expect(list.result.resources).toHaveLength(11);
+    const templates = await client.request("resources/templates/list", {});
+    expect(templates.result.resourceTemplates.map((t: any) => t.uriTemplate))
+      .toEqual(["spring://project/{name}", "spring://guide/{id}"]);
+  });
+
+  it("resources/read rejette une URI invalide sans réseau", async () => {
+    client = new Client();
+    await client.initialize("2024-11-05");
+    const bad = await client.request("resources/read", { uri: "spring://project/../x" });
+    expect(bad.error?.code).toBe(-32602);
+  });
+
   it("reports invalid tool arguments as isError", async () => {
     client = new Client();
     await client.initialize("2024-11-05");

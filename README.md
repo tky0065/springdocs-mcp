@@ -93,6 +93,11 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ---
 
+### 📎 **Resources**
+
+- `spring://project/<slug>` : Spring project page as complete markdown (e.g. `spring://project/spring-boot`); `resources/list` enumerates the 11 projects of the registry, the template accepts any project of spring.io
+- `spring://guide/<id>` : Spring getting-started guide as complete markdown (e.g. `spring://guide/rest-service`), available through the resource template
+
 ### 💬 **Prompts**
 
 - `migrate-boot-version` (`to_version`, optional `from_version`): plans a Spring Boot upgrade by chaining `get_migration_guide`, `get_release_notes` and `get_spring_reference`

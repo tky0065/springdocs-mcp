@@ -55,6 +55,7 @@ npm run cicd:check   # Check CI/CD configuration status
 
 - `src/services/http.ts`: `fetchWithRetry` (retry/backoff, timeouts, 5 MiB response size cap)
 - `src/services/markdown.ts`: shared turndown instance, `extractContent` (detail levels) and `pageMarkdown` (pagination)
+- `src/resources.ts`: MCP resources `spring://project/<slug>` and `spring://guide/<id>` (complete markdown, read through `docsService` and the shared cache; `parseResourceUri` is strict)
 - `src/prompts.ts`: MCP prompts `migrate-boot-version` and `explain-error` (pure, no network; they chain the existing tools)
 - `src/services/initializr.ts`: Spring Initializr metadata (`get_spring_initializr`), cached 24h
 - `src/services/boot-wiki.ts`: Spring Boot wiki access (migration guides / upgrade notes)
