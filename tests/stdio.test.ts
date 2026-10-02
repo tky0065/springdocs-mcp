@@ -97,3 +97,14 @@ describe("MCP server over stdio", () => {
     expect(response.error ?? response.result?.isError).toBeTruthy();
   });
 });
+
+describe("validation des arguments via stdio (#18)", () => {
+  it("nomme le paramètre manquant quand arguments est absent", async () => {
+    client = new Client();
+    await client.initialize("2024-11-05");
+    const { result } = await client.request("tools/call", { name: "get_spring_guide" });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toMatch(/guideId/);
+  });
+});

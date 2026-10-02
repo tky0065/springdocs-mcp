@@ -25,6 +25,11 @@ export function buildDockerTools(tools) {
           arg.enum = prop.enum;
         }
 
+        // Add max length for strings
+        if (prop.maxLength !== undefined) {
+          arg.maxLength = prop.maxLength;
+        }
+
         // Add default value if present
         if (prop.default !== undefined) {
           arg.default = prop.default;

@@ -13,6 +13,7 @@ export class ToolDefinitions {
           properties: {
             query: {
               type: "string",
+              maxLength: 200,
               description: "Les mots-clés à rechercher dans la documentation",
             },
             docType: {
@@ -40,6 +41,7 @@ export class ToolDefinitions {
           properties: {
             query: {
               type: "string",
+              maxLength: 200,
               description: "Les mots-clés à rechercher dans les projets Spring (ex: 'security', 'data', 'cloud')",
             },
             limit: {
@@ -61,6 +63,7 @@ export class ToolDefinitions {
           properties: {
             projectName: {
               type: "string",
+              maxLength: 100,
               description: "Le nom du projet Spring (ex: 'spring-boot', 'spring-security', 'spring-data')",
             },
           },
@@ -75,6 +78,7 @@ export class ToolDefinitions {
           properties: {
             category: {
               type: "string",
+              maxLength: 100,
               description: "Catégorie de guides à filtrer (ex: 'Web', 'Data', 'Security', 'Testing')",
             },
             limit: {
@@ -96,6 +100,7 @@ export class ToolDefinitions {
           properties: {
             guideId: {
               type: "string",
+              maxLength: 100,
               description: "L'identifiant du guide Spring Boot (par exemple: 'rest-service', 'accessing-data-jpa')",
             },
             detail_level: {
@@ -122,10 +127,12 @@ export class ToolDefinitions {
             },
             section: {
               type: "string",
+              maxLength: 100,
               description: "Documentation section (e.g., 'web', 'data' for Boot; 'chatclient', 'rag' for AI; 'core', 'web' for Framework)",
             },
             subsection: {
               type: "string",
+              maxLength: 100,
               description: "Optional subsection for more precise navigation",
             },
           },
@@ -140,6 +147,7 @@ export class ToolDefinitions {
           properties: {
             concept: {
               type: "string",
+              maxLength: 200,
               description: "Le concept Spring Boot à rechercher (par exemple: 'auto-configuration', 'profiles', 'actuator')",
             },
             category: {
@@ -159,6 +167,7 @@ export class ToolDefinitions {
           properties: {
             query: {
               type: "string",
+              maxLength: 200,
               description: "Keywords to search across the entire Spring ecosystem",
             },
             scope: {
@@ -186,6 +195,7 @@ export class ToolDefinitions {
           properties: {
             topic: {
               type: "string",
+              maxLength: 200,
               description: "Tutorial topic (e.g., 'rest-api', 'jpa', 'security', 'testing')",
             },
             level: {
@@ -212,10 +222,12 @@ export class ToolDefinitions {
           properties: {
             version1: {
               type: "string",
+              maxLength: 50,
               description: "First Spring Boot version to compare (e.g., '2.7.0')",
             },
             version2: {
               type: "string",
+              maxLength: 50,
               description: "Second Spring Boot version to compare (e.g., '3.0.0')",
             },
             focus: {
@@ -257,6 +269,7 @@ export class ToolDefinitions {
           properties: {
             error_message: {
               type: "string",
+              maxLength: 2000,
               description: "Error message or issue description",
             },
             component: {
@@ -266,6 +279,7 @@ export class ToolDefinitions {
             },
             stack_trace: {
               type: "string",
+              maxLength: 10000,
               description: "Stack trace (optional, for more specific diagnosis)",
             },
           },

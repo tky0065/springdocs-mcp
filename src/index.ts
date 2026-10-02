@@ -6,6 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, CallToolRequest, ListToo
 import { SpringBootDocsServiceOptimized } from "./services/springboot-docs-optimized.js";
 import { AdvancedFeaturesService } from "./services/advanced-features.js";
 import { ToolDefinitions } from "./tools/index.js";
+import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
 
 /**
@@ -44,11 +45,13 @@ class SpringBootMCPServerAdvanced {
 
     // Handler for executing tools
     this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-      const { name, arguments: args } = request.params;
+      const { name, arguments: rawArgs } = request.params;
 
       try {
         const startTime = Date.now();
         console.error(`🔧 Executing tool: ${name}`);
+
+        const args = validateToolArguments(name, rawArgs);
 
         let result;
         switch (name) {

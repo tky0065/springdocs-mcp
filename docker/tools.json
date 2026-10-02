@@ -7,7 +7,8 @@
         "name": "query",
         "type": "string",
         "required": true,
-        "description": "Les mots-clés à rechercher dans la documentation"
+        "description": "Les mots-clés à rechercher dans la documentation",
+        "maxLength": 200
       },
       {
         "name": "docType",
@@ -41,7 +42,8 @@
         "name": "query",
         "type": "string",
         "required": true,
-        "description": "Les mots-clés à rechercher dans les projets Spring (ex: 'security', 'data', 'cloud')"
+        "description": "Les mots-clés à rechercher dans les projets Spring (ex: 'security', 'data', 'cloud')",
+        "maxLength": 200
       },
       {
         "name": "limit",
@@ -62,7 +64,8 @@
         "name": "projectName",
         "type": "string",
         "required": true,
-        "description": "Le nom du projet Spring (ex: 'spring-boot', 'spring-security', 'spring-data')"
+        "description": "Le nom du projet Spring (ex: 'spring-boot', 'spring-security', 'spring-data')",
+        "maxLength": 100
       }
     ]
   },
@@ -74,7 +77,8 @@
         "name": "category",
         "type": "string",
         "required": false,
-        "description": "Catégorie de guides à filtrer (ex: 'Web', 'Data', 'Security', 'Testing')"
+        "description": "Catégorie de guides à filtrer (ex: 'Web', 'Data', 'Security', 'Testing')",
+        "maxLength": 100
       },
       {
         "name": "limit",
@@ -95,7 +99,8 @@
         "name": "guideId",
         "type": "string",
         "required": true,
-        "description": "L'identifiant du guide Spring Boot (par exemple: 'rest-service', 'accessing-data-jpa')"
+        "description": "L'identifiant du guide Spring Boot (par exemple: 'rest-service', 'accessing-data-jpa')",
+        "maxLength": 100
       },
       {
         "name": "detail_level",
@@ -131,13 +136,15 @@
         "name": "section",
         "type": "string",
         "required": true,
-        "description": "Documentation section (e.g., 'web', 'data' for Boot; 'chatclient', 'rag' for AI; 'core', 'web' for Framework)"
+        "description": "Documentation section (e.g., 'web', 'data' for Boot; 'chatclient', 'rag' for AI; 'core', 'web' for Framework)",
+        "maxLength": 100
       },
       {
         "name": "subsection",
         "type": "string",
         "required": false,
-        "description": "Optional subsection for more precise navigation"
+        "description": "Optional subsection for more precise navigation",
+        "maxLength": 100
       }
     ]
   },
@@ -149,7 +156,8 @@
         "name": "concept",
         "type": "string",
         "required": true,
-        "description": "Le concept Spring Boot à rechercher (par exemple: 'auto-configuration', 'profiles', 'actuator')"
+        "description": "Le concept Spring Boot à rechercher (par exemple: 'auto-configuration', 'profiles', 'actuator')",
+        "maxLength": 200
       },
       {
         "name": "category",
@@ -175,7 +183,8 @@
         "name": "query",
         "type": "string",
         "required": true,
-        "description": "Keywords to search across the entire Spring ecosystem"
+        "description": "Keywords to search across the entire Spring ecosystem",
+        "maxLength": 200
       },
       {
         "name": "scope",
@@ -211,7 +220,8 @@
         "name": "topic",
         "type": "string",
         "required": true,
-        "description": "Tutorial topic (e.g., 'rest-api', 'jpa', 'security', 'testing')"
+        "description": "Tutorial topic (e.g., 'rest-api', 'jpa', 'security', 'testing')",
+        "maxLength": 200
       },
       {
         "name": "level",
@@ -247,13 +257,15 @@
         "name": "version1",
         "type": "string",
         "required": true,
-        "description": "First Spring Boot version to compare (e.g., '2.7.0')"
+        "description": "First Spring Boot version to compare (e.g., '2.7.0')",
+        "maxLength": 50
       },
       {
         "name": "version2",
         "type": "string",
         "required": true,
-        "description": "Second Spring Boot version to compare (e.g., '3.0.0')"
+        "description": "Second Spring Boot version to compare (e.g., '3.0.0')",
+        "maxLength": 50
       },
       {
         "name": "focus",
@@ -310,7 +322,8 @@
         "name": "error_message",
         "type": "string",
         "required": true,
-        "description": "Error message or issue description"
+        "description": "Error message or issue description",
+        "maxLength": 2000
       },
       {
         "name": "component",
@@ -330,7 +343,8 @@
         "name": "stack_trace",
         "type": "string",
         "required": false,
-        "description": "Stack trace (optional, for more specific diagnosis)"
+        "description": "Stack trace (optional, for more specific diagnosis)",
+        "maxLength": 10000
       }
     ]
   }
