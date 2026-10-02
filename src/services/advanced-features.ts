@@ -60,22 +60,36 @@ export class AdvancedFeaturesService {
       ];
       const selected = searches.filter(([name]) => scope === 'all' || scope === name);
 
-      // Run the searches concurrently; a failed one yields an empty category
+      // Run the searches concurrently; a failed one is reported, never cached
       const settled = await Promise.allSettled(selected.map(([, , run]) => run()));
+      const unavailable: string[] = [];
       selected.forEach(([, category], index) => {
         const outcome = settled[index];
-        results.categories[category] = outcome.status === 'fulfilled' ? outcome.value : [];
+        if (outcome.status === 'fulfilled') {
+          results.categories[category] = outcome.value;
+        } else {
+          results.categories[category] = [];
+          unavailable.push(category);
+          console.error(`Ecosystem source "${category}" failed:`, outcome.reason instanceof Error ? outcome.reason.message : outcome.reason);
+        }
       });
+
+      if (selected.length > 0 && unavailable.length === selected.length) {
+        throw new Error(`Unable to search the Spring ecosystem: all sources failed (${unavailable.join(', ')})`);
+      }
+      results.unavailable = unavailable;
 
       results.totalResults = Object.values(results.categories)
         .reduce((total: number, category: any) => total + (category?.length || 0), 0);
 
       const formattedResult = this.formatEcosystemResults(results);
-      this.cache.set(cacheKey, formattedResult);
+      if (unavailable.length === 0) {
+        this.cache.set(cacheKey, formattedResult);
+      }
       return formattedResult;
     } catch (error) {
       console.error('Error searching ecosystem:', error);
-      return `# Spring Ecosystem Search Results\n\nError searching for "${query}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+      throw error;
     }
   }
 
@@ -175,7 +189,7 @@ export class AdvancedFeaturesService {
       return result;
     } catch (error) {
       console.error('Error fetching tutorial:', error);
-      return `# Tutorial Error\n\nUnable to fetch tutorial for "${topic}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+      throw error;
     }
   }
 
@@ -231,7 +245,7 @@ For detailed migration guides, visit: https://github.com/spring-projects/spring-
       return result;
     } catch (error) {
       console.error('Error comparing versions:', error);
-      return `# Version Comparison Error\n\nUnable to compare versions ${version1} and ${version2}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      throw error;
     }
   }
 
@@ -294,7 +308,7 @@ For complete documentation, visit: ${docUrl}`;
       return result;
     } catch (error) {
       console.error('Error fetching best practices:', error);
-      return `# Best Practices Error\n\nUnable to fetch best practices for "${category}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+      throw error;
     }
   }
 
@@ -344,7 +358,7 @@ For complete documentation, visit: ${docUrl}`;
       return result;
     } catch (error) {
       console.error('Error diagnosing issue:', error);
-      return `# Diagnosis Error\n\nUnable to diagnose issue: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      throw error;
     }
   }
 
@@ -380,7 +394,7 @@ For complete documentation, visit: ${docUrl}`;
       return projects.slice(0, limit);
     } catch (error) {
       console.error('Error searching projects:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -415,7 +429,7 @@ For complete documentation, visit: ${docUrl}`;
       return guides.slice(0, limit);
     } catch (error) {
       console.error('Error searching guides:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -446,7 +460,7 @@ For complete documentation, visit: ${docUrl}`;
       return docs.slice(0, limit);
     } catch (error) {
       console.error('Error searching documentation:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -460,8 +474,7 @@ For complete documentation, visit: ${docUrl}`;
       const response = await this.fetchWithRetry(aiDocsUrl);
 
       if (!response.ok) {
-        console.error('Failed to fetch Spring AI documentation');
-        return [];
+        throw new Error('Failed to fetch Spring AI documentation');
       }
 
       const html = await response.text();
@@ -505,7 +518,7 @@ For complete documentation, visit: ${docUrl}`;
       return aiDocs.slice(0, limit);
     } catch (error) {
       console.error('Error searching Spring AI documentation:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -579,6 +592,10 @@ For complete documentation, visit: ${docUrl}`;
 
     if (results.totalResults === 0) {
       output += `No results found for "${results.query}" in scope "${results.scope}".`;
+    }
+
+    if (results.unavailable?.length > 0) {
+      output += `\n\n⚠️ Some sources were unavailable: ${results.unavailable.join(', ')}. Results may be incomplete.`;
     }
 
     return output;

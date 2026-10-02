@@ -154,7 +154,7 @@ export class SpringBootDocsServiceOptimized {
       return results;
     } catch (error) {
       console.error('Error searching Spring projects:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -249,7 +249,7 @@ export class SpringBootDocsServiceOptimized {
       return results;
     } catch (error) {
       console.error('Error retrieving Spring guides:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -447,7 +447,7 @@ export class SpringBootDocsServiceOptimized {
       return conceptContent;
     } catch (error) {
       console.error('Error searching concepts:', error);
-      return `# Spring Concept Search Error\n\nUnable to search for concept "${concept}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+      throw error;
     }
   }
 
@@ -468,39 +468,49 @@ export class SpringBootDocsServiceOptimized {
 
     const results: any[] = [];
 
-    try {
-      if (docType === 'all' || docType === 'guides') {
+    const sources: Array<[string, () => Promise<any[]>]> = [];
+    if (docType === 'all' || docType === 'guides') {
+      sources.push(['guides', async () => {
         const guides = await this.getAllSpringGuides(undefined, Number.MAX_SAFE_INTEGER);
-        const filteredGuides = guides.filter(guide =>
+        return guides.filter(guide =>
           guide.title.toLowerCase().includes(query.toLowerCase()) ||
           guide.description.toLowerCase().includes(query.toLowerCase())
-        );
-        results.push(...filteredGuides.slice(0, limit));
-      }
-
-      if (docType === 'all' || docType === 'projects') {
-        const projects = await this.searchSpringProjects(query, limit);
-        results.push(...projects);
-      }
-
-      if (docType === 'all' || docType === 'reference') {
-        // Search in reference documentation
-        const refResults = await this.searchInReference(query, limit);
-        results.push(...refResults);
-      }
-
-      this.cache.set(cacheKey, results);
-      return results.slice(0, limit);
-    } catch (error) {
-      console.error('Error searching documentation:', error);
-      return [];
+        ).slice(0, limit);
+      }]);
     }
+    if (docType === 'all' || docType === 'projects') {
+      sources.push(['projects', () => this.searchSpringProjects(query, limit)]);
+    }
+    if (docType === 'all' || docType === 'reference') {
+      sources.push(['reference', () => this.searchInReference(query, limit)]);
+    }
+
+    // A failing source must not be hidden nor cached: fail if all fail, otherwise return partial results uncached
+    const failures: string[] = [];
+    for (const [name, run] of sources) {
+      try {
+        results.push(...await run());
+      } catch (error) {
+        failures.push(name);
+        console.error(`Documentation source "${name}" failed:`, error instanceof Error ? error.message : error);
+      }
+    }
+
+    if (sources.length > 0 && failures.length === sources.length) {
+      throw new Error(`Unable to search documentation: all sources failed (${failures.join(', ')})`);
+    }
+    if (failures.length === 0) {
+      this.cache.set(cacheKey, results);
+    }
+    return results.slice(0, limit);
   }
 
   private async searchInReference(query: string, limit: number): Promise<any[]> {
     try {
       const response = await this.fetchWithRetry(`${this.baseUrl}/spring-boot/docs/current/reference/html/`);
-      if (!response.ok) return [];
+      if (!response.ok) {
+        throw new Error('Unable to access Spring Boot reference documentation');
+      }
 
       const html = await response.text();
       const $ = cheerio.load(html);
@@ -524,7 +534,7 @@ export class SpringBootDocsServiceOptimized {
       return results.slice(0, limit);
     } catch (error) {
       console.error('Error searching reference:', error);
-      return [];
+      throw error;
     }
   }
 
