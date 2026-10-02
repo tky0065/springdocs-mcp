@@ -432,12 +432,10 @@ process.on("SIGINT", async () => {
 
 process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
   console.error("💥 Unhandled promise rejection:", reason);
-  process.exit(1);
 });
 
 process.on("uncaughtException", (error: Error) => {
   console.error("💥 Uncaught exception:", error);
-  process.exit(1);
 });
 
 // Start server
