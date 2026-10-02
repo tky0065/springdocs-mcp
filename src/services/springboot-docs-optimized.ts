@@ -1,16 +1,9 @@
-import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
-import TurndownService from 'turndown';
 import { CacheService } from './cache.js';
-import { USER_AGENT } from '../version.js';
+import { fetchWithRetry, FetchResult } from './http.js';
+import { turndownService } from './markdown.js';
 import { absoluteSpringUrl, assertSafeSegment } from './url.js';
 
-interface FetchResult {
-  ok: boolean;
-  status: number;
-  text(): Promise<string>;
-  json(): Promise<any>;
-}
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 
 /**
@@ -24,17 +17,10 @@ export class SpringBootDocsServiceOptimized {
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
   private projectsConfig: SpringProjectsConfig;
-  private turndownService: TurndownService;
   private cache: CacheService;
-  private readonly REQUEST_TIMEOUT = 10000;
-  private readonly MAX_RETRIES = 3;
 
   constructor(projectsConfig: SpringProjectsConfig = springProjectsConfig) {
     this.projectsConfig = projectsConfig;
-    this.turndownService = new TurndownService({
-      headingStyle: 'atx',
-      codeBlockStyle: 'fenced',
-    });
     this.cache = new CacheService();
 
     // Cleanup cache every hour
@@ -189,7 +175,7 @@ export class SpringBootDocsServiceOptimized {
         throw new Error('No content found for project');
       }
 
-      const markdown = this.turndownService.turndown(content.html() || '');
+      const markdown = turndownService.turndown(content.html() || '');
       const projectUrl = `${this.springProjectsUrl}/${slug}`;
       const result = `# ${projectName}\n\n${markdown.substring(0, 1500)}...\n\nFor complete project info, visit: ${projectUrl}`;
 
@@ -381,7 +367,7 @@ export class SpringBootDocsServiceOptimized {
         throw new Error(`No content found in ${project.displayName} reference documentation`);
       }
 
-      const markdown = this.turndownService.turndown(content.html() || '');
+      const markdown = turndownService.turndown(content.html() || '');
       const result = `# ${project.displayName} Reference: ${subsection ? `${section}/${subsection}` : section}\n\n${markdown.substring(0, 1500)}...\n\nFor complete reference, visit: ${url}`;
 
       // Use project-specific cache strategy
@@ -439,7 +425,7 @@ export class SpringBootDocsServiceOptimized {
 
         if (headingText.includes(concept.toLowerCase())) {
           const section = heading.parent();
-          const sectionMarkdown = this.turndownService.turndown(section.html() || '');
+          const sectionMarkdown = turndownService.turndown(section.html() || '');
           conceptContent += sectionMarkdown.substring(0, 500) + '\n\n';
           foundSections++;
         }
@@ -565,9 +551,9 @@ export class SpringBootDocsServiceOptimized {
     if (mainContent.length === 0) {
       console.error('No main content found, using body');
       $('script, style').remove();
-      markdown = this.turndownService.turndown($('body').html() || '');
+      markdown = turndownService.turndown($('body').html() || '');
     } else {
-      markdown = this.turndownService.turndown(mainContent.html() || '');
+      markdown = turndownService.turndown(mainContent.html() || '');
     }
 
     // Use intelligent extraction
@@ -577,48 +563,7 @@ export class SpringBootDocsServiceOptimized {
     return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n**Detail Level:** ${detailLevel}\n\n${extractedContent}${needsTruncation ? '\n\n---\n*Content truncated for brevity. Use detail_level="full" for complete guide or visit the link above.*' : ''}`;
   }
 
-  private async fetchWithRetry(url: string, timeout = this.REQUEST_TIMEOUT, retries = this.MAX_RETRIES): Promise<FetchResult> {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-      let delayMs = 1000 * 2 ** (attempt - 1); // Exponential backoff
-
-      try {
-        const response = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'User-Agent': USER_AGENT,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9'
-          }
-        });
-        // Read the body before clearing the timeout so the timeout also covers it
-        const body = await response.text();
-        const result: FetchResult = {
-          ok: response.ok,
-          status: response.status,
-          text: async () => body,
-          json: async () => JSON.parse(body)
-        };
-
-        const retryable = response.status === 429 || response.status >= 500;
-        if (!retryable || attempt === retries) return result;
-
-        const retryAfterHeader = response.headers.get('retry-after');
-        const retryAfter = retryAfterHeader === null ? NaN : Number(retryAfterHeader);
-        if (Number.isFinite(retryAfter) && retryAfter >= 0) {
-          delayMs = Math.min(retryAfter * 1000, 10000);
-        }
-        console.error(`Retry ${attempt}/${retries} for ${url}: HTTP ${response.status}`);
-      } catch (error) {
-        if (attempt === retries) throw error;
-
-        console.error(`Retry ${attempt}/${retries} for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
-      } finally {
-        clearTimeout(timeoutId);
-      }
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-    throw new Error('All retry attempts failed');
+  private fetchWithRetry(url: string, timeout?: number, retries?: number): Promise<FetchResult> {
+    return fetchWithRetry(url, timeout, retries);
   }
 }
