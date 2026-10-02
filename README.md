@@ -277,12 +277,6 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 - Retry with exponential backoff and request timeouts on all external HTTP calls
 - Responses larger than 5 MiB are rejected
 
---------|---------------|--------------|-------------|
-| Response Time | 2-5 seconds | 0.5-2 seconds | **50-80% faster** |
-| Cache Hit Rate | 0% | 85% | **New feature** |
-| Success Rate | 90% | 99.5% | **10x more reliable** |
-| Memory Usage | High | Optimized | **40% reduction** |
-
 ---
 
 ## 🔮 Roadmap
