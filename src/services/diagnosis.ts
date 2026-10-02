@@ -118,8 +118,13 @@ function parseFrame(line: string): ParsedFrame | undefined {
   if (open < 0 || line.indexOf(')', open) < 0) return undefined;
   let name = line.slice(3, open).trim();
   // JDK 9+ frames may carry a module prefix: "java.base/java.util.List.get"
-  const slash = name.lastIndexOf('/');
-  if (slash >= 0) name = name.slice(slash + 1);
+  // Hidden/lambda classes ("Foo$$Lambda/0x...") keep the qualified name before the "/"
+  const slash = name.indexOf('/');
+  if (slash >= 0) {
+    const before = name.slice(0, slash);
+    const after = name.slice(name.lastIndexOf('/') + 1);
+    name = before.includes('$$Lambda') || !after.includes('.') ? before : after;
+  }
   if (name.length === 0 || !IDENTIFIER.test(name.replace(/<(init|clinit)>/, 'x'))) return undefined;
   return { text: line, name };
 }

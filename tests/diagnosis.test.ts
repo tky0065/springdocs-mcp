@@ -115,6 +115,18 @@ describe("analyzeStackTrace", () => {
     expect(analyzeStackTrace(onlyFw).applicationFrame).toBeUndefined();
   });
 
+  it("(i) classifies module-prefixed JDK frames and lambda frames correctly", () => {
+    const head = "java.lang.RuntimeException: x\n";
+    const jdk = head + "\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)";
+    expect(analyzeStackTrace(jdk).applicationFrame).toBeUndefined();
+    const springLambda = head + "\tat org.springframework.beans.factory.support.AbstractBeanFactory$$Lambda/0x0000000800c0a000.getObject(Unknown Source)";
+    expect(analyzeStackTrace(springLambda).applicationFrame).toBeUndefined();
+    const appLambda = head + "\tat com.acme.Foo$$Lambda/0x0000000800c0a000.apply(Unknown Source)";
+    expect(analyzeStackTrace(appLambda).applicationFrame).toBe("at com.acme.Foo$$Lambda/0x0000000800c0a000.apply(Unknown Source)");
+    const appFrame = head + "\tat com.acme.Repo.find(Repo.java:7)";
+    expect(analyzeStackTrace(appFrame).applicationFrame).toBe("at com.acme.Repo.find(Repo.java:7)");
+  });
+
   it("handles edge cases: no colon, empty Caused by, broken frames, CRLF, NUL", () => {
     expect(analyzeStackTrace("java.lang.RuntimeException").chain).toEqual([
       { type: "java.lang.RuntimeException", message: "" },

@@ -157,6 +157,21 @@ describe("AdvancedFeaturesService.getReleaseNotes (#33)", () => {
   });
 });
 
+describe("troncature des release notes (#33)", () => {
+  it("avertit quand le corps dépasse 50 000 caractères", async () => {
+    const big = "* Add a very long entry for testing purposes #1\n".repeat(1300); // ~62 000 characters
+    respondWith(200, release({ body: big }));
+    const out = await run(new AdvancedFeaturesService().getReleaseNotes("boot", "3.5.0"));
+    expect(out).toContain("Release notes truncated at 50,000 characters");
+    expect(out).toContain(`Full notes: ${HTML_URL}`);
+  });
+
+  it("n'avertit pas pour un corps court", async () => {
+    const out = await run(new AdvancedFeaturesService().getReleaseNotes("boot", "3.5.0"));
+    expect(out).not.toContain("Release notes truncated");
+  });
+});
+
 describe("validation de get_release_notes (#33)", () => {
   it("accepte {} et refuse un project hors enum", () => {
     expect(() => validateToolArguments("get_release_notes", {})).not.toThrow();

@@ -30,6 +30,12 @@ export function extractContent(markdown: string, detailLevel: string = 'medium')
     if (line.trim().startsWith('```')) inCodeBlock = !inCodeBlock;
   }
 
+  // A first line longer than the budget leaves nothing: hard-cut it instead
+  if (kept.length === 0) {
+    const first = markdown.slice(0, maxLength);
+    return { content: first.trim().startsWith('```') ? first + '\n```' : first, truncated: true };
+  }
+
   let content = kept.join('\n').trimEnd();
   if (inCodeBlock) content += '\n```';
   return { content, truncated: true };

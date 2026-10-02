@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import * as cheerio from 'cheerio';
 import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
@@ -100,7 +99,11 @@ export class AdvancedFeaturesService {
 
     const filtered = filterReleaseBody(release.body, focus);
     if (filtered.trim()) {
-      output += extractContent(filtered, 'full').content;
+      const { content, truncated } = extractContent(filtered, 'full');
+      output += content;
+      if (truncated) {
+        output += `\n\n---\n*Release notes truncated at 50,000 characters. Full notes: ${release.url}*`;
+      }
     } else {
       output += `No ${focus} entries found in these release notes. See the full notes: ${release.url}`;
     }
@@ -331,17 +334,8 @@ For complete documentation, visit: ${docUrl}`;
    * Diagnose issues using Spring Boot documentation
    */
   async diagnoseIssues(errorMessage: string, component?: string, stackTrace?: string) {
-    const digest = createHash('sha256')
-      .update(JSON.stringify([errorMessage, component ?? '', stackTrace ?? '']))
-      .digest('hex');
-    const cacheKey = `diagnosis:${digest}`;
-    const cached = this.cache.get<string>(cacheKey);
-    if (cached) return cached;
-
     // Local analysis: no network call, bounded and deterministic
-    const result = renderDiagnosis({ errorMessage, component, stackTrace });
-    this.cache.set(cacheKey, result);
-    return result;
+    return renderDiagnosis({ errorMessage, component, stackTrace });
   }
 
   // Real implementation methods (no mock data)

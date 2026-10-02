@@ -71,3 +71,18 @@ describe("registre de projets (#32)", () => {
     expect(project.githubTagPrefix).toBe(prefix);
   });
 });
+
+describe("enum project de get_release_notes", () => {
+  it("correspond aux projets du registre ayant githubRepo et githubTagPrefix", () => {
+    const tool = ToolDefinitions.getToolList().find((t: any) => t.name === "get_release_notes") as any;
+    const enumIds: string[] = [...tool.inputSchema.properties.project.enum].sort();
+    const projects = springProjectsConfig.getAllProjects();
+    const expected = projects.filter((p) => p.githubRepo && p.githubTagPrefix !== undefined).map((p) => p.id).sort();
+    expect(enumIds).toEqual(expected);
+    for (const id of enumIds) {
+      const project = projects.find((p) => p.id === id)!;
+      expect(project.githubRepo).toBeTruthy();
+      expect(project.githubTagPrefix).toBeDefined();
+    }
+  });
+});

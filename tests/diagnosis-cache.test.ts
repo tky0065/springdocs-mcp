@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe("cache de diagnoseIssues (#23)", () => {
+describe("sortie de diagnoseIssues (#23)", () => {
   it("ne mélange pas deux composants pour le même début de message", async () => {
     const service = new AdvancedFeaturesService();
     await service.diagnoseIssues(MESSAGE, "web");
@@ -30,13 +30,5 @@ describe("cache de diagnoseIssues (#23)", () => {
     const second = await service.diagnoseIssues(MESSAGE, undefined, "java.lang.IllegalStateException: boom\n\tat com.example.Foo.bar(Foo.java:10)");
     expect(second).not.toBe(first);
     expect(second).toContain("**Your code:**");
-  });
-
-  it("sert le cache pour une requête identique", async () => {
-    const service = new AdvancedFeaturesService();
-    const first = await service.diagnoseIssues(MESSAGE, "web");
-    mockedFetch.mockClear();
-    expect(await service.diagnoseIssues(MESSAGE, "web")).toBe(first);
-    expect(mockedFetch).not.toHaveBeenCalled();
   });
 });

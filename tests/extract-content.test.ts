@@ -55,3 +55,13 @@ describe("extractContent (#25)", () => {
     expect(extractContent(doc, "summary").truncated).toBe(true);
   });
 });
+
+describe("extractContent, première ligne trop longue (#25)", () => {
+  it("coupe dur la première ligne au lieu de rendre un contenu vide", () => {
+    const doc = "x".repeat(5000) + "\nsuite";
+    const { content, truncated } = extractContent(doc, "summary");
+    expect(content.length).toBeGreaterThan(0);
+    expect(content.length).toBeLessThanOrEqual(DETAIL_LIMITS.summary + 4);
+    expect(truncated).toBe(true);
+  });
+});

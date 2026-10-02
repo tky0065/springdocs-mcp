@@ -4,7 +4,7 @@ vi.mock("node-fetch", () => ({ default: vi.fn() }));
 
 import fetch from "node-fetch";
 import { AdvancedFeaturesService } from "../src/services/advanced-features.js";
-import * as diagnosis from "../src/services/diagnosis.js";
+import { CacheService } from "../src/services/cache.js";
 
 const mockedFetch = vi.mocked(fetch) as unknown as ReturnType<typeof vi.fn>;
 
@@ -44,13 +44,16 @@ describe("diagnoseIssues hors ligne (#36)", () => {
     expect(mockedFetch).not.toHaveBeenCalled();
   });
 
-  it("sert le cache sans recalculer", async () => {
-    const spy = vi.spyOn(diagnosis, "renderDiagnosis");
-    const service = new AdvancedFeaturesService();
+  it("renvoie des sorties identiques et n'écrit rien dans le cache", async () => {
+    const cache = new CacheService();
+    const set = vi.spyOn(cache, "set");
+    const setLongTerm = vi.spyOn(cache, "setLongTerm");
+    const service = new AdvancedFeaturesService(cache);
     const first = await service.diagnoseIssues("x", "web", BEAN_TRACE);
     const second = await service.diagnoseIssues("x", "web", BEAN_TRACE);
     expect(second).toBe(first);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(set).not.toHaveBeenCalled();
+    expect(setLongTerm).not.toHaveBeenCalled();
   });
 
   it("deux stack traces différentes donnent deux sorties différentes", async () => {
