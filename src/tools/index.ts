@@ -96,7 +96,7 @@ export class ToolDefinitions {
           properties: {
             guideId: {
               type: "string",
-              description: "L'identifiant du guide Spring Boot (par exemple: 'gs-rest-service', 'gs-accessing-data-jpa')",
+              description: "L'identifiant du guide Spring Boot (par exemple: 'rest-service', 'accessing-data-jpa')",
             },
             detail_level: {
               type: "string",

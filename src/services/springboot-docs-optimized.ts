@@ -262,8 +262,13 @@ export class SpringBootDocsServiceOptimized {
     if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(guideId) || guideId.includes('..')) {
       throw new Error(`Invalid guideId "${guideId}": only letters, digits, '.', '_' and '-' are allowed`);
     }
-    const safeId = encodeURIComponent(guideId);
-    const cacheKey = `guide:${guideId}:${detailLevel}`;
+    // Getting-started guides live under /guides/gs/<name>/; accept the repository-style "gs-<name>" too
+    const name = guideId.replace(/^gs-/, '');
+    if (!name) {
+      throw new Error(`Invalid guideId "${guideId}": the guide name is empty`);
+    }
+    const safeId = encodeURIComponent(name);
+    const cacheKey = `guide:${name}:${detailLevel}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for guide: ${guideId} (${detailLevel})`);
@@ -272,11 +277,10 @@ export class SpringBootDocsServiceOptimized {
 
     console.error(`🔍 Fetching guide: ${guideId} with detail level: ${detailLevel}`);
 
-    // Try multiple sources for guides
+    // Fallbacks tried in order: getting-started guide, then top-level guide path
     const sources = [
-      { name: 'Spring.io', url: `${this.springGuideUrl}/${safeId}/` },
-      { name: 'GitHub', url: `https://github.com/spring-guides/${safeId}` },
-      { name: 'Spring.io alt', url: `${this.springGuideUrl}/gs/${safeId}/` }
+      { name: 'Spring.io getting-started', url: `${this.springGuideUrl}/gs/${safeId}/` },
+      { name: 'Spring.io', url: `${this.springGuideUrl}/${safeId}/` }
     ];
 
     let content = '';
