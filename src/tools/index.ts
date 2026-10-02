@@ -106,7 +106,7 @@ export class ToolDefinitions {
             detail_level: {
               type: "string",
               enum: ["summary", "medium", "full"],
-              description: "Niveau de détail: summary (1500 chars), medium (4000 chars), full (8000 chars)",
+              description: "Niveau de détail: summary (1500 chars), medium (4000 chars), full (50000 chars)",
               default: "medium",
             },
           },
@@ -207,7 +207,7 @@ export class ToolDefinitions {
             detail_level: {
               type: "string",
               enum: ["summary", "medium", "full"],
-              description: "Content detail: summary (1500 chars), medium (4000 chars), full (8000 chars)",
+              description: "Content detail: summary (1500 chars), medium (4000 chars), full (50000 chars)",
               default: "medium",
             },
           },

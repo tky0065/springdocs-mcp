@@ -106,7 +106,7 @@
         "name": "detail_level",
         "type": "string",
         "required": false,
-        "description": "Niveau de détail: summary (1500 chars), medium (4000 chars), full (8000 chars)",
+        "description": "Niveau de détail: summary (1500 chars), medium (4000 chars), full (50000 chars)",
         "enum": [
           "summary",
           "medium",
@@ -239,7 +239,7 @@
         "name": "detail_level",
         "type": "string",
         "required": false,
-        "description": "Content detail: summary (1500 chars), medium (4000 chars), full (8000 chars)",
+        "description": "Content detail: summary (1500 chars), medium (4000 chars), full (50000 chars)",
         "enum": [
           "summary",
           "medium",

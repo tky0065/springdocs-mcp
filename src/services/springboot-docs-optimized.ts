@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
-import { turndownService } from './markdown.js';
+import { turndownService, extractContent } from './markdown.js';
 import { absoluteSpringUrl, assertSafeSegment } from './url.js';
 
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
@@ -22,71 +22,6 @@ export class SpringBootDocsServiceOptimized {
   constructor(projectsConfig: SpringProjectsConfig = springProjectsConfig, cache: CacheService = new CacheService()) {
     this.projectsConfig = projectsConfig;
     this.cache = cache;
-  }
-
-  /**
-   * Extract content intelligently based on detail level
-   * Preserves code blocks, key sections, and structure
-   */
-  private extractIntelligentContent(markdown: string, detailLevel: string = 'medium'): string {
-    const limits: { [key: string]: number } = {
-      'summary': 1500,
-      'medium': 4000,
-      'full': 8000
-    };
-
-    const maxLength = limits[detailLevel] || limits['medium'];
-
-    // If content is smaller than limit, return as-is
-    if (markdown.length <= maxLength) {
-      return markdown;
-    }
-
-    // Extract important sections
-    const lines = markdown.split('\n');
-    let result = '';
-    let inCodeBlock = false;
-    let codeBlockContent = '';
-    let currentLength = 0;
-
-    for (const line of lines) {
-      // Track code blocks
-      if (line.trim().startsWith('```')) {
-        inCodeBlock = !inCodeBlock;
-        if (!inCodeBlock && codeBlockContent) {
-          // Keep complete code blocks
-          const blockToAdd = codeBlockContent + line + '\n';
-          if (currentLength + blockToAdd.length <= maxLength * 0.8) { // Reserve 20% for text
-            result += blockToAdd;
-            currentLength += blockToAdd.length;
-          }
-          codeBlockContent = '';
-        } else {
-          codeBlockContent = line + '\n';
-        }
-        continue;
-      }
-
-      if (inCodeBlock) {
-        codeBlockContent += line + '\n';
-        continue;
-      }
-
-      // Keep headers, important lines
-      if (line.startsWith('#') || line.startsWith('-') || line.startsWith('*') || line.trim().startsWith('>')) {
-        if (currentLength + line.length + 1 <= maxLength) {
-          result += line + '\n';
-          currentLength += line.length + 1;
-        }
-      } else if (line.trim() && currentLength + line.length + 1 <= maxLength) {
-        result += line + '\n';
-        currentLength += line.length + 1;
-      }
-
-      if (currentLength >= maxLength) break;
-    }
-
-    return result.trim();
   }
 
   /**
@@ -554,10 +489,9 @@ export class SpringBootDocsServiceOptimized {
     }
 
     // Use intelligent extraction
-    const extractedContent = this.extractIntelligentContent(markdown, detailLevel);
-    const needsTruncation = markdown.length > extractedContent.length;
+    const { content: extractedContent, truncated } = extractContent(markdown, detailLevel);
 
-    return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n**Detail Level:** ${detailLevel}\n\n${extractedContent}${needsTruncation ? '\n\n---\n*Content truncated for brevity. Use detail_level="full" for complete guide or visit the link above.*' : ''}`;
+    return `# Spring Guide: ${guideId}\n\n**Source:** ${sourceUrl}\n**Detail Level:** ${detailLevel}\n\n${extractedContent}${truncated ? (detailLevel === 'full' ? '\n\n---\n*Content truncated at 50,000 characters even in full mode. Visit the link above for the complete guide.*' : '\n\n---\n*Content truncated for brevity. Use detail_level="full" for complete guide or visit the link above.*') : ''}`;
   }
 
   private fetchWithRetry(url: string, timeout?: number, retries?: number): Promise<FetchResult> {
