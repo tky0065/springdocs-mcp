@@ -66,7 +66,7 @@ npm run cicd:check   # Check CI/CD configuration status
 ### Key Design Patterns
 
 1. **Real API Integration**: Data is fetched from actual Spring.io and docs.spring.io URLs using `node-fetch` and `cheerio` for HTML parsing. The exception is `diagnose_spring_issues`, a local (offline) analysis that points to real reference sections from the project registry
-2. **Intelligent Caching**: Two-tier caching system (short-term for dynamic content, long-term for stable content) provides 50-80% performance improvement
+2. **Intelligent Caching**: Two-tier caching system (short-term for dynamic content, long-term for stable content) so repeated requests are served from memory without a new network call
 3. **Retry Logic**: Built-in exponential backoff with 3 max retries and 10-second timeouts for resilience
 4. **MCP Protocol**: Implements the Model Context Protocol using `@modelcontextprotocol/sdk` for universal AI assistant compatibility
 
