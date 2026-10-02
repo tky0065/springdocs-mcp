@@ -260,6 +260,33 @@ export class ToolDefinitions {
         },
       },
       {
+        name: "get_release_notes",
+        description: "Récupère les notes de release GitHub d'un projet Spring (version précise ou dernière), avec filtre sur les changements majeurs, nouveautés ou dépréciations",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: {
+              type: "string",
+              enum: ["boot", "ai", "framework", "security", "data-jpa", "batch", "integration", "kafka", "modulith", "cloud-gateway", "cloud-config"],
+              description: "Projet Spring dont on veut les notes de release",
+              default: "boot",
+            },
+            version: {
+              type: "string",
+              maxLength: 50,
+              description: "Version de la release (ex. '3.5.0', 'v3.5.0', '4.2.0-M2'). Si omise ou 'latest' : dernière version stable",
+            },
+            focus: {
+              type: "string",
+              enum: ["all", "breaking-changes", "new-features", "deprecations"],
+              description: "Aspect à mettre en avant : tout, changements majeurs, nouveautés ou dépréciations",
+              default: "all",
+            },
+          },
+          required: [],
+        },
+      },
+      {
         name: "get_spring_best_practices",
         description: "Get best practices and recommendations for Spring Boot development",
         inputSchema: {

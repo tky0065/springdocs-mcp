@@ -4,6 +4,18 @@ import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
 import { turndownService, extractContent } from './markdown.js';
 import { absoluteSpringUrl } from './url.js';
+import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
+import { ReleaseFocus, filterReleaseBody, normalizeReleaseVersion } from './release-notes.js';
+
+/** Raw GitHub release data kept in the cache (the focus filter is applied on read). */
+interface CachedRelease {
+  tag: string;
+  name: string | null;
+  publishedAt: string | null;
+  url: string;
+  prerelease: boolean;
+  body: string | null;
+}
 
 /**
  * Advanced features service for Spring documentation - uses ONLY real Spring documentation APIs
@@ -15,8 +27,83 @@ export class AdvancedFeaturesService {
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
 
-  constructor(cache: CacheService = new CacheService()) {
+  private projectsConfig: SpringProjectsConfig;
+
+  constructor(
+    cache: CacheService = new CacheService(),
+    projectsConfig: SpringProjectsConfig = springProjectsConfig
+  ) {
     this.cache = cache;
+    this.projectsConfig = projectsConfig;
+  }
+
+  /**
+   * Get the GitHub release notes of a Spring project (a given version or the latest one),
+   * optionally filtered on breaking changes, new features or deprecations.
+   */
+  async getReleaseNotes(project: string, version?: string, focus: ReleaseFocus = 'all'): Promise<string> {
+    const config = this.projectsConfig.getProject(project);
+    if (!config.githubRepo) {
+      throw new Error(`Release notes are not available for ${config.displayName}`);
+    }
+    // Validate before any network call
+    const normalized = normalizeReleaseVersion(version);
+    const repo = config.githubRepo;
+    const tag = normalized === undefined ? undefined : `${config.githubTagPrefix ?? ''}${normalized}`;
+
+    const cacheKey = `release:${project}:${normalized ?? 'latest'}`;
+    let release = this.cache.get<CachedRelease>(cacheKey);
+
+    if (!release) {
+      const url = tag === undefined
+        ? `https://api.github.com/repos/${repo}/releases/latest`
+        : `https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`;
+      const response = await this.fetchWithRetry(url);
+
+      if (response.status === 404) {
+        throw new Error(
+          tag === undefined
+            ? `No release found for ${config.displayName}`
+            : `Release not found: ${config.displayName} ${normalized} (tag "${tag}"). See https://github.com/${repo}/releases`
+        );
+      }
+      if (response.status === 403 || response.status === 429) {
+        throw new Error('GitHub API rate limit reached (60 requests/hour without authentication). Try again later.');
+      }
+      if (!response.ok) {
+        throw new Error(`Failed to fetch release data: ${response.status}`);
+      }
+
+      const data = await response.json();
+      release = {
+        tag: data.tag_name,
+        name: data.name || null,
+        publishedAt: data.published_at || null,
+        url: data.html_url,
+        prerelease: Boolean(data.prerelease),
+        body: data.body ?? null,
+      };
+      // Only successful responses are cached; "latest" moves, so it keeps the short TTL
+      if (normalized === undefined) {
+        this.cache.set(cacheKey, release);
+      } else {
+        this.cache.setLongTerm(cacheKey, release);
+      }
+    }
+
+    let output = `# ${config.displayName} ${release.name || release.tag}\n\n`;
+    output += `**Released:** ${release.publishedAt ? release.publishedAt.slice(0, 10) : 'unknown'}\n`;
+    if (release.prerelease) output += `**Pre-release:** yes\n`;
+    output += `**Release notes:** ${release.url}\n`;
+    output += `**Focus:** ${focus}\n\n`;
+
+    const filtered = filterReleaseBody(release.body, focus);
+    if (filtered.trim()) {
+      output += extractContent(filtered, 'full').content;
+    } else {
+      output += `No ${focus} entries found in these release notes. See the full notes: ${release.url}`;
+    }
+    return output;
   }
 
   /**

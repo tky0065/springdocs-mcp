@@ -99,6 +99,10 @@ class SpringBootMCPServerAdvanced {
             result = await this.handleCompareVersions(args);
             break;
 
+          case "get_release_notes":
+            result = await this.handleGetReleaseNotes(args);
+            break;
+
           case "get_spring_best_practices":
             result = await this.handleGetBestPractices(args);
             break;
@@ -315,6 +319,21 @@ class SpringBootMCPServerAdvanced {
         {
           type: "text",
           text: comparison,
+        },
+      ],
+    };
+  }
+
+  private async handleGetReleaseNotes(args: any) {
+    const { project = "boot", version, focus = "all" } = args;
+
+    const notes = await this.advancedService.getReleaseNotes(project, version, focus);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: notes,
         },
       ],
     };

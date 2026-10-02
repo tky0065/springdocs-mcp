@@ -95,11 +95,11 @@ TOOLS_OUTPUT=$(echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params
 
 if echo "$TOOLS_OUTPUT" | grep -q '"result"'; then
     TOOL_COUNT=$(echo "$TOOLS_OUTPUT" | grep -o '"name"' | wc -l | tr -d ' ')
-    if [ "$TOOL_COUNT" -eq 12 ]; then
-        echo -e "${GREEN}✅ PASSED - Found 12 tools${NC}"
+    if [ "$TOOL_COUNT" -eq 13 ]; then
+        echo -e "${GREEN}✅ PASSED - Found 13 tools${NC}"
         TESTS_PASSED=$((TESTS_PASSED + 1))
     else
-        echo -e "${RED}❌ FAILED - Expected 12 tools, found $TOOL_COUNT${NC}"
+        echo -e "${RED}❌ FAILED - Expected 13 tools, found $TOOL_COUNT${NC}"
         TESTS_FAILED=$((TESTS_FAILED + 1))
     fi
 else

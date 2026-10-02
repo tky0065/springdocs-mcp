@@ -316,6 +316,52 @@
     ]
   },
   {
+    "name": "get_release_notes",
+    "description": "Récupère les notes de release GitHub d'un projet Spring (version précise ou dernière), avec filtre sur les changements majeurs, nouveautés ou dépréciations",
+    "arguments": [
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Projet Spring dont on veut les notes de release",
+        "enum": [
+          "boot",
+          "ai",
+          "framework",
+          "security",
+          "data-jpa",
+          "batch",
+          "integration",
+          "kafka",
+          "modulith",
+          "cloud-gateway",
+          "cloud-config"
+        ],
+        "default": "boot"
+      },
+      {
+        "name": "version",
+        "type": "string",
+        "required": false,
+        "description": "Version de la release (ex. '3.5.0', 'v3.5.0', '4.2.0-M2'). Si omise ou 'latest' : dernière version stable",
+        "maxLength": 50
+      },
+      {
+        "name": "focus",
+        "type": "string",
+        "required": false,
+        "description": "Aspect à mettre en avant : tout, changements majeurs, nouveautés ou dépréciations",
+        "enum": [
+          "all",
+          "breaking-changes",
+          "new-features",
+          "deprecations"
+        ],
+        "default": "all"
+      }
+    ]
+  },
+  {
     "name": "get_spring_best_practices",
     "description": "Get best practices and recommendations for Spring Boot development",
     "arguments": [
