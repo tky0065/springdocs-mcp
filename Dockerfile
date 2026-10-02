@@ -2,7 +2,7 @@
 # Optimized for size, security, and Docker MCP Catalog compatibility
 
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 LABEL maintainer="EnokDev <tky0065@gmail.com>"
 LABEL description="Spring Documentation MCP Server - Build Stage"
@@ -27,7 +27,7 @@ RUN npm run build
 RUN test -f build/index.js || (echo "Build failed: build/index.js not found" && exit 1)
 
 # Stage 2: Production
-FROM node:20-alpine
+FROM node:22-alpine
 
 LABEL maintainer="EnokDev <tky0065@gmail.com>"
 LABEL description="Spring Documentation MCP Server for Spring Boot and Spring AI"
@@ -51,7 +51,7 @@ RUN addgroup -g 1001 -S mcp && \
 COPY --chown=mcp:mcp package*.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production --quiet && \
+RUN npm ci --omit=dev --quiet && \
     npm cache clean --force
 
 # Copy built application from builder stage
@@ -67,10 +67,10 @@ USER mcp
 ENV MCP_SERVER_NAME="springdocs-mcp"
 ENV MCP_SERVER_VERSION="1.2.8"
 
-# Health check to verify Node.js process is running
-# Simple check that exits successfully if node is responsive
+# Health check: stdio server without any port, so only verify that Node.js
+# starts and that the compiled entry point (build/index.js) is present
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "process.exit(0)"
+  CMD node -e "require('fs').accessSync('build/index.js')"
 
 # Entry point - MCP servers communicate via stdio
 ENTRYPOINT ["node", "build/index.js"]
