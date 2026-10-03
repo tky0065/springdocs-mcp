@@ -45,13 +45,14 @@ npm run cicd:check   # Check CI/CD configuration status
 **Server Entry Point** (`src/index.ts`):
 - `SpringBootMCPServerAdvanced` class orchestrates the entire MCP server
 - Uses MCP SDK's `Server` class; `createServer()` builds a fresh `Server` bound to the shared service singletons (once for stdio, once per request for HTTP). Stdio is the default transport, Streamable HTTP is opt-in
-- Handles 17 tools split between core documentation and advanced features
-- All tool handlers route to either `docsService` or `advancedService`
+- Handles 17 tools, routed to four collaborators: `docsService` (8), `advancedService` (6), `initializrService` (2) and the shared `cache` (1)
 
 **Services Architecture**:
-- `SpringBootDocsServiceOptimized` (`src/services/springboot-docs-optimized.ts`): Handles the 8 core documentation tools (search docs, projects, guides, references, concepts, `get_migration_guide`)
-- `AdvancedFeaturesService` (`src/services/advanced-features.ts`): Handles the 7 advanced tools (ecosystem search, tutorials, version comparison, `get_release_notes`, best practices, diagnostics, `spring_cache_stats`)
-- `CacheService` (`src/services/cache.ts`): In-memory caching with TTL (30min default, 24h for stable content)
+- `SpringBootDocsServiceOptimized` (`src/services/springboot-docs-optimized.ts`): the 8 core documentation tools (`search_spring_docs`, `search_spring_projects`, `get_spring_project`, `get_all_spring_guides`, `get_spring_guide`, `get_spring_reference`, `search_spring_concepts`, `get_migration_guide`)
+- `AdvancedFeaturesService` (`src/services/advanced-features.ts`): the 6 advanced tools (`search_spring_ecosystem`, `get_spring_tutorial`, `compare_spring_versions`, `get_release_notes`, `get_spring_best_practices`, `diagnose_spring_issues`)
+- `InitializrService` (`src/services/initializr.ts`): the 2 Initializr tools (`get_spring_initializr`, `find_spring_dependency`)
+- `spring_cache_stats` is answered directly by `CacheService.statsReport()` from `src/index.ts`
+- `CacheService` (`src/services/cache.ts`): In-memory caching with TTL (30min default, 24h for stable content), one instance shared by all services
 
 - `src/config.ts`: `parseConfig` (flags `--transport/--port/--host` and `MCP_*` env vars)
 - `src/http-server.ts`: Streamable HTTP transport on `node:http` (stateless: one `Server` per request, Host/Origin checks, 1 MiB body cap, `POST /mcp`, `GET /healthz`)
@@ -67,7 +68,7 @@ npm run cicd:check   # Check CI/CD configuration status
 - `src/services/search-index.ts`: in-memory BM25 index (`SearchIndex`) fed by pages the docs service already fetched; powers `docType="content"` of `search_spring_docs` (never cached, empty on a cold server)
 
 **Tool Definitions** (`src/tools/index.ts`):
-- Centralized schema definitions for all 17 MCP tools
+- Centralized schema definitions for all 17 MCP tools (source of truth for the tool count and names)
 - Defines input validation, types, and descriptions for each tool
 
 ### Key Design Patterns
