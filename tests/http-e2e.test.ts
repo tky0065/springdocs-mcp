@@ -19,7 +19,7 @@ function start(args: string[], env: Record<string, string> = {}) {
     const timer = setTimeout(() => reject(new Error("server did not report its port")), 8000);
     proc.stderr!.on("data", (chunk) => {
       buffer += chunk;
-      const match = buffer.match(/HTTP server listening on http:\/\/[^:]+:(\d+)\/mcp/);
+      const match = buffer.match(/HTTP server listening on http:\/\/\S+:(\d+)\/mcp/);
       if (match) { clearTimeout(timer); resolve(Number(match[1])); }
     });
     proc.on("exit", (code) => { clearTimeout(timer); reject(new Error(`server exited early (${code})`)); });

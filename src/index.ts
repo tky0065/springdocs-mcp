@@ -567,7 +567,7 @@ No results found for "${results.query}" in scope "${results.scope}".`;
           allowedHosts: config.allowedHosts,
           createServer: () => this.createServer(),
         });
-        console.error(`🚀 HTTP server listening on http://${config.host}:${this.httpServer.port}/mcp`);
+        console.error(`🚀 HTTP server listening on http://${this.httpServer.address}/mcp`);
         return;
       }
       const server = this.createServer();

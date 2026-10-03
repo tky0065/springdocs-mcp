@@ -201,6 +201,8 @@ npx @enokdev/springdocs-mcp --transport http --port 3000   # écoute sur 127.0.0
 
 Endpoint MCP : `POST /mcp` (mode sans état) ; santé : `GET /healthz`. **Aucune authentification** : l'écoute reste sur loopback par défaut, et les en-têtes `Host`/`Origin` sont contrôlés contre le DNS rebinding. Pour un conteneur, `MCP_TRANSPORT=http MCP_HOST=0.0.0.0` avec le port publié (`-p 127.0.0.1:3000:3000`) ; si le port publié diffère du port interne, déclarer le `Host` utilisé par le client, par exemple `MCP_ALLOWED_HOSTS=localhost:8080`.
 
+Le `Host` doit être de la forme `nom:port` : un `Host` sans port (client sur le port 80 ou 443 derrière un reverse proxy, par exemple `Host: mcp.example.com`) est refusé en 403. Il faut alors le déclarer tel que le proxy le transmet, via `MCP_ALLOWED_HOSTS=mcp.example.com` (liste séparée par des virgules, comparaison exacte avec l'en-tête reçu).
+
 ## 🧪 Testing & Development
 
 ### Quick Test

@@ -14,6 +14,8 @@ export interface HttpServerOptions {
 
 export interface RunningHttpServer {
   port: number;
+  /** Address actually bound, as `ip:port` (`[ip]:port` for IPv6), not the configured host name. */
+  address: string;
   close(): Promise<void>;
 }
 
@@ -138,8 +140,13 @@ export async function startHttpServer(options: HttpServerOptions): Promise<Runni
   const port = typeof address === "object" && address ? address.port : options.port;
   allowed = new Set([`localhost:${port}`, `127.0.0.1:${port}`, `[::1]:${port}`, ...extraHosts]);
 
+  const bound = typeof address === "object" && address
+    ? `${address.family === "IPv6" ? `[${address.address}]` : address.address}:${address.port}`
+    : `${options.host}:${port}`;
+
   return {
     port,
+    address: bound,
     close: () => new Promise<void>((resolve) => {
       server.close(() => resolve());
       server.closeIdleConnections();

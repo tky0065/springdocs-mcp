@@ -1,4 +1,5 @@
 import { request as httpRequest } from "node:http";
+import { connect, isIP } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -104,10 +105,31 @@ describe("transport Streamable HTTP (#53)", () => {
     expect((await raw("POST", "/mcp", { headers: JSON_HEADERS, body: INIT })).status).toBe(200);
   });
 
-  it("répond 413 pour un corps de plus de 1 Mo, puis continue de servir", async () => {
-    const big = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "x", params: { pad: "a".repeat(1_100_000) } });
-    const res = await raw("POST", "/mcp", { headers: JSON_HEADERS, body: big }).catch(() => ({ status: 413 }));
+  it("répond 413 dès l'en-tête Content-Length trop grand, sans lire le corps (déterministe)", async () => {
+    const res = await new Promise<{ status: number; body: string }>((resolve, reject) => {
+      const req = httpRequest({ host: "127.0.0.1", port: running.port, method: "POST", path: "/mcp", headers: { ...JSON_HEADERS, "content-length": "2000000" } }, (r) => {
+        let body = "";
+        r.on("data", chunk => (body += chunk));
+        r.on("end", () => resolve({ status: r.statusCode ?? 0, body }));
+      });
+      req.on("error", reject);
+      req.write("{"); // le corps annoncé n'est jamais envoyé : le serveur doit répondre sans l'attendre
+    });
     expect(res.status).toBe(413);
+    expect(JSON.parse(res.body).error.message).toMatch(/too large/);
+    expect((await raw("POST", "/mcp", { headers: JSON_HEADERS, body: INIT })).status).toBe(200);
+  });
+
+  it("répond 413 ou coupe la connexion (ECONNRESET/EPIPE) pour un corps réel de plus de 1 Mo, puis continue de servir", async () => {
+    // Le serveur répond 413 puis ferme la socket sans drainer le corps : selon la
+    // course entre l'envoi du client et la fermeture, le client voit la réponse 413
+    // ou une erreur de socket. Aucun autre résultat n'est acceptable.
+    const big = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "x", params: { pad: "a".repeat(1_100_000) } });
+    const outcome = await raw("POST", "/mcp", { headers: JSON_HEADERS, body: big }).then(
+      r => r.status,
+      (error: NodeJS.ErrnoException) => error.code,
+    );
+    expect([413, "ECONNRESET", "EPIPE"]).toContain(outcome);
     expect((await raw("POST", "/mcp", { headers: JSON_HEADERS, body: INIT })).status).toBe(200);
   });
 
@@ -123,6 +145,31 @@ describe("transport Streamable HTTP (#53)", () => {
     const again = await startHttpServer({ host: "127.0.0.1", port, createServer: stubServer });
     expect(again.port).toBe(port);
     await again.close();
+    running = await startHttpServer({ host: "127.0.0.1", port: 0, createServer: stubServer }); // pour afterEach
+  });
+
+  it("expose l'adresse réellement liée (IP littérale, pas le nom configuré)", async () => {
+    const named = await startHttpServer({ host: "localhost", port: 0, createServer: stubServer });
+    const match = named.address.match(/^\[?([^\]]+?)\]?:(\d+)$/);
+    expect(match).not.toBeNull();
+    expect(isIP(match![1])).not.toBe(0);
+    expect(Number(match![2])).toBe(named.port);
+    await named.close();
+  });
+
+  it("close() force la fermeture d'une connexion ouverte après le délai de grâce", async () => {
+    const socket = connect(running.port, "127.0.0.1");
+    await new Promise<void>(resolve => socket.once("connect", resolve));
+    // requête incomplète : la connexion n'est pas inactive, close() ne peut pas la fermer tout de suite
+    socket.write(`POST /mcp HTTP/1.1\r\nHost: 127.0.0.1:${running.port}\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n{`);
+    const closed = new Promise<void>(resolve => { socket.on("close", () => resolve()); socket.on("error", () => {}); });
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const start = Date.now();
+    await running.close();
+    await closed;
+    const elapsed = Date.now() - start;
+    expect(elapsed).toBeGreaterThanOrEqual(1500);
+    expect(elapsed).toBeLessThan(5000);
     running = await startHttpServer({ host: "127.0.0.1", port: 0, createServer: stubServer }); // pour afterEach
   });
 
