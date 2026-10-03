@@ -50,8 +50,8 @@ describe("transport HTTP de bout en bout (#53)", () => {
       await client.close();
       return result.content[0].text as string;
     };
-    expect(await call()).toMatch(/Entries: 0 \//);
-    expect(await call()).toMatch(/Entries: 0 \//); // même instance de cache, pas de crash sur la 2e requête
+    expect(await call()).toMatch(/Entries: 0\n- Memory/);
+    expect(await call()).toMatch(/Entries: 0\n- Memory/); // même instance de cache, pas de crash sur la 2e requête
   });
 
   it("MCP_TRANSPORT=http suffit, et SIGTERM termine le processus avec le code 0", async () => {
