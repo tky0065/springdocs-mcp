@@ -10,6 +10,7 @@ import { InitializrService } from "./services/initializr.js";
 import { ToolDefinitions } from "./tools/index.js";
 import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
+import { formatSearchResults } from "./format.js";
 import { listPrompts, getPrompt } from "./prompts.js";
 import { ResourcesService } from "./resources.js";
 import { parseConfig, type ServerConfig } from "./config.js";
@@ -207,7 +208,7 @@ class SpringBootMCPServerAdvanced {
       content: [
         {
           type: "text",
-          text: `Search results for "${query}":\n\n${this.formatSearchResults(results)}`,
+          text: `Search results for "${query}":\n\n${formatSearchResults(results)}`,
         },
       ],
     };
@@ -226,7 +227,7 @@ class SpringBootMCPServerAdvanced {
       content: [
         {
           type: "text",
-          text: `Spring projects found for "${query}":\n\n${this.formatSearchResults(results)}`,
+          text: `Spring projects found for "${query}":\n\n${formatSearchResults(results)}`,
         },
       ],
     };
@@ -260,7 +261,7 @@ class SpringBootMCPServerAdvanced {
       content: [
         {
           type: "text",
-          text: `Available Spring guides${category ? ` in category "${category}"` : ""}:\n\n${this.formatSearchResults(results)}`,
+          text: `Available Spring guides${category ? ` in category "${category}"` : ""}:\n\n${formatSearchResults(results)}`,
         },
       ],
     };
@@ -306,13 +307,13 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleSearchConcepts(args: any) {
-    const { concept, category } = args;
+    const { concept } = args;
 
     if (!concept || typeof concept !== "string") {
       throw new Error("The 'concept' parameter is required and must be a string");
     }
 
-    const results = await this.docsService.searchConcepts(concept, category);
+    const results = await this.docsService.searchConcepts(concept);
 
     return {
       content: [
@@ -494,29 +495,6 @@ class SpringBootMCPServerAdvanced {
   }
 
   // Formatting methods
-  private formatSearchResults(results: any[]): string {
-    if (results.length === 0) {
-      return "No results found.";
-    }
-
-    return results
-      .map((result, index) => {
-        if (result.type === "note") {
-          return `${index + 1}. **${result.title}**
-   ${result.description}
-
-`;
-        }
-        return `${index + 1}. **${result.title}**
-   Type: ${result.type}
-   URL: ${result.url}
-   Description: ${result.description || "No description available"}
-
-`;
-      })
-      .join("\n");
-  }
-
   private formatEcosystemResults(results: any): string {
     if (!results || results.totalResults === 0) {
       return `# Spring Ecosystem Search Results

@@ -28,7 +28,7 @@ const code = (fn: () => unknown) => {
 beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => {});
   mockedFetch.mockReset();
-  mockedFetch.mockImplementation(async () => fakeResponse(200, "<main><h1>Titre</h1><p>Corps du document.</p></main>") as any);
+  mockedFetch.mockImplementation(async () => fakeResponse(200, "<main><h1>Titre</h1><p>Corps du document. Texte suffisamment long pour représenter une vraie page de documentation.</p></main>") as any);
 });
 
 describe("parseResourceUri", () => {
