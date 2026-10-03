@@ -182,6 +182,23 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ---
 
+## Transport HTTP (optionnel)
+
+Par défaut le serveur parle stdio. Pour l'héberger en local ou en conteneur :
+
+```bash
+npx @enokdev/springdocs-mcp --transport http --port 3000   # écoute sur 127.0.0.1
+```
+
+| Option | Variable | Défaut |
+|---|---|---|
+| `--transport stdio\|http` | `MCP_TRANSPORT` | `stdio` |
+| `--port` | `MCP_PORT` | `3000` |
+| `--host` | `MCP_HOST` | `127.0.0.1` |
+| (aucune) | `MCP_ALLOWED_HOSTS` | vide : liste de `Host` supplémentaires, séparés par des virgules |
+
+Endpoint MCP : `POST /mcp` (mode sans état) ; santé : `GET /healthz`. **Aucune authentification** : l'écoute reste sur loopback par défaut, et les en-têtes `Host`/`Origin` sont contrôlés contre le DNS rebinding. Pour un conteneur, `MCP_TRANSPORT=http MCP_HOST=0.0.0.0` avec le port publié (`-p 127.0.0.1:3000:3000`) ; si le port publié diffère du port interne, déclarer le `Host` utilisé par le client, par exemple `MCP_ALLOWED_HOSTS=localhost:8080`.
+
 ## 🧪 Testing & Development
 
 ### Quick Test
