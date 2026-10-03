@@ -140,7 +140,7 @@ describe("AdvancedFeaturesService.getReleaseNotes (#33)", () => {
 
   it("rejette les versions invalides avant tout appel réseau et les projets inconnus", async () => {
     const service = new AdvancedFeaturesService();
-    for (const bad of ["../x", "3.5", "3.5.0/../x", "v", "3.5.0 "]) {
+    for (const bad of ["../x", "3.5.0/../x", "v", "3.5.0 "]) {
       expect(await failure(service.getReleaseNotes("boot", bad)), bad).toMatch(/Invalid version/);
     }
     expect(mockedFetch).not.toHaveBeenCalled();

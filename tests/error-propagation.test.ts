@@ -90,10 +90,10 @@ describe("AdvancedFeaturesService", () => {
   it("rejects when the only selected source is down and does not cache the failure", async () => {
     const service = new AdvancedFeaturesService();
     down = ALL;
-    await rejected(service.searchEcosystem("boot", "guides", 5));
+    await rejected(service.searchEcosystem("rest", "guides", 5));
 
     down = [];
-    const result = await value(service.searchEcosystem("boot", "guides", 5));
+    const result = await value(service.searchEcosystem("rest", "guides", 5));
     expect(result).not.toContain("No results found");
   });
 

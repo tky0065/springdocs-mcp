@@ -109,3 +109,36 @@ describe("AdvancedFeaturesService.compareVersions (#37)", () => {
     expect(await run(service.compareVersions("3.4.0", "3.5.0"))).toContain("ok body");
   });
 });
+
+describe("AdvancedFeaturesService.compareVersions : focus", () => {
+  const BODY = ["## New Features", "* Add virtual threads #1", "## Bug Fixes", "* Remove deprecated `foo` #2", "* Binding is no longer lenient #3"].join("\n");
+
+  it("new-features : applique le filtre de release-notes aux deux versions", async () => {
+    servePages([[rel("v3.5.0", BODY), rel("v3.4.0", BODY)]]);
+    const out = await run(new AdvancedFeaturesService().compareVersions("3.4.0", "3.5.0", "new-features"));
+    expect(out).toContain("virtual threads");
+    expect(out).not.toContain("no longer lenient");
+    expect(out).toContain("**Focus:** new-features");
+  });
+
+  it("breaking-changes : ne garde que les lignes correspondantes", async () => {
+    servePages([[rel("v3.5.0", BODY), rel("v3.4.0", BODY)]]);
+    const out = await run(new AdvancedFeaturesService().compareVersions("3.4.0", "3.5.0", "breaking-changes"));
+    expect(out).toContain("no longer lenient");
+    expect(out).not.toContain("virtual threads");
+  });
+
+  it("indique l'absence d'entrées pour le focus demandé", async () => {
+    servePages([[rel("v3.5.0", "* nothing relevant"), rel("v3.4.0", "* nothing relevant")]]);
+    const out = await run(new AdvancedFeaturesService().compareVersions("3.4.0", "3.5.0", "deprecations"));
+    expect(out).toContain("No deprecations entries found");
+  });
+
+  it("des focus différents ont des entrées de cache distinctes", async () => {
+    const service = new AdvancedFeaturesService();
+    servePages([[rel("v3.5.0", BODY), rel("v3.4.0", BODY)]]);
+    const a = await run(service.compareVersions("3.4.0", "3.5.0", "new-features"));
+    const b = await run(service.compareVersions("3.4.0", "3.5.0", "breaking-changes"));
+    expect(a).not.toBe(b);
+  });
+});

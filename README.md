@@ -201,6 +201,14 @@ npx @enokdev/springdocs-mcp --transport http --port 3000   # écoute sur 127.0.0
 
 Endpoint MCP : `POST /mcp` (mode sans état) ; santé : `GET /healthz`. **Aucune authentification** : l'écoute reste sur loopback par défaut, et les en-têtes `Host`/`Origin` sont contrôlés contre le DNS rebinding. Pour un conteneur, `MCP_TRANSPORT=http MCP_HOST=0.0.0.0` avec le port publié (`-p 127.0.0.1:3000:3000`) ; si le port publié diffère du port interne, déclarer le `Host` utilisé par le client, par exemple `MCP_ALLOWED_HOSTS=localhost:8080`.
 
+### Jeton GitHub (optionnel)
+
+`get_release_notes` et `compare_spring_versions` interrogent l'API GitHub, limitée à 60 requêtes/heure sans authentification. Définir `GITHUB_TOKEN` (jeton sans scope particulier suffit) relève cette limite à 5000/heure ; le jeton n'est envoyé qu'à `api.github.com` (jamais à un autre hôte ni après une redirection) et n'est jamais journalisé. En cas de limite atteinte, l'outil échoue immédiatement avec un message clair (délai de reprise inclus) au lieu d'attendre. `get_release_notes` accepte `version` en `X.Y` (ex. `3.5`) pour obtenir la dernière release stable de cette mineure ; `compare_spring_versions` applique `focus` (`breaking-changes`, `new-features`, `deprecations`).
+
+```json
+{ "mcpServers": { "springdocs": { "command": "npx", "args": ["@enokdev/springdocs-mcp@latest"], "env": { "GITHUB_TOKEN": "ghp_..." } } } }
+```
+
 ## 🧪 Testing & Development
 
 ### Quick Test

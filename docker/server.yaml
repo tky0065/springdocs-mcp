@@ -66,6 +66,11 @@ config:
       description: "Maximum retry attempts for failed requests (default: 3)"
       required: false
 
+    - name: GITHUB_TOKEN
+      value: ""
+      description: "Optional GitHub token raising the API rate limit for get_release_notes / compare_spring_versions (sent to api.github.com only)"
+      required: false
+
     - name: NODE_OPTIONS
       value: "--max-old-space-size=4096"
       description: "Node.js memory optimization (default: --max-old-space-size=4096)"

@@ -274,7 +274,7 @@ export class ToolDefinitions {
             version: {
               type: "string",
               maxLength: 50,
-              description: "Version de la release (ex. '3.5.0', 'v3.5.0', '4.2.0-M2'). Si omise ou 'latest' : dernière version stable",
+              description: "Version de la release (ex. '3.5.0', 'v3.5.0', '4.2.0-M2' ; '3.5' = dernière release stable de cette mineure). Si omise ou 'latest' : dernière version stable. Jeton GitHub optionnel via la variable d'environnement GITHUB_TOKEN (limite de débit relevée)",
             },
             focus: {
               type: "string",

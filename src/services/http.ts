@@ -6,6 +6,48 @@ export interface FetchResult {
   status: number;
   text(): Promise<string>;
   json(): Promise<any>;
+  /** Set for an api.github.com response refused because of a rate limit (never retried). */
+  rateLimit?: GitHubRateLimit;
+}
+
+export interface GitHubRateLimit {
+  retryAfterSeconds?: number;
+  resetAt?: string;
+}
+
+const GITHUB_API_HOST = 'api.github.com';
+
+/** Optional GITHUB_TOKEN, trimmed; undefined when unset or blank. Never log it. */
+function githubToken(): string | undefined {
+  const token = process.env.GITHUB_TOKEN?.trim();
+  return token ? token : undefined;
+}
+
+/** Clear message for a GitHub rate-limited response (no waiting, no secret in it). */
+export function githubRateLimitMessage(rateLimit?: GitHubRateLimit): string {
+  let message = githubToken()
+    ? 'GitHub API rate limit reached (authenticated with GITHUB_TOKEN).'
+    : 'GitHub API rate limit reached (60 requests/hour without authentication; set GITHUB_TOKEN to raise it to 5000).';
+  if (rateLimit?.retryAfterSeconds !== undefined) {
+    message += ` Retry in ${rateLimit.retryAfterSeconds} seconds.`;
+  } else if (rateLimit?.resetAt) {
+    message += ` The limit resets at ${rateLimit.resetAt}.`;
+  } else {
+    message += ' Try again later.';
+  }
+  return message;
+}
+
+function parseRateLimit(headers: { get(name: string): string | null }): GitHubRateLimit | undefined {
+  const retryAfter = Number(headers.get('retry-after') ?? NaN);
+  const remaining = headers.get('x-ratelimit-remaining');
+  const reset = Number(headers.get('x-ratelimit-reset') ?? NaN);
+  const hasRetryAfter = headers.get('retry-after') !== null && Number.isFinite(retryAfter) && retryAfter >= 0;
+  if (!hasRetryAfter && remaining !== '0') return undefined;
+  const info: GitHubRateLimit = {};
+  if (hasRetryAfter) info.retryAfterSeconds = retryAfter;
+  if (Number.isFinite(reset) && reset > 0) info.resetAt = new Date(reset * 1000).toISOString();
+  return info;
 }
 
 export const REQUEST_TIMEOUT = 10000;
@@ -44,15 +86,21 @@ export async function fetchWithRetry(url: string, timeout = REQUEST_TIMEOUT, ret
       let redirects = 0;
       let response;
       for (;;) {
+        const headers: Record<string, string> = {
+          'User-Agent': USER_AGENT,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9'
+        };
+        // The token goes to api.github.com only, checked on every hop (never after a redirect elsewhere)
+        const token = githubToken();
+        if (token && new URL(currentUrl).hostname === GITHUB_API_HOST) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
         response = await fetch(currentUrl, {
           signal: controller.signal,
           size: MAX_RESPONSE_BYTES,
           redirect: 'manual',
-          headers: {
-            'User-Agent': USER_AGENT,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9'
-          }
+          headers
         });
         // Reject early when the server announces a body above the limit
         const declaredLength = Number(response.headers.get('content-length'));
@@ -100,6 +148,15 @@ export async function fetchWithRetry(url: string, timeout = REQUEST_TIMEOUT, ret
         text: async () => body,
         json: async () => JSON.parse(body)
       };
+
+      // A GitHub rate limit lasts minutes to an hour: waiting 10 s is pointless, report it at once
+      if ((response.status === 403 || response.status === 429) && new URL(currentUrl).hostname === GITHUB_API_HOST) {
+        const rateLimit = parseRateLimit(response.headers);
+        if (rateLimit) {
+          result.rateLimit = rateLimit;
+          return result;
+        }
+      }
 
       const retryable = response.status === 429 || response.status >= 500;
       if (!retryable || attempt === retries) return result;
