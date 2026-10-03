@@ -2,17 +2,42 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-03
+
 ### Added
-- New tools `get_release_notes` (GitHub release notes with focus filter) and `get_migration_guide` (Spring Boot migration guides and upgrade notes)
-- `get_spring_reference`: 11 projects supported, new `version` and `offset` parameters
-- `get_spring_project`: new `offset` parameter
+- New tools: `get_release_notes`, `get_migration_guide`, `spring_cache_stats`, `get_spring_initializr` and `find_spring_dependency` (17 tools in total)
+- `get_migration_guide`: `project` parameter (`spring-boot` by default, `spring-framework`, `spring-batch`), `section` and `offset`
+- `get_release_notes`: any Spring project from the registry, `focus` filter, `version` as `X.Y` (latest stable release of that minor)
+- Optional `GITHUB_TOKEN` (sent to `api.github.com` only, never logged) to lift the 60 requests/hour GitHub limit; a rate limit now fails immediately with the reset delay
+- `get_spring_reference`: 11 projects supported, new `version` and `offset` parameters; `version` is also accepted by `search_spring_docs` and `search_spring_concepts` for Spring Boot reference pages
+- `find_spring_dependency`: `bootVersion` parameter
+- Full-text search: `search_spring_docs` with `docType="content"` (in-memory BM25 index fed by pages already read)
+- MCP resources (`spring://project/<slug>`, `spring://guide/<id>`) and prompts (`migrate-boot-version`, `explain-error`)
+- Streamable HTTP transport (`--transport http` / `MCP_TRANSPORT`): stateless, `POST /mcp` and `GET /healthz`, loopback by default, Host/Origin checks, 1 MiB body cap
+- `MCP_CACHE_MAX_MB` to set the cache budget (64 MiB by default)
 
 ### Changed
-- Pagination by pages of 4000 characters instead of truncation at 1500
+- Pagination by pages of 4000 characters instead of truncation at 1500; footer now in English
 - `detail_level=full` goes from 8000 to 50000 characters for guides and tutorials (output change)
-- `diagnose_spring_issues`: local (offline) stack trace analysis instead of a 3-word search
-- HTTP responses are capped at 5 MiB
-- Internal refactor (`http.ts`, `markdown.ts`, shared cache)
+- `diagnose_spring_issues`: local (offline) stack trace analysis; a 403 is attributed to Spring Security only when the first frame is a security frame
+- `search_spring_concepts`: the `category` parameter is removed (the reference page has no categories); clients that still send it are not affected
+- Cache bounded in bytes (LRU) instead of entry count; `spring_cache_stats` reports estimated memory
+- MCP SDK upgraded to 1.x; Docker image on Node 22
+- HTTP: responses capped at 5 MiB, redirects restricted to an allowlist of hosts, tool arguments validated against their schema
+- Internal refactor (`http.ts`, `markdown.ts`, shared cache, shared fence scanner, shared guides list)
+
+### Fixed
+- `console.log` on stdout corrupted the stdio JSON-RPC channel
+- `search_spring_docs` only searched the first `limit` guides; the guides list now comes from spring.io `page-data.json` (also used by `search_spring_ecosystem`)
+- `get_spring_guide` returned almost nothing for current guides
+- Network failures were cached for 30 minutes and reported as empty results
+- `fetchWithRetry` now retries 429/5xx with exponential backoff
+- `find_spring_dependency`: short words match whole words only, correct scopes for `devtools`, `docker-compose` and `native`
+- `compare_spring_versions` honors `focus`
+
+### Security
+- Input validation on all path segments (`guideId`, `projectName`, `section`) and tool arguments
+- Dependencies updated (MCP SDK, undici); CI workflows with minimal permissions, pinned actions and npm provenance
 
 ## [1.3.0] - 2026-02-16 🐳 (Prepared - Pending Docker MCP Catalog Submission)
 

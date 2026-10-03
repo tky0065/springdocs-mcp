@@ -195,7 +195,7 @@ For complete documentation, see the main repository:
 
 ## Version
 
-**Current Version**: 1.2.8
+**Current Version**: 1.4.0
 
 **Changelog**: See [CHANGELOG.md](https://github.com/tky0065/springdocs-mcp/blob/main/CHANGELOG.md)
 

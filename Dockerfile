@@ -31,10 +31,10 @@ FROM node:22-alpine
 
 LABEL maintainer="EnokDev <tky0065@gmail.com>"
 LABEL description="Spring Documentation MCP Server for Spring Boot and Spring AI"
-LABEL version="1.2.8"
+LABEL version="1.4.0"
 LABEL org.opencontainers.image.title="Spring Documentation MCP Server"
 LABEL org.opencontainers.image.description="MCP server providing access to Spring Boot, Spring AI, and Spring Framework documentation"
-LABEL org.opencontainers.image.version="1.2.8"
+LABEL org.opencontainers.image.version="1.4.0"
 LABEL org.opencontainers.image.url="https://github.com/tky0065/springdocs-mcp"
 LABEL org.opencontainers.image.source="https://github.com/tky0065/springdocs-mcp"
 LABEL org.opencontainers.image.licenses="MIT"
@@ -65,7 +65,7 @@ USER mcp
 
 # Expose metadata for MCP protocol
 ENV MCP_SERVER_NAME="springdocs-mcp"
-ENV MCP_SERVER_VERSION="1.2.8"
+ENV MCP_SERVER_VERSION="1.4.0"
 
 # Health check: stdio server without any port, so only verify that Node.js
 # starts and that the compiled entry point (build/index.js) is present

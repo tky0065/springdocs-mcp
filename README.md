@@ -5,7 +5,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Universal%20Compatible-brightgreen.svg)](https://modelcontextprotocol.io/)
 
-> **🚀 Enhanced v1.2.8:** 17 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
+> **🚀 Enhanced v1.4.0:** 17 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
 >
 > **🌐 Universal MCP Compatibility:** Works with Claude Code, Gemini CLI, VS Code, JetBrains IDEs, and all MCP-compatible clients!
 
