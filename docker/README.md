@@ -91,13 +91,15 @@ The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_
 - `get_migration_guide` - Spring Boot migration guide / upgrade notes
 - `search_spring_concepts` - Explore Spring concepts
 
-### Advanced Tools (9 Tools)
+### Advanced Tools (6 Tools)
 - `search_spring_ecosystem` - Search entire ecosystem + Spring AI
 - `get_spring_tutorial` - Step-by-step tutorials
 - `compare_spring_versions` - Version comparison & migration
 - `get_release_notes` - GitHub release notes (any project, with focus filter)
 - `get_spring_best_practices` - Expert guidance by category
 - `diagnose_spring_issues` - Intelligent error diagnosis
+
+### Tooling (3 Tools)
 - `spring_cache_stats` - Cache statistics and optional purge
 - `get_spring_initializr` - Spring Initializr options and dependencies (start.spring.io)
 - `find_spring_dependency` - Find starters for a need, with Maven and Gradle snippets (optional `bootVersion` as X.Y.Z)

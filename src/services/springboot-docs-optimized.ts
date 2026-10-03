@@ -402,7 +402,7 @@ export class SpringBootDocsServiceOptimized {
 
     const markdown = keyword ? selectSections(entry.markdown, keyword, entry.title) : entry.markdown;
     const title = keyword ? `${entry.title} (section: ${keyword})` : entry.title;
-    return this.formatPage(title, markdown, entry.url, offset, 'For the complete page, visit');
+    return this.formatPage(title, markdown, entry.url, offset, 'For the complete page, visit', Boolean(keyword));
   }
 
   private async fetchBootWikiPage(version: string, document: WikiDocument) {
@@ -441,14 +441,15 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Format one page of a full markdown document with a pagination footer
    */
-  private formatPage(title: string, markdown: string, url: string, offset: number, linkLabel: string): string {
+  private formatPage(title: string, markdown: string, url: string, offset: number, linkLabel: string, filtered = false): string {
     const page = pageMarkdown(markdown, offset);
     if (offset >= page.total) {
       return `No content at offset ${offset} (total: ${page.total} characters).`;
     }
     let result = `# ${title}\n\n${page.content}`;
     if (page.nextOffset !== null) {
-      result += `\n\n---\nPartie ${page.start}–${page.end} sur ${page.total} caractères. Pour la suite, rappeler avec offset=${page.nextOffset}.`;
+      const note = filtered ? ' The offset applies to the filtered text (the selected section), not to the full page.' : '';
+      result += `\n\n---\nPart ${page.start}–${page.end} of ${page.total} characters. To continue, call again with offset=${page.nextOffset}.${note}`;
     }
     return `${result}\n\n${linkLabel}: ${url}`;
   }

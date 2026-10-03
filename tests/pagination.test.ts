@@ -42,8 +42,8 @@ describe.each(cases)("pagination $name (#24)", ({ link, title, call }) => {
 
   it("première page : pied de pagination et lien, sans ...", async () => {
     const text = await call(new SpringBootDocsServiceOptimized());
-    expect(text).toContain("Partie 0–");
-    expect(text).toMatch(/Pour la suite, rappeler avec offset=\d+/);
+    expect(text).toContain("Part 0–");
+    expect(text).toMatch(/To continue, call again with offset=\d+/);
     expect(text).toContain(link);
     expect(text).not.toContain("...");
   });
@@ -53,7 +53,7 @@ describe.each(cases)("pagination $name (#24)", ({ link, title, call }) => {
     let text = await call(service);
     let pages = 1;
     while (true) {
-      const m = text.match(/Pour la suite, rappeler avec offset=(\d+)/);
+      const m = text.match(/To continue, call again with offset=(\d+)/);
       if (!m) break;
       text = await call(service, Number(m[1]));
       expect(text).toMatch(title);
@@ -72,10 +72,10 @@ describe.each(cases)("pagination $name (#24)", ({ link, title, call }) => {
     expect(text).toContain("No content at offset 1000000000 (total: ");
   });
 
-  it("petit document : ni Partie ni ...", async () => {
+  it("petit document : ni Part ni ...", async () => {
     mockedFetch.mockImplementation(async () => fakeResponse(200, "<main><h1>Petit</h1><p>contenu</p></main>"));
     const text = await call(new SpringBootDocsServiceOptimized());
-    expect(text).not.toContain("Partie");
+    expect(text).not.toContain("Part ");
     expect(text).not.toContain("...");
     expect(text).toContain(link);
   });

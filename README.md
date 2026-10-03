@@ -87,9 +87,36 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ## ✨ Features & Tools
 
-### 📚 **Core Documentation (8 Enhanced Tools)**
+The server exposes **17 tools**.
+
+### 📚 **Core Documentation (8 Tools)**
 | Tool | Purpose | Example Usage |
-|------|-
+|------|---------|---------------|
+| `search_spring_docs` | Search Spring documentation (`docType` all, guides, projects, reference, content; optional `version`) | "Search docs for WebClient" |
+| `search_spring_projects` | Find Spring projects | "Find projects about security" |
+| `get_spring_project` | Project page as markdown (paginated with `offset`) | "Show the Spring Data project" |
+| `get_all_spring_guides` | List the getting-started guides | "List the guides" |
+| `get_spring_guide` | Complete guide content | "Get the rest-service guide" |
+| `get_spring_reference` | Reference documentation for 11 projects (`version`, `offset`) | "Boot reference, web section" |
+| `get_migration_guide` | Spring Boot / Framework / Batch migration guides and upgrade notes | "Migration guide to Boot 3.4" |
+| `search_spring_concepts` | Explore Spring concepts (optional `version`) | "Explain auto-configuration" |
+
+### 🚀 **Advanced Features (6 Tools)**
+| Tool | Purpose | Example Usage |
+|------|---------|---------------|
+| `search_spring_ecosystem` | Search the whole ecosystem, Spring AI included | "Find Spring AI vector stores" |
+| `get_spring_tutorial` | Step-by-step tutorials | "Tutorial on Spring Security" |
+| `compare_spring_versions` | Version comparison and migration notes | "Compare 3.3 and 3.4" |
+| `get_release_notes` | GitHub release notes with focus filter | "Release notes of Boot 3.5" |
+| `get_spring_best_practices` | Expert guidance by category | "Best practices for testing" |
+| `diagnose_spring_issues` | Offline stack trace and error diagnosis | "Diagnose this DataSource error" |
+
+### 🧰 **Tooling (3 Tools)**
+| Tool | Purpose | Example Usage |
+|------|---------|---------------|
+| `get_spring_initializr` | Spring Initializr metadata: Boot versions, dependencies (start.spring.io) | "Which Boot versions does Initializr offer?" |
+| `find_spring_dependency` | Find starters for a need, with Maven and Gradle snippets (optional `bootVersion` as X.Y.Z) | "Which dependency for Redis caching?" |
+| `spring_cache_stats` | In-memory cache statistics and optional purge | "Show cache stats" |
 
 ---
 
