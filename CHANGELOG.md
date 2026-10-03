@@ -2,7 +2,9 @@
 
 ## [Unreleased]
 
-## [1.4.0] - 2026-10-03
+## [1.4.1] - 2026-10-03
+
+> `v1.4.0` was tagged but never published to npm: its CI run failed on Node 18 (see Changed). 1.4.1 contains everything planned for 1.4.0.
 
 ### Added
 - New tools: `get_release_notes`, `get_migration_guide`, `spring_cache_stats`, `get_spring_initializr` and `find_spring_dependency` (17 tools in total)
@@ -17,6 +19,7 @@
 - `MCP_CACHE_MAX_MB` to set the cache budget (64 MiB by default)
 
 ### Changed
+- **Requires Node.js >= 20.18.1** (was >= 18): `cheerio` 1.1 and `undici` 7 need it, and the MCP SDK 1.x relies on the global `crypto`. On Node 18 the server exited at startup. CI now tests Node 20, 22 and 24
 - Pagination by pages of 4000 characters instead of truncation at 1500; footer now in English
 - `detail_level=full` goes from 8000 to 50000 characters for guides and tutorials (output change)
 - `diagnose_spring_issues`: local (offline) stack trace analysis; a 403 is attributed to Spring Security only when the first frame is a security frame

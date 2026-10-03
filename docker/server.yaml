@@ -1,5 +1,5 @@
 # Docker MCP Catalog Server Definition
-# Spring Documentation MCP Server v1.4.0
+# Spring Documentation MCP Server v1.4.1
 
 name: springdocs-mcp
 image: mcp/springdocs-mcp

@@ -5,7 +5,7 @@ Merci de votre intérêt pour contribuer au projet Spring Boot MCP Server ! Ce g
 ## 🛠️ Configuration de l'environnement de développement
 
 ### Prérequis
-- Node.js >= 18.0.0
+- Node.js >= 20.18.1
 - npm >= 8.0.0
 - TypeScript >= 5.0.0
 - Git
@@ -150,7 +150,7 @@ Ce qui devrait se passer.
 
 **Environnement**
 - OS: [ex: macOS 14.0]
-- Node.js: [ex: 18.17.0]
+- Node.js: [ex: 20.18.1]
 - Version du serveur: [ex: 1.0.0]
 
 **Logs d'erreur**

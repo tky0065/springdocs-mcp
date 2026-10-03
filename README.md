@@ -2,10 +2,10 @@
 
 [![npm version](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp.svg)](https://badge.fury.io/js/@enokdev%2Fspringdocs-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.18+-green.svg)](https://nodejs.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Universal%20Compatible-brightgreen.svg)](https://modelcontextprotocol.io/)
 
-> **🚀 Enhanced v1.4.0:** 17 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
+> **🚀 Enhanced v1.4.1:** 17 powerful tools with **Spring AI support**, intelligent caching, advanced tutorials, and comprehensive Spring ecosystem access
 >
 > **🌐 Universal MCP Compatibility:** Works with Claude Code, Gemini CLI, VS Code, JetBrains IDEs, and all MCP-compatible clients!
 
@@ -275,7 +275,7 @@ done
 
 #### "Server failed to start"
 ```bash
-# Check Node.js version (requires 18+)
+# Check Node.js version (requires 20.18.1+)
 node --version
 
 # Update to latest
@@ -352,13 +352,11 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 
 ## 🔮 Roadmap
 
-### v1.4.0 (Next)
-- Interactive Spring Boot project generator
-- Real-time error analysis
-- Spring Initializr integration
+### v1.5.0 (Next)
+- Interactive Spring Boot project generator (Initializr metadata and dependency lookup are already available)
 - Custom tutorial creation
 
-### v1.5.0 (Future)
+### v1.6.0 (Future)
 - AI-powered code suggestions
 - Performance bottleneck detection
 - Security vulnerability scanning

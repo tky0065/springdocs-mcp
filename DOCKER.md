@@ -264,8 +264,8 @@ docker build --no-cache -t mcp/springdocs-mcp:test .
 ```
 
 **Problem**: Node.js compatibility errors
-- Ensure using Node 20 Alpine (not Node 18)
-- Check package.json requires Node 18+ but Docker uses Node 20
+- Ensure using Node 22 Alpine (not Node 18)
+- Check package.json requires Node 20.18.1+ and Docker uses Node 22
 
 ### Runtime Issues
 

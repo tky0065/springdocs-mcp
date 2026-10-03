@@ -92,7 +92,7 @@ npm run cicd:check   # Check CI/CD configuration status
 - **TypeScript Configuration**: Uses Node16 module resolution with ES2022 target, outputs to `build/` directory
 - **Binary Entry Point**: The compiled `build/index.js` has a shebang (`#!/usr/bin/env node`) and is marked executable
 - **MCP Protocol Version**: Server version is read from `package.json` (see `src/version.ts`), uses `@modelcontextprotocol/sdk` 1.x (low-level `Server`), which negotiates the protocol version with the client (2024-11-05 and later)
-- **Node Version**: Requires Node.js 18+
+- **Node Version**: Requires Node.js 20.18.1+ (cheerio and undici need it)
 
 ## Common Development Patterns
 
