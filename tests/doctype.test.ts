@@ -19,7 +19,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("docType (#14)", () => {
   it("rejette un docType inconnu avec un message explicite", async () => {
     await expect(new SpringBootDocsServiceOptimized().searchSpringDocs("boot", "api", 5))
-      .rejects.toThrow(/Invalid docType "api".*guides, reference, projects, all/);
+      .rejects.toThrow(/Invalid docType "api".*guides, reference, projects, content, all/);
     expect(mockedFetch).not.toHaveBeenCalled();
   });
 
@@ -29,7 +29,7 @@ describe("docType (#14)", () => {
 
   it("l'enum du tool search_spring_docs correspond aux sources réelles", () => {
     const tool = toolsModule.ToolDefinitions.getToolList().find((t: any) => t.name === "search_spring_docs") as any;
-    expect(tool.inputSchema.properties.docType.enum).toEqual(["guides", "reference", "projects", "all"]);
+    expect(tool.inputSchema.properties.docType.enum).toEqual(["guides", "reference", "projects", "content", "all"]);
   });
 });
 
@@ -48,6 +48,6 @@ describe("sources de recherche en parallèle (#31)", () => {
     expect(started).toEqual(["guides", "projects", "reference"]);
     release();
     const results = await pending;
-    expect(results.map((r: any) => r.title)).toEqual(["boot guide", "boot project", "boot ref"]);
+    expect(results.filter((r: any) => r.type !== "note").map((r: any) => r.title)).toEqual(["boot guide", "boot project", "boot ref"]);
   });
 });

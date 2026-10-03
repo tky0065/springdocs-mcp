@@ -6,6 +6,7 @@ import { absoluteSpringUrl, assertSafeSegment, normalizeVersion } from './url.js
 
 import { WikiDocument, resolveWikiDocument, wikiPageName, wikiPageUrl, expectedWikiTitle, extractWikiMarkdown, selectSections } from './boot-wiki.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
+import { SearchIndex } from './search-index.js';
 
 /**
  * Spring Documentation Service - Supports multiple Spring projects (Boot, AI, Framework, etc.)
@@ -19,10 +20,25 @@ export class SpringBootDocsServiceOptimized {
   private readonly springGuideUrl = 'https://spring.io/guides';
   private projectsConfig: SpringProjectsConfig;
   private cache: CacheService;
+  private searchIndex: SearchIndex;
 
-  constructor(projectsConfig: SpringProjectsConfig = springProjectsConfig, cache: CacheService = new CacheService()) {
+  constructor(
+    projectsConfig: SpringProjectsConfig = springProjectsConfig,
+    cache: CacheService = new CacheService(),
+    searchIndex: SearchIndex = new SearchIndex()
+  ) {
     this.projectsConfig = projectsConfig;
     this.cache = cache;
+    this.searchIndex = searchIndex;
+  }
+
+  /** Feeds the full-text index with a page already fetched; never breaks the read path. */
+  private indexPage(docId: string, title: string, url: string, text: string): void {
+    try {
+      this.searchIndex.add(docId, { title, url, text });
+    } catch (error) {
+      console.error(`Content index failure for ${docId}:`, error instanceof Error ? error.message : error);
+    }
   }
 
   /**
@@ -111,6 +127,7 @@ export class SpringBootDocsServiceOptimized {
       const markdown = turndownService.turndown(content.html() || '');
 
       // Cache the full markdown so later pages need no new fetch
+      this.indexPage(`project:${slug}`, projectName, url, markdown);
       const entry = { markdown, url };
       this.cache.setLongTerm(cacheKey, entry);
       return entry;
@@ -237,6 +254,7 @@ export class SpringBootDocsServiceOptimized {
 
     try {
       const result = this.processHtmlGuide(content, guideId, sourceUrl, detailLevel);
+      this.indexPage(`guide:${name}`, `Guide: ${name}`, sourceUrl, result);
       this.cache.setLongTerm(cacheKey, result);
       return result;
     } catch (error) {
@@ -322,6 +340,12 @@ export class SpringBootDocsServiceOptimized {
 
       const markdown = turndownService.turndown(content.html() || '');
       const entry = { markdown, url };
+      this.indexPage(
+        `reference:${projectId}:${normalizedVersion ?? 'current'}:${section}:${subsection ?? 'main'}`,
+        this.referenceTitle(projectId, section, subsection),
+        url,
+        markdown
+      );
 
       // Use project-specific cache strategy
       const cacheTTL = this.projectsConfig.getCacheTTL(projectId);
@@ -474,14 +498,43 @@ export class SpringBootDocsServiceOptimized {
    * Search documentation with real API
    */
   async searchSpringDocs(query: string, docType: string = 'all', limit: number = 10): Promise<any[]> {
-    const allowedDocTypes = ['guides', 'reference', 'projects', 'all'];
+    const allowedDocTypes = ['guides', 'reference', 'projects', 'content', 'all'];
     if (!allowedDocTypes.includes(docType)) {
       throw new Error(`Invalid docType "${docType}". Allowed: ${allowedDocTypes.join(', ')}`);
     }
     const cacheKey = `docs:${query}:${docType}:${limit}`;
-    const cached = this.cache.get<any[]>(cacheKey);
-    if (cached) return cached;
+    // Only the title sources are cached: content hits depend on the current state of the index
+    const titles = this.cache.get<any[]>(cacheKey) ?? await this.searchTitleSources(query, docType, limit, cacheKey);
+    if (docType !== 'all' && docType !== 'content') {
+      return titles.slice(0, limit);
+    }
+    return this.mergeContentResults(titles, query, limit);
+  }
 
+  private mergeContentResults(titles: any[], query: string, limit: number): any[] {
+    const seen = new Set(titles.map(result => result.url));
+    let content: any[] = [];
+    try {
+      content = this.searchIndex.search(query, limit)
+        .filter(hit => !seen.has(hit.url))
+        .map(hit => ({ type: 'content', title: hit.title, url: hit.url, description: hit.snippet, score: hit.score }));
+    } catch (error) {
+      console.error('Content search failed:', error instanceof Error ? error.message : error);
+    }
+    // Content takes the slots titles leave free, and at most half of them otherwise
+    const contentSlots = Math.min(content.length, Math.max(Math.floor(limit / 2), limit - titles.length));
+    const merged = [...titles.slice(0, limit - contentSlots), ...content.slice(0, contentSlots)];
+    if (this.searchIndex.size === 0) {
+      merged.push({
+        type: 'note',
+        title: 'Content index is empty',
+        description: 'Full-text search covers pages already read: read a page first (get_spring_project, get_spring_reference or get_spring_guide), then search again.'
+      });
+    }
+    return merged;
+  }
+
+  private async searchTitleSources(query: string, docType: string, limit: number, cacheKey: string): Promise<any[]> {
     const results: any[] = [];
 
     const sources: Array<[string, () => Promise<any[]>]> = [];

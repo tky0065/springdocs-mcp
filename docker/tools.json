@@ -14,11 +14,12 @@
         "name": "docType",
         "type": "string",
         "required": false,
-        "description": "Type de documentation à rechercher",
+        "description": "Type de documentation à rechercher. `content` = recherche plein texte (classement BM25) dans les pages déjà lues par le serveur (get_spring_project, get_spring_reference, get_spring_guide) ; inclus dans `all`.",
         "enum": [
           "guides",
           "reference",
           "projects",
+          "content",
           "all"
         ],
         "default": "all"

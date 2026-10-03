@@ -18,8 +18,8 @@ export class ToolDefinitions {
             },
             docType: {
               type: "string",
-              enum: ["guides", "reference", "projects", "all"],
-              description: "Type de documentation à rechercher",
+              enum: ["guides", "reference", "projects", "content", "all"],
+              description: "Type de documentation à rechercher. `content` = recherche plein texte (classement BM25) dans les pages déjà lues par le serveur (get_spring_project, get_spring_reference, get_spring_guide) ; inclus dans `all`.",
               default: "all",
             },
             limit: {

@@ -496,6 +496,12 @@ class SpringBootMCPServerAdvanced {
 
     return results
       .map((result, index) => {
+        if (result.type === "note") {
+          return `${index + 1}. **${result.title}**
+   ${result.description}
+
+`;
+        }
         return `${index + 1}. **${result.title}**
    Type: ${result.type}
    URL: ${result.url}
