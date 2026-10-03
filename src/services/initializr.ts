@@ -1,6 +1,6 @@
 import { CacheService } from './cache.js';
 import { fetchWithRetry } from './http.js';
-import { BuildChoice, DependencyData, flattenCatalog, formatDependencyMatches, rankDependencies, searchWords } from './dependency-finder.js';
+import { BuildChoice, DependencyData, escapeInline, flattenCatalog, formatDependencyMatches, rankDependencies, searchWords } from './dependency-finder.js';
 
 // Reads the Spring Initializr metadata (https://start.spring.io/metadata/client):
 // build options and the list of available dependencies. Real API only, no mock data.
@@ -10,6 +10,7 @@ const CACHE_KEY = 'initializr:metadata';
 const COORDINATES_URL = 'https://start.spring.io/dependencies';
 const COORDINATES_CACHE_KEY = 'initializr:dependencies';
 const MAX_MATCHES = 30;
+const BOOT_VERSION = /^\d{1,3}\.\d{1,3}\.\d{1,3}$/;
 
 interface OptionValue { id: string; name?: string }
 interface OptionGroup { default?: string; values: OptionValue[] }
@@ -77,10 +78,10 @@ export function formatDependencies(meta: InitializrMetadata, query?: string): st
       if (haystack.includes(needle)) matches.push(dep);
     }
   }
-  if (matches.length === 0) return `No dependency matches "${query!.trim()}".`;
+  if (matches.length === 0) return `No dependency matches "${escapeInline(query!)}".`;
 
   const shown = matches.slice(0, MAX_MATCHES);
-  const lines = [`# Spring Initializr dependencies matching "${query!.trim()}"`, ''];
+  const lines = [`# Spring Initializr dependencies matching "${escapeInline(query!)}"`, ''];
   for (const dep of shown) lines.push(`- \`${dep.id}\` — ${dep.name}${dep.description ? `: ${dep.description}` : ''}`);
   if (matches.length > shown.length) {
     lines.push('', `${matches.length - shown.length} more matches, refine the query.`);
@@ -96,22 +97,26 @@ export class InitializrService {
     return section === 'dependencies' ? formatDependencies(meta, query) : formatOptions(meta);
   }
 
-  async findDependency(need: string, build: BuildChoice = 'both'): Promise<string> {
+  async findDependency(need: string, build: BuildChoice = 'both', bootVersion?: string): Promise<string> {
     const words = searchWords(need);
     if (words.length === 0) {
       throw new Error('The need must contain at least one searchable word (English keywords such as "jpa" or "oauth2")');
     }
+    if (bootVersion !== undefined && !BOOT_VERSION.test(bootVersion)) {
+      throw new Error('The bootVersion must use the X.Y.Z format (for example "4.0.8")');
+    }
     const meta = await this.loadMetadata();
-    const data = await this.loadCoordinates();
+    const data = await this.loadCoordinates(bootVersion);
     const ranked = rankDependencies(flattenCatalog(meta), words);
     return formatDependencyMatches(need, ranked, data, build);
   }
 
-  private async loadCoordinates(): Promise<DependencyData> {
-    const cached = this.cache.get<DependencyData>(COORDINATES_CACHE_KEY);
+  private async loadCoordinates(bootVersion?: string): Promise<DependencyData> {
+    const cacheKey = bootVersion ? `${COORDINATES_CACHE_KEY}:${bootVersion}` : COORDINATES_CACHE_KEY;
+    const cached = this.cache.get<DependencyData>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetchWithRetry(COORDINATES_URL);
+    const response = await fetchWithRetry(bootVersion ? `${COORDINATES_URL}?bootVersion=${bootVersion}` : COORDINATES_URL);
     if (!response.ok) {
       throw new Error(`Spring Initializr is unavailable (HTTP ${response.status})`);
     }
@@ -119,7 +124,7 @@ export class InitializrService {
     if (!data || typeof data.dependencies !== 'object' || data.dependencies === null || Array.isArray(data.dependencies)) {
       unexpected('dependencies');
     }
-    this.cache.setLongTerm(COORDINATES_CACHE_KEY, data);
+    this.cache.setLongTerm(cacheKey, data);
     return data;
   }
 

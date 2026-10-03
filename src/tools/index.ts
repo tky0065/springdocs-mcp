@@ -419,6 +419,11 @@ export class ToolDefinitions {
               description: "Snippets à produire : Maven, Gradle ou les deux",
               default: "both",
             },
+            bootVersion: {
+              type: "string",
+              maxLength: 20,
+              description: "Version de Spring Boot ciblée au format X.Y.Z (ex. '4.0.8') ; par défaut, celle d'Initializr",
+            },
           },
           required: ["need"],
         },

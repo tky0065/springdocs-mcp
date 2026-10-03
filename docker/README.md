@@ -100,7 +100,7 @@ The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_
 - `diagnose_spring_issues` - Intelligent error diagnosis
 - `spring_cache_stats` - Cache statistics and optional purge
 - `get_spring_initializr` - Spring Initializr options and dependencies (start.spring.io)
-- `find_spring_dependency` - Find starters for a need, with Maven and Gradle snippets
+- `find_spring_dependency` - Find starters for a need, with Maven and Gradle snippets (optional `bootVersion` as X.Y.Z)
 
 ## Resources
 

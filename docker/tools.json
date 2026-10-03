@@ -533,6 +533,13 @@
           "both"
         ],
         "default": "both"
+      },
+      {
+        "name": "bootVersion",
+        "type": "string",
+        "required": false,
+        "description": "Version de Spring Boot ciblée au format X.Y.Z (ex. '4.0.8') ; par défaut, celle d'Initializr",
+        "maxLength": 20
       }
     ]
   }
