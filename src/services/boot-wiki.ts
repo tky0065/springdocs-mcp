@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { turndownService } from './markdown.js';
+import { scanFences, turndownService } from './markdown.js';
 
 // Pure helpers for reading Spring Boot migration guides and release notes from
 // the GitHub wiki of spring-projects/spring-boot. No network access here.
@@ -88,13 +88,9 @@ interface Heading {
 
 function findHeadings(lines: string[]): Heading[] {
   const headings: Heading[] = [];
-  let inFence = false;
+  const scan = scanFences(lines);
   lines.forEach((line, index) => {
-    if (/^\s*(```|~~~)/.test(line)) {
-      inFence = !inFence;
-      return;
-    }
-    if (inFence) return;
+    if (scan[index].inCode || scan[index].isFence) return;
     const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
     if (match) headings.push({ line: index, level: match[1].length, text: match[2] });
   });

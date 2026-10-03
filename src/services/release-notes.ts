@@ -2,6 +2,8 @@
  * Release notes helpers: pure functions used by the get_release_notes tool.
  */
 
+import { scanFences } from './markdown.js';
+
 export type ReleaseFocus = 'all' | 'breaking-changes' | 'new-features' | 'deprecations';
 
 const VERSION_PATTERN = /^\d+\.\d+\.\d+(-[A-Za-z0-9.]+)?$/;
@@ -33,12 +35,16 @@ export function filterReleaseBody(body: string | null | undefined, focus: Releas
 
   // GitHub sometimes returns CRLF line endings
   const lines = body.split(/\r?\n/);
+  // A line inside a code block (or a fence line) is never a heading
+  const scan = scanFences(lines);
+  const isHeading = (index: number): RegExpExecArray | null =>
+    scan[index].inCode || scan[index].isFence ? null : HEADING_PATTERN.exec(lines[index]);
 
   if (focus === 'new-features') {
     const result: string[] = [];
     let level = 0; // 0 = not inside the section
-    for (const line of lines) {
-      const heading = HEADING_PATTERN.exec(line);
+    for (const [index, line] of lines.entries()) {
+      const heading = isHeading(index);
       if (level === 0) {
         if (heading && /new features/i.test(line)) {
           level = heading[1].length;
@@ -54,6 +60,6 @@ export function filterReleaseBody(body: string | null | undefined, focus: Releas
 
   const pattern = focus === 'breaking-changes' ? BREAKING_PATTERN : DEPRECATION_PATTERN;
   return lines
-    .filter((line) => !HEADING_PATTERN.test(line) && pattern.test(line))
+    .filter((line, index) => !isHeading(index) && pattern.test(line))
     .join('\n');
 }
