@@ -5,6 +5,60 @@ export const turndownService = new TurndownService({
   codeBlockStyle: 'fenced',
 });
 
+/** An open fenced code block: its fence character and the length of the opening fence. */
+export interface Fence {
+  char: '`' | '~';
+  length: number;
+}
+
+const OPENING_FENCE = /^\s*(`{3,}|~{3,})(.*)$/;
+const CLOSING_FENCE = /^\s*(`{3,}|~{3,})\s*$/;
+
+/**
+ * Fence state after `line`, given the state before it (null = outside a code block).
+ * An opening fence is 3+ backticks or tildes (a backtick fence cannot carry
+ * backticks in its info string); a closing fence uses the same character, is at
+ * least as long as the opening one and carries nothing but whitespace.
+ */
+export function advanceFence(state: Fence | null, line: string): Fence | null {
+  if (state) {
+    const close = CLOSING_FENCE.exec(line);
+    if (close && close[1][0] === state.char && close[1].length >= state.length) return null;
+    return state;
+  }
+  const open = OPENING_FENCE.exec(line);
+  if (!open) return null;
+  const char = open[1][0] as '`' | '~';
+  if (char === '`' && open[2].includes('`')) return null;
+  return { char, length: open[1].length };
+}
+
+/** The fence line that closes (or reopens) a block opened with `fence`. */
+export function fenceMarker(fence: Fence): string {
+  return fence.char.repeat(fence.length);
+}
+
+export interface FenceLine {
+  /** Whether the line begins inside a fenced code block. */
+  inCode: boolean;
+  /** The open fence at the start of the line (null when outside a block). */
+  fence: Fence | null;
+  /** Whether the line is itself an opening or closing fence. */
+  isFence: boolean;
+  /** The open fence after this line (null when outside a block). */
+  after: Fence | null;
+}
+
+/** Code-fence state of every line, in one pass. Single source of truth for all fence tracking. */
+export function scanFences(lines: readonly string[]): FenceLine[] {
+  let state: Fence | null = null;
+  return lines.map((line) => {
+    const before = state;
+    state = advanceFence(before, line);
+    return { inCode: before !== null, fence: before, isFence: (before === null) !== (state === null), after: state };
+  });
+}
+
 export const DETAIL_LIMITS: Record<string, number> = {
   summary: 1500,
   medium: 4000,
@@ -22,48 +76,47 @@ export function extractContent(markdown: string, detailLevel: string = 'medium')
 
   const kept: string[] = [];
   let length = 0;
-  let inCodeBlock = false;
+  let fence: Fence | null = null;
   for (const line of markdown.split('\n')) {
     if (length + line.length + 1 > maxLength) break;
     kept.push(line);
     length += line.length + 1;
-    if (line.trim().startsWith('```')) inCodeBlock = !inCodeBlock;
+    fence = advanceFence(fence, line);
   }
 
   // A first line longer than the budget leaves nothing: hard-cut it instead
   if (kept.length === 0) {
+    const firstLine = markdown.split('\n', 1)[0];
+    const open = advanceFence(null, firstLine);
     const first = markdown.slice(0, maxLength);
-    return { content: first.trim().startsWith('```') ? first + '\n```' : first, truncated: true };
+    return { content: open ? `${first}\n${fenceMarker(open)}` : first, truncated: true };
   }
 
   let content = kept.join('\n').trimEnd();
-  if (inCodeBlock) content += '\n```';
+  if (fence) content += `\n${fenceMarker(fence)}`;
   return { content, truncated: true };
 }
 
 export const PAGE_SIZE = 4000;
 
-interface Line {
+interface Line extends FenceLine {
   start: number;
   text: string;
-  /** Whether the line begins inside a fenced code block. */
-  inCode: boolean;
 }
 
 /** Split into lines with their start position and code-fence state, in one pass. */
 function scanLines(markdown: string): Line[] {
-  const lines: Line[] = [];
+  const texts: string[] = [];
+  const starts: number[] = [];
   let start = 0;
-  let inCode = false;
   while (start < markdown.length) {
     const newline = markdown.indexOf('\n', start);
     const end = newline === -1 ? markdown.length : newline;
-    const text = markdown.slice(start, end);
-    lines.push({ start, text, inCode });
-    if (text.trim().startsWith('```')) inCode = !inCode;
+    texts.push(markdown.slice(start, end));
+    starts.push(start);
     start = end + 1;
   }
-  return lines;
+  return scanFences(texts).map((fence, i) => ({ ...fence, start: starts[i], text: texts[i] }));
 }
 
 /**
@@ -85,16 +138,16 @@ export function pageMarkdown(
 
   const lines = scanLines(markdown);
   // Fence state at a position = state at the start of the line containing it
-  const stateAt = (position: number): boolean => {
+  const stateAt = (position: number): Fence | null => {
     let found = lines[0];
     for (const line of lines) {
       if (line.start > position) break;
       found = line;
     }
-    return found.inCode;
+    return found.fence;
   };
 
-  const startsInCode = stateAt(offset);
+  const startFence = stateAt(offset);
   const windowEnd = Math.min(total, offset + pageSize);
   let end = windowEnd;
 
@@ -114,7 +167,8 @@ export function pageMarkdown(
   }
 
   let content = markdown.slice(offset, end);
-  if (startsInCode) content = '```\n' + content;
-  if (end < total && stateAt(end)) content = content.replace(/\n?$/, '\n```');
+  if (startFence) content = `${fenceMarker(startFence)}\n${content}`;
+  const endFence = end < total ? stateAt(end) : null;
+  if (endFence) content = content.replace(/\n?$/, `\n${fenceMarker(endFence)}`);
   return { content, start: offset, end, nextOffset: end < total ? end : null, total };
 }
