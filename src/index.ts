@@ -12,12 +12,13 @@ import { validateToolArguments } from "./validation.js";
 import { VERSION } from "./version.js";
 import { listPrompts, getPrompt } from "./prompts.js";
 import { ResourcesService } from "./resources.js";
+import { parseConfig, type ServerConfig } from "./config.js";
+import { startHttpServer, type RunningHttpServer } from "./http-server.js";
 
 /**
  * Enhanced Spring Documentation MCP Server with advanced features and optimizations
  */
 class SpringBootMCPServerAdvanced {
-  private server: Server;
   private docsService: SpringBootDocsServiceOptimized;
   private advancedService: AdvancedFeaturesService;
   private cache: CacheService;
@@ -25,7 +26,16 @@ class SpringBootMCPServerAdvanced {
   private resourcesService: ResourcesService;
 
   constructor() {
-    this.server = new Server(
+    this.cache = new CacheService();
+    this.docsService = new SpringBootDocsServiceOptimized(undefined, this.cache);
+    this.resourcesService = new ResourcesService(this.docsService);
+    this.advancedService = new AdvancedFeaturesService(this.cache);
+    this.initializrService = new InitializrService(this.cache);
+  }
+
+  /** Builds a fresh MCP server bound to the shared services (once for stdio, once per request for HTTP). */
+  createServer(): Server {
+    const server = new Server(
       {
         name: "springboot-mcp-server-advanced",
         version: VERSION,
@@ -38,52 +48,47 @@ class SpringBootMCPServerAdvanced {
         },
       }
     );
-
-    this.cache = new CacheService();
-    this.docsService = new SpringBootDocsServiceOptimized(undefined, this.cache);
-    this.resourcesService = new ResourcesService(this.docsService);
-    this.advancedService = new AdvancedFeaturesService(this.cache);
-    this.initializrService = new InitializrService(this.cache);
-    this.setupToolHandlers();
-    this.setupPromptHandlers();
-    this.setupResourceHandlers();
+    this.setupToolHandlers(server);
+    this.setupPromptHandlers(server);
+    this.setupResourceHandlers(server);
+    return server;
   }
 
-  private setupResourceHandlers() {
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  private setupResourceHandlers(server: Server) {
+    server.setRequestHandler(ListResourcesRequestSchema, async () => ({
       resources: this.resourcesService.listResources(),
     }));
 
-    this.server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+    server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
       resourceTemplates: this.resourcesService.listTemplates(),
     }));
 
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       return this.resourcesService.readResource(request.params.uri);
     });
   }
 
-  private setupPromptHandlers() {
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  private setupPromptHandlers(server: Server) {
+    server.setRequestHandler(ListPromptsRequestSchema, async () => ({
       prompts: listPrompts(),
     }));
 
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    server.setRequestHandler(GetPromptRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
       return getPrompt(name, args);
     });
   }
 
-  private setupToolHandlers() {
+  private setupToolHandlers(server: Server) {
     // Handler for listing available tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async (request: ListToolsRequest) => {
+    server.setRequestHandler(ListToolsRequestSchema, async (request: ListToolsRequest) => {
       return {
         tools: ToolDefinitions.getToolList(),
       };
     });
 
     // Handler for executing tools
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
+    server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
       const { name, arguments: rawArgs } = request.params;
 
       try {
@@ -547,29 +552,62 @@ No results found for "${results.query}" in scope "${results.scope}".`;
     return formatted;
   }
 
-  async run() {
+  private httpServer?: RunningHttpServer;
+
+  async run(config: ServerConfig) {
     try {
-      const transport = new StdioServerTransport();
+      if (config.transport === "http") {
+        const loopback = ["127.0.0.1", "localhost", "::1"].includes(config.host);
+        if (!loopback) {
+          console.error(`⚠️  Listening on ${config.host}: the HTTP transport has no authentication, restrict access at the network level`);
+        }
+        this.httpServer = await startHttpServer({
+          host: config.host,
+          port: config.port,
+          allowedHosts: config.allowedHosts,
+          createServer: () => this.createServer(),
+        });
+        console.error(`🚀 HTTP server listening on http://${config.host}:${this.httpServer.port}/mcp`);
+        return;
+      }
+      const server = this.createServer();
       console.error("🚀 Advanced Spring Boot MCP Server started on stdio");
-      await this.server.connect(transport);
+      await server.connect(new StdioServerTransport());
       console.error("✅ Server connected successfully");
     } catch (error) {
       console.error("💥 Error starting server:", error);
       throw error;
     }
   }
+
+  async stop(): Promise<void> {
+    await this.httpServer?.close();
+  }
 }
 
 // Main entry point
+let app: SpringBootMCPServerAdvanced | undefined;
+
 async function main() {
-  const server = new SpringBootMCPServerAdvanced();
-  await server.run();
+  let config: ServerConfig;
+  try {
+    config = parseConfig(process.argv.slice(2), process.env);
+  } catch (error) {
+    console.error(`💥 ${error instanceof Error ? error.message : error}`);
+    process.exit(1);
+  }
+  app = new SpringBootMCPServerAdvanced();
+  await app.run(config);
 }
 
 // Error handling
 function shutdown(signal: NodeJS.Signals): void {
   console.error(`🛑 Shutting down server (${signal})...`);
-  process.exit(0);
+  const done = () => process.exit(0);
+  // Close the HTTP server first (bounded), then exit
+  const bound = setTimeout(done, 3000);
+  bound.unref();
+  (app?.stop() ?? Promise.resolve()).then(done, done);
 }
 
 process.on("SIGINT", shutdown);

@@ -44,7 +44,7 @@ npm run cicd:check   # Check CI/CD configuration status
 
 **Server Entry Point** (`src/index.ts`):
 - `SpringBootMCPServerAdvanced` class orchestrates the entire MCP server
-- Uses MCP SDK's `Server` class with stdio transport for communication
+- Uses MCP SDK's `Server` class; `createServer()` builds a fresh `Server` bound to the shared service singletons (once for stdio, once per request for HTTP). Stdio is the default transport, Streamable HTTP is opt-in
 - Handles 17 tools split between core documentation and advanced features
 - All tool handlers route to either `docsService` or `advancedService`
 
@@ -53,6 +53,8 @@ npm run cicd:check   # Check CI/CD configuration status
 - `AdvancedFeaturesService` (`src/services/advanced-features.ts`): Handles the 7 advanced tools (ecosystem search, tutorials, version comparison, `get_release_notes`, best practices, diagnostics, `spring_cache_stats`)
 - `CacheService` (`src/services/cache.ts`): In-memory caching with TTL (30min default, 24h for stable content)
 
+- `src/config.ts`: `parseConfig` (flags `--transport/--port/--host` and `MCP_*` env vars)
+- `src/http-server.ts`: Streamable HTTP transport on `node:http` (stateless: one `Server` per request, Host/Origin checks, 1 MiB body cap, `POST /mcp`, `GET /healthz`)
 - `src/services/http.ts`: `fetchWithRetry` (retry/backoff, timeouts, 5 MiB response size cap)
 - `src/services/markdown.ts`: shared turndown instance, `extractContent` (detail levels) and `pageMarkdown` (pagination)
 - `src/resources.ts`: MCP resources `spring://project/<slug>` and `spring://guide/<id>` (complete markdown, read through `docsService` and the shared cache; `parseResourceUri` is strict)
@@ -77,7 +79,7 @@ npm run cicd:check   # Check CI/CD configuration status
 
 ### Data Flow
 
-1. MCP client (Claude Code, etc.) sends JSON-RPC request via stdio
+1. MCP client (Claude Code, etc.) sends JSON-RPC request via stdio (or `POST /mcp` when started with `--transport http`)
 2. `src/index.ts` routes the tool call to appropriate service
 3. Service checks cache first, then fetches from Spring URLs if needed
 4. HTML is parsed with cheerio, converted to markdown with turndown
