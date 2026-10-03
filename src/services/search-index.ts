@@ -96,7 +96,7 @@ export class SearchIndex {
     }
   }
 
-  search(query: string, limit: number): SearchHit[] {
+  search(query: string, limit: number, filter?: (docId: string) => boolean): SearchHit[] {
     const terms = [...new Set(tokenize(query))];
     if (terms.length === 0 || this.docs.size === 0) return [];
 
@@ -110,6 +110,7 @@ export class SearchIndex {
 
     const scored: Array<{ docId: string; score: number }> = [];
     for (const [docId, doc] of this.docs) {
+      if (filter && !filter(docId)) continue;
       let score = 0;
       for (const term of terms) {
         const tf = doc.tf.get(term);

@@ -166,7 +166,7 @@ describe("contenu de guide quasi vide (G5)", () => {
 describe("search_spring_concepts : paramètre category (G6)", () => {
   it("n'expose plus de paramètre category (la page de référence n'a pas de catégories)", () => {
     const tool = (ToolDefinitions.getToolList() as any[]).find(t => t.name === "search_spring_concepts");
-    expect(Object.keys(tool.inputSchema.properties)).toEqual(["concept"]);
+    expect(Object.keys(tool.inputSchema.properties)).toEqual(["concept", "version"]);
     expect(tool.description).not.toMatch(/catégorie/i);
   });
 });

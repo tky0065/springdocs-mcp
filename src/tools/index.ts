@@ -29,6 +29,11 @@ export class ToolDefinitions {
               minimum: 1,
               maximum: 50,
             },
+            version: {
+              type: "string",
+              maxLength: 20,
+              description: "Version de la documentation de référence Spring Boot (ex. '3.4' ou '3.4.2' ; le patch est ignoré ; 'current' ou absent = dernière). Ne s'applique qu'à la partie référence (et aux pages de référence Boot de la recherche plein texte) : les guides et les projets ne sont pas versionnés et ignorent ce paramètre.",
+            },
           },
           required: ["query"],
         },
@@ -169,6 +174,11 @@ export class ToolDefinitions {
               maxLength: 200,
               description: "Le concept Spring Boot à rechercher (par exemple: 'auto-configuration', 'profiles', 'actuator')",
             },
+            version: {
+              type: "string",
+              maxLength: 20,
+              description: "Version de la documentation Spring Boot (ex. '3.4' ou '3.4.2' ; le patch est ignoré ; 'current' ou absent = dernière)",
+            },
           },
           required: ["concept"],
         },
@@ -283,19 +293,25 @@ export class ToolDefinitions {
       },
       {
         name: "get_migration_guide",
-        description: "Récupère le guide de migration ou les notes de version d'upgrade de Spring Boot pour une version cible, avec filtre par section (ex: jakarta)",
+        description: "Récupère le guide de migration ou les notes de version d'upgrade de Spring Boot (par défaut), Spring Framework ou Spring Batch pour une version cible, avec filtre par section (ex: jakarta)",
         inputSchema: {
           type: "object",
           properties: {
             version: {
               type: "string",
               maxLength: 20,
-              description: "Version cible de Spring Boot (ex. '3.0', '3.4' ou '3.4.2' ; le patch est ignoré)",
+              description: "Version cible du projet (ex. '3.0', '3.4' ou '3.4.2' pour Boot, '6.2' pour Framework, '5.0' pour Batch ; le patch est ignoré)",
+            },
+            project: {
+              type: "string",
+              enum: ["spring-boot", "spring-framework", "spring-batch"],
+              description: "Projet concerné. spring-boot (défaut) : guide de migration / notes de version Boot ; spring-framework : notes de version (section « Upgrading From ») ; spring-batch : guide de migration (disponible pour 5.0 et 6.0). Pages markdown brutes du wiki du projet.",
+              default: "spring-boot",
             },
             document: {
               type: "string",
               enum: ["auto", "migration-guide", "release-notes"],
-              description: "Document à lire : auto (guide de migration pour les versions x.0, notes de version sinon), guide de migration ou notes de version",
+              description: "Document à lire : auto (Boot : guide de migration pour les versions x.0, notes de version sinon ; Framework : notes de version ; Batch : guide de migration), guide de migration ou notes de version (Framework n'a que release-notes, Batch que migration-guide)",
               default: "auto",
             },
             section: {

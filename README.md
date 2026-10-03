@@ -110,6 +110,10 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 "Search for REST API documentation in Spring Boot"
 ```
 
+`search_spring_docs` and `search_spring_concepts` accept an optional `version` (`3.4` or `3.4.2`, the patch is ignored; `current` or omitted = latest) that targets the Spring Boot reference documentation of that version (a version that is not published gives a dedicated error). Guides and projects are not versioned and ignore it; with `docType=content`, Boot reference pages of other versions are left out of the results.
+
+`get_migration_guide` accepts `project` (`spring-boot` by default, `spring-framework`, `spring-batch`): Framework serves the release notes of its minor version (`6.2`, section "Upgrading From ..."), Batch its migration guide (`5.0`, `6.0`), both read as raw markdown from the project wiki; `section` and `offset` work as for Boot. Spring Security and Spring AI (docs.spring.io pages) are not covered yet.
+
 `search_spring_docs` accepts `docType=content`: full-text search (BM25 ranking) over the pages the server has already read (`get_spring_project`, `get_spring_reference`, `get_spring_guide`). It is included in `docType=all` and stays empty until a page has been read.
 
 ### 🆕 Spring AI Support
