@@ -1,0 +1,5 @@
+{"componentChunkName":"component---src-templates-guides-template-tsx","path":"/guides","result":{"data":{"guides":{"nodes":[
+{"description":"Learn how to schedule tasks with Spring.","name":"scheduling-tasks","title":"Scheduling Tasks","type":"getting-started","path":"/guides/gs/scheduling-tasks/","category":["IO"]},
+{"description":"Learn how to build a RESTful service.","name":"rest-service","title":"Building a RESTful Web Service","type":"getting-started","path":"/guides/gs/rest-service/","category":["Web","REST"]},
+{"description":"Entrée sans chemin.","name":"broken","title":"Broken","type":"topical","category":["Web"]}
+]}}}}
