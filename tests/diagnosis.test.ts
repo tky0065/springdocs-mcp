@@ -248,3 +248,37 @@ describe("renderDiagnosis", () => {
     expect(out.startsWith("# Spring Boot Issue Diagnosis")).toBe(true);
   });
 });
+
+describe("diagnosis: écarts du P2", () => {
+  const ids = (msg: string, trace?: string) => matchRules(msg, analyzeStackTrace(trace), trace).map((r) => r.id);
+
+  it("ne rapporte pas un 403 d'API externe comme un problème Spring Security", () => {
+    const trace = [
+      "org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: \"denied\"",
+      "\tat org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:134)",
+      "\tat com.acme.client.PaymentClient.charge(PaymentClient.java:30)",
+    ].join("\n");
+    expect(ids("403 Forbidden", trace)).not.toContain("access-denied");
+  });
+
+  it("rapporte un Forbidden levé depuis une frame Spring Security", () => {
+    const trace = [
+      "java.lang.IllegalStateException: Forbidden",
+      "\tat org.springframework.security.web.access.ExceptionTranslationFilter.handleAccessDeniedException(ExceptionTranslationFilter.java:1)",
+      "\tat com.acme.Foo.bar(Foo.java:2)",
+    ].join("\n");
+    expect(ids("Forbidden", trace)).toContain("access-denied");
+  });
+
+  it("garde AccessDeniedException", () => {
+    expect(ids("org.springframework.security.access.AccessDeniedException: Access Denied")).toContain("access-denied");
+  });
+
+  it("une classe cachée non-lambda du framework n'est pas « votre code »", () => {
+    const head = "java.lang.RuntimeException: x\n";
+    const fw = head + "\tat org.springframework.aop.Foo/0x0000000800c0a000.run(Unknown Source)";
+    expect(analyzeStackTrace(fw).applicationFrame).toBeUndefined();
+    const app = head + "\tat com.acme.Foo/0x0000000800c0a000.run(Unknown Source)";
+    expect(analyzeStackTrace(app).applicationFrame).toBe("at com.acme.Foo/0x0000000800c0a000.run(Unknown Source)");
+  });
+});
