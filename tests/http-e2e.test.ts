@@ -19,7 +19,7 @@ function start(args: string[], env: Record<string, string> = {}) {
     const timer = setTimeout(() => reject(new Error("server did not report its port")), 8000);
     proc.stderr!.on("data", (chunk) => {
       buffer += chunk;
-      const match = buffer.match(/HTTP server listening on http:\/\/[^:]+:(\d+)\/mcp/);
+      const match = buffer.match(/HTTP server listening on http:\/\/\S+:(\d+)\/mcp/);
       if (match) { clearTimeout(timer); resolve(Number(match[1])); }
     });
     proc.on("exit", (code) => { clearTimeout(timer); reject(new Error(`server exited early (${code})`)); });
@@ -50,8 +50,8 @@ describe("transport HTTP de bout en bout (#53)", () => {
       await client.close();
       return result.content[0].text as string;
     };
-    expect(await call()).toMatch(/Entries: 0 \//);
-    expect(await call()).toMatch(/Entries: 0 \//); // même instance de cache, pas de crash sur la 2e requête
+    expect(await call()).toMatch(/Entries: 0\n- Memory/);
+    expect(await call()).toMatch(/Entries: 0\n- Memory/); // même instance de cache, pas de crash sur la 2e requête
   });
 
   it("MCP_TRANSPORT=http suffit, et SIGTERM termine le processus avec le code 0", async () => {

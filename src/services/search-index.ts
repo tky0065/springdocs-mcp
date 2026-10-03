@@ -64,6 +64,10 @@ export class SearchIndex {
     return this.docs.size;
   }
 
+  has(docId: string): boolean {
+    return this.docs.has(docId);
+  }
+
   add(docId: string, doc: { title: string; url: string; text: string }): void {
     this.remove(docId);
     const text = doc.text.length > this.maxChars ? doc.text.slice(0, this.maxChars) : doc.text;
@@ -92,7 +96,7 @@ export class SearchIndex {
     }
   }
 
-  search(query: string, limit: number): SearchHit[] {
+  search(query: string, limit: number, filter?: (docId: string) => boolean): SearchHit[] {
     const terms = [...new Set(tokenize(query))];
     if (terms.length === 0 || this.docs.size === 0) return [];
 
@@ -106,6 +110,7 @@ export class SearchIndex {
 
     const scored: Array<{ docId: string; score: number }> = [];
     for (const [docId, doc] of this.docs) {
+      if (filter && !filter(docId)) continue;
       let score = 0;
       for (const term of terms) {
         const tf = doc.tf.get(term);

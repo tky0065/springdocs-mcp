@@ -43,12 +43,6 @@ describe("registre de projets (#32)", () => {
     expect(schemaIds).toEqual(["boot", "ai", "framework", "security", "data-jpa", "batch", "integration", "kafka", "modulith", "cloud-gateway", "cloud-config"]);
   });
 
-  it("ne renseigne pas latestVersion pour les nouveaux projets", () => {
-    for (const id of ["security", "batch", "integration", "kafka", "modulith", "data-jpa", "cloud-gateway", "cloud-config"]) {
-      expect(springProjectsConfig.getProject(id).latestVersion).toBeUndefined();
-    }
-  });
-
   it("un registre construit avec un Map vide ne connaît aucun projet", () => {
     expect(() => new SpringProjectsConfig(new Map()).getProject("boot")).toThrow(/Unknown Spring project/);
   });

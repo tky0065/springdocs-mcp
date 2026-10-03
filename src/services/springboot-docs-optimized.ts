@@ -3,10 +3,15 @@ import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
 import { turndownService, extractContent, pageMarkdown } from './markdown.js';
 import { absoluteSpringUrl, assertSafeSegment, normalizeVersion } from './url.js';
+import { fetchSpringGuidesList } from './guides-list.js';
 
 import { WikiDocument, resolveWikiDocument, wikiPageName, wikiPageUrl, expectedWikiTitle, extractWikiMarkdown, selectSections } from './boot-wiki.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 import { SearchIndex } from './search-index.js';
+import { MigrationProject, RawMigrationProject, assertRawMarkdown, isMigrationProject, projectDisplayName, rawWikiTitle, rawWikiUrl, resolveRawDocument } from './migration-sources.js';
+
+/** Below this size an extracted guide is considered empty (a real guide is far longer; the smallest fixture is ~190). */
+const MIN_GUIDE_CHARS = 100;
 
 /**
  * Spring Documentation Service - Supports multiple Spring projects (Boot, AI, Framework, etc.)
@@ -18,7 +23,6 @@ export class SpringBootDocsServiceOptimized {
   private readonly baseUrl = 'https://docs.spring.io';
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
-  private readonly springGuidesDataUrl = 'https://spring.io/page-data/guides/page-data.json';
   private projectsConfig: SpringProjectsConfig;
   private cache: CacheService;
   private searchIndex: SearchIndex;
@@ -40,6 +44,11 @@ export class SpringBootDocsServiceOptimized {
     } catch (error) {
       console.error(`Content index failure for ${docId}:`, error instanceof Error ? error.message : error);
     }
+  }
+
+  /** Re-feeds the index from the cache when a page was evicted or read before the index existed. */
+  private reindexIfMissing(docId: string, title: string, url: string, text: string): void {
+    if (!this.searchIndex.has(docId)) this.indexPage(docId, title, url, text);
   }
 
   /**
@@ -104,6 +113,7 @@ export class SpringBootDocsServiceOptimized {
     const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for project: ${projectName}`);
+      this.reindexIfMissing(`project:${slug}`, projectName, cached.url, cached.markdown);
       return cached;
     }
 
@@ -159,42 +169,7 @@ export class SpringBootDocsServiceOptimized {
 
     console.error(`🔍 Fetching guides for category: ${category || 'all'}`);
     try {
-      // The /guides page is rendered client-side (Gatsby): its HTML holds no guide links,
-      // the list lives in the page-data JSON that the page itself loads.
-      const response = await this.fetchWithRetry(this.springGuidesDataUrl);
-
-      if (!response.ok) {
-        throw new Error('Unable to access Spring guides page');
-      }
-
-      let nodes: unknown;
-      try {
-        nodes = JSON.parse(await response.text())?.result?.data?.guides?.nodes;
-      } catch {
-        nodes = undefined;
-      }
-      if (!Array.isArray(nodes)) {
-        throw new Error('Unexpected format of the Spring guides data (no guides list found)');
-      }
-
-      const guides: any[] = [];
-      for (const node of nodes as any[]) {
-        const title = typeof node?.title === 'string' ? node.title.trim() : '';
-        const url = absoluteSpringUrl(typeof node?.path === 'string' ? node.path : undefined);
-        if (!title || !url) continue;
-
-        const categories: string[] = Array.isArray(node.category) ? node.category.map(String) : [];
-        const guideCategory = categories.join(', ');
-        if (category && !guideCategory.toLowerCase().includes(category.toLowerCase())) continue;
-
-        guides.push({
-          type: 'spring-guide',
-          title,
-          description: (typeof node.description === 'string' && node.description.trim()) || 'Spring guide',
-          category: guideCategory || 'General',
-          url,
-        });
-      }
+      const guides = await fetchSpringGuidesList(category);
 
       const results = guides.slice(0, limit);
       this.cache.set(cacheKey, results);
@@ -219,9 +194,13 @@ export class SpringBootDocsServiceOptimized {
     }
     const safeId = encodeURIComponent(name);
     const cacheKey = `guide:${name}:${detailLevel}`;
+    const rawKey = `guide-md:${name}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for guide: ${guideId} (${detailLevel})`);
+      // The formatted text depends on detailLevel: the index is fed from the full markdown kept apart
+      const full = this.cache.get<{ markdown: string; url: string }>(rawKey);
+      if (full) this.reindexIfMissing(`guide:${name}`, `Guide: ${name}`, full.url, full.markdown);
       return cached;
     }
 
@@ -259,8 +238,11 @@ export class SpringBootDocsServiceOptimized {
     }
 
     try {
-      const result = this.processHtmlGuide(content, guideId, sourceUrl, detailLevel);
-      this.indexPage(`guide:${name}`, `Guide: ${name}`, sourceUrl, result);
+      const markdown = this.extractGuideMarkdown(content, sourceUrl);
+      const result = this.formatGuide(markdown, guideId, sourceUrl, detailLevel);
+      // Index the complete text, whatever the detail level of this read
+      this.indexPage(`guide:${name}`, `Guide: ${name}`, sourceUrl, markdown);
+      this.cache.setLongTerm(rawKey, { markdown, url: sourceUrl });
       this.cache.setLongTerm(cacheKey, result);
       return result;
     } catch (error) {
@@ -305,6 +287,12 @@ export class SpringBootDocsServiceOptimized {
     const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for reference: ${projectId}/${section}`);
+      this.reindexIfMissing(
+        `reference:${projectId}:${normalizedVersion ?? 'current'}:${section}:${subsection ?? 'main'}`,
+        this.referenceTitle(projectId, section, subsection),
+        cached.url,
+        cached.markdown
+      );
       return this.formatPage(this.referenceTitle(projectId, section, subsection), cached.markdown, cached.url, offset, 'For complete reference, visit');
     }
 
@@ -380,37 +368,69 @@ export class SpringBootDocsServiceOptimized {
     version: string,
     document: 'auto' | WikiDocument = 'auto',
     section?: string,
-    offset = 0
+    offset = 0,
+    project: MigrationProject = 'spring-boot'
   ): Promise<string> {
+    if (!isMigrationProject(project)) {
+      throw new Error(`Unknown project "${project}" for migration guides`);
+    }
     // Resolve version and document before any cache or network access
     const normalizedVersion = normalizeVersion(version);
     if (!normalizedVersion) {
-      throw new Error('A target Spring Boot version is required (e.g. "3.0", "3.4" or "4.0")');
+      throw new Error(`A target ${projectDisplayName(project)} version is required (e.g. "3.0", "3.4" or "4.0")`);
     }
-    const resolved = resolveWikiDocument(normalizedVersion, document);
+    const resolved = project === 'spring-boot'
+      ? resolveWikiDocument(normalizedVersion, document)
+      : resolveRawDocument(project, document);
     const keyword = section?.trim() || undefined;
-    const cacheKey = `migration:${resolved}:${normalizedVersion}`;
+    const cacheKey = project === 'spring-boot'
+      ? `migration:${resolved}:${normalizedVersion}`
+      : `migration:${project}:${resolved}:${normalizedVersion}`;
 
     let entry = this.cache.get<{ markdown: string; url: string; title: string }>(cacheKey);
     if (entry) {
       console.error(`✅ Cache hit for migration page: ${cacheKey}`);
+      this.reindexIfMissing(cacheKey, entry.title, entry.url, entry.markdown);
     } else {
-      const url = wikiPageUrl(wikiPageName(normalizedVersion, resolved));
-      console.error(`🔍 Fetching migration page: ${url}`);
-      const response = await this.fetchWithRetry(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch Spring Boot wiki page: ${response.status}`);
-      }
-      const html = await response.text();
-      const { markdown, title } = extractWikiMarkdown(html, expectedWikiTitle(normalizedVersion, resolved), url);
-      entry = { markdown, url, title };
-      // Only successful, verified pages are cached
+      entry = project === 'spring-boot'
+        ? await this.fetchBootWikiPage(normalizedVersion, resolved as WikiDocument)
+        : await this.fetchRawWikiPage(project, normalizedVersion);
+      // Only successful, verified pages are cached and indexed (whole page, not just the requested section)
+      this.indexPage(cacheKey, entry.title, entry.url, entry.markdown);
       this.cache.setLongTerm(cacheKey, entry);
     }
 
     const markdown = keyword ? selectSections(entry.markdown, keyword, entry.title) : entry.markdown;
     const title = keyword ? `${entry.title} (section: ${keyword})` : entry.title;
-    return this.formatPage(title, markdown, entry.url, offset, 'For the complete page, visit');
+    return this.formatPage(title, markdown, entry.url, offset, 'For the complete page, visit', Boolean(keyword));
+  }
+
+  private async fetchBootWikiPage(version: string, document: WikiDocument) {
+    const url = wikiPageUrl(wikiPageName(version, document));
+    console.error(`🔍 Fetching migration page: ${url}`);
+    const response = await this.fetchWithRetry(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Spring Boot wiki page: ${response.status}`);
+    }
+    const html = await response.text();
+    const { markdown, title } = extractWikiMarkdown(html, expectedWikiTitle(version, document), url);
+    return { markdown, url, title };
+  }
+
+  /** Raw markdown wiki page (Framework, Batch): a missing page is a real 404, an HTML body is never a guide. */
+  private async fetchRawWikiPage(project: RawMigrationProject, version: string) {
+    const url = rawWikiUrl(project, version);
+    const title = rawWikiTitle(project, version);
+    console.error(`🔍 Fetching migration page: ${url}`);
+    const response = await this.fetchWithRetry(url);
+    if (response.status === 404) {
+      throw new Error(`Wiki page not found: ${title} (${url})`);
+    }
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${title}: ${response.status}`);
+    }
+    const markdown = assertRawMarkdown(await response.text(), title, url);
+    return { markdown, url, title };
   }
 
   private referenceTitle(projectId: string, section: string, subsection?: string): string {
@@ -421,14 +441,15 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Format one page of a full markdown document with a pagination footer
    */
-  private formatPage(title: string, markdown: string, url: string, offset: number, linkLabel: string): string {
+  private formatPage(title: string, markdown: string, url: string, offset: number, linkLabel: string, filtered = false): string {
     const page = pageMarkdown(markdown, offset);
     if (offset >= page.total) {
       return `No content at offset ${offset} (total: ${page.total} characters).`;
     }
     let result = `# ${title}\n\n${page.content}`;
     if (page.nextOffset !== null) {
-      result += `\n\n---\nPartie ${page.start}–${page.end} sur ${page.total} caractères. Pour la suite, rappeler avec offset=${page.nextOffset}.`;
+      const note = filtered ? ' The offset applies to the filtered text (the selected section), not to the full page.' : '';
+      result += `\n\n---\nPart ${page.start}–${page.end} of ${page.total} characters. To continue, call again with offset=${page.nextOffset}.${note}`;
     }
     return `${result}\n\n${linkLabel}: ${url}`;
   }
@@ -436,24 +457,44 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Search Spring concepts - alias for backward compatibility
    */
-  async searchConcepts(concept: string, category?: string): Promise<string> {
-    return this.searchSpringConcepts(concept, category);
+  async searchConcepts(concept: string, version?: string): Promise<string> {
+    return this.searchSpringConcepts(concept, version);
+  }
+
+  /**
+   * Entry page of the Spring Boot reference documentation: the current docs (legacy URL, unchanged)
+   * or the page of a published version ("3.4" or "3.4.2"; the patch is ignored).
+   */
+  private bootReferenceIndexUrl(normalizedVersion: string | undefined): string {
+    return normalizedVersion
+      ? `${this.baseUrl}/spring-boot/${normalizedVersion}/reference/index.html`
+      : `${this.baseUrl}/spring-boot/docs/current/reference/html/`;
+  }
+
+  private bootVersionNotFound(normalizedVersion: string): Error {
+    return new Error(
+      `Spring Boot documentation for version ${normalizedVersion} not found (this version may not be published at the current documentation site; omit 'version' for the latest or try a more recent one)`
+    );
   }
 
   /**
    * Search Spring concepts - using real documentation
+   *
+   * @param version - Optional Spring Boot documentation version ('3.4' or '3.4.2'; omitted/'current' = latest)
    */
-  async searchSpringConcepts(concept: string, category?: string): Promise<string> {
-    const cacheKey = `concepts:${concept}:${category || 'all'}`;
+  async searchSpringConcepts(concept: string, version?: string): Promise<string> {
+    const normalizedVersion = normalizeVersion(version);
+    const cacheKey = normalizedVersion ? `concepts:${concept}:v${normalizedVersion}` : `concepts:${concept}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
     try {
       // Search in Spring Boot reference documentation
-      const searchUrl = `${this.baseUrl}/spring-boot/docs/current/reference/html/`;
+      const searchUrl = this.bootReferenceIndexUrl(normalizedVersion);
       const response = await this.fetchWithRetry(searchUrl);
 
       if (!response.ok) {
+        if (normalizedVersion) throw this.bootVersionNotFound(normalizedVersion);
         throw new Error('Unable to access Spring Boot documentation');
       }
 
@@ -496,32 +537,41 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Search documentation with real API - alias for backward compatibility
    */
-  async searchDocumentation(query: string, docType: string = 'all', limit: number = 10): Promise<any[]> {
-    return this.searchSpringDocs(query, docType, limit);
+  async searchDocumentation(query: string, docType: string = 'all', limit: number = 10, version?: string): Promise<any[]> {
+    return this.searchSpringDocs(query, docType, limit, version);
   }
 
   /**
    * Search documentation with real API
+   *
+   * @param version - Optional Spring Boot documentation version for the Boot reference part
+   *   ('3.4' or '3.4.2'; omitted/'current' = latest). Guides and projects are not versioned and ignore it.
    */
-  async searchSpringDocs(query: string, docType: string = 'all', limit: number = 10): Promise<any[]> {
+  async searchSpringDocs(query: string, docType: string = 'all', limit: number = 10, version?: string): Promise<any[]> {
     const allowedDocTypes = ['guides', 'reference', 'projects', 'content', 'all'];
     if (!allowedDocTypes.includes(docType)) {
       throw new Error(`Invalid docType "${docType}". Allowed: ${allowedDocTypes.join(', ')}`);
     }
-    const cacheKey = `docs:${query}:${docType}:${limit}`;
+    const normalizedVersion = normalizeVersion(version);
+    const baseKey = `docs:${query}:${docType}:${limit}`;
+    const cacheKey = normalizedVersion ? `${baseKey}:v${normalizedVersion}` : baseKey;
     // Only the title sources are cached: content hits depend on the current state of the index
-    const titles = this.cache.get<any[]>(cacheKey) ?? await this.searchTitleSources(query, docType, limit, cacheKey);
+    const titles = this.cache.get<any[]>(cacheKey) ?? await this.searchTitleSources(query, docType, limit, cacheKey, normalizedVersion);
     if (docType !== 'all' && docType !== 'content') {
       return titles.slice(0, limit);
     }
-    return this.mergeContentResults(titles, query, limit);
+    return this.mergeContentResults(titles, query, limit, normalizedVersion);
   }
 
-  private mergeContentResults(titles: any[], query: string, limit: number): any[] {
+  private mergeContentResults(titles: any[], query: string, limit: number, normalizedVersion?: string): any[] {
     const seen = new Set(titles.map(result => result.url));
     let content: any[] = [];
     try {
-      content = this.searchIndex.search(query, limit)
+      // With a version, Boot reference pages of other versions are left out (each page is indexed
+      // under its own versioned docId); guides, projects and other projects' pages are not versioned
+      const sameVersion = (docId: string) =>
+        !normalizedVersion || !docId.startsWith('reference:boot:') || docId.startsWith(`reference:boot:${normalizedVersion}:`);
+      content = this.searchIndex.search(query, limit, sameVersion)
         .filter(hit => !seen.has(hit.url))
         .map(hit => ({ type: 'content', title: hit.title, url: hit.url, description: hit.snippet, score: hit.score }));
     } catch (error) {
@@ -540,7 +590,7 @@ export class SpringBootDocsServiceOptimized {
     return merged;
   }
 
-  private async searchTitleSources(query: string, docType: string, limit: number, cacheKey: string): Promise<any[]> {
+  private async searchTitleSources(query: string, docType: string, limit: number, cacheKey: string, normalizedVersion?: string): Promise<any[]> {
     const results: any[] = [];
 
     const sources: Array<[string, () => Promise<any[]>]> = [];
@@ -557,7 +607,7 @@ export class SpringBootDocsServiceOptimized {
       sources.push(['projects', () => this.searchSpringProjects(query, limit)]);
     }
     if (docType === 'all' || docType === 'reference') {
-      sources.push(['reference', () => this.searchInReference(query, limit)]);
+      sources.push(['reference', () => this.searchInReference(query, limit, normalizedVersion)]);
     }
 
     // A failing source must not be hidden nor cached: fail if all fail, otherwise return partial results uncached
@@ -573,7 +623,10 @@ export class SpringBootDocsServiceOptimized {
     });
 
     if (sources.length > 0 && failures.length === sources.length) {
-      throw new Error(`Unable to search documentation: all sources failed (${failures.join(', ')})`);
+      const reasons = settled
+        .map(outcome => (outcome.status === 'rejected' ? (outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason)) : ''))
+        .filter(Boolean);
+      throw new Error(`Unable to search documentation: all sources failed (${failures.join(', ')}): ${reasons.join('; ')}`);
     }
     if (failures.length === 0) {
       this.cache.set(cacheKey, results);
@@ -581,10 +634,12 @@ export class SpringBootDocsServiceOptimized {
     return results.slice(0, limit);
   }
 
-  private async searchInReference(query: string, limit: number): Promise<any[]> {
+  private async searchInReference(query: string, limit: number, normalizedVersion?: string): Promise<any[]> {
     try {
-      const response = await this.fetchWithRetry(`${this.baseUrl}/spring-boot/docs/current/reference/html/`);
+      const pageUrl = this.bootReferenceIndexUrl(normalizedVersion);
+      const response = await this.fetchWithRetry(pageUrl);
       if (!response.ok) {
+        if (normalizedVersion) throw this.bootVersionNotFound(normalizedVersion);
         throw new Error('Unable to access Spring Boot reference documentation');
       }
 
@@ -601,7 +656,9 @@ export class SpringBootDocsServiceOptimized {
           results.push({
             type: 'reference',
             title: `Spring Boot: ${text}`,
-            url: href.startsWith('http') ? href : `${this.baseUrl}/spring-boot/docs/current/reference/html/${href}`,
+            url: normalizedVersion
+              ? new URL(href, pageUrl).href // nav hrefs of the versioned site are relative to the page
+              : href.startsWith('http') ? href : `${this.baseUrl}/spring-boot/docs/current/reference/html/${href}`,
             description: `Reference documentation section`
           });
         }
@@ -614,8 +671,8 @@ export class SpringBootDocsServiceOptimized {
     }
   }
 
-  private processHtmlGuide(content: string, guideId: string, sourceUrl: string, detailLevel: string = 'medium'): string {
-    console.error(`Processing HTML content with detail level: ${detailLevel}...`);
+  private extractGuideMarkdown(content: string, sourceUrl: string): string {
+    console.error('Processing HTML guide content...');
     const $ = cheerio.load(content);
 
     // Remove navigation and footer elements
@@ -636,10 +693,15 @@ export class SpringBootDocsServiceOptimized {
       markdown = turndownService.turndown(mainContent.html() || '');
     }
 
-    if (!markdown.trim()) {
+    const trimmed = markdown.trim();
+    // A near-empty page or a JSON excerpt (client-rendered page data) is not a guide
+    if (trimmed.length < MIN_GUIDE_CHARS || /^[{[]\s*"/.test(trimmed)) {
       throw new Error(`No content could be extracted from the guide page: ${sourceUrl}`);
     }
+    return markdown;
+  }
 
+  private formatGuide(markdown: string, guideId: string, sourceUrl: string, detailLevel: string): string {
     // Use intelligent extraction
     const { content: extractedContent, truncated } = extractContent(markdown, detailLevel);
 

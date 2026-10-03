@@ -16,6 +16,8 @@ const data: DependencyData = {
     springdoc: { groupId: "org.springdoc", artifactId: "springdoc-openapi-starter-webmvc-ui", scope: "compile", version: "3.1.0" },
     saml: { groupId: "org.springframework.boot", artifactId: "spring-boot-starter-security-saml2", scope: "compile", repository: "shibboleth" },
     native: { groupId: "org.springframework.boot", artifactId: "spring-boot", scope: "compile" },
+    devtools: { groupId: "org.springframework.boot", artifactId: "spring-boot-devtools", scope: "runtime" },
+    "docker-compose": { groupId: "org.springframework.boot", artifactId: "spring-boot-docker-compose", scope: "runtime" },
     provided: { groupId: "jakarta.servlet", artifactId: "jakarta.servlet-api", scope: "provided" },
     weird: { groupId: "org.acme", artifactId: "weird", scope: "banana" },
     evil: { groupId: "org.acme\n```\n# pwn", artifactId: "x", scope: "compile" },
@@ -53,6 +55,16 @@ describe("flattenCatalog", () => {
 
   it("métadonnées sans dependencies : erreur claire", () => {
     expect(() => flattenCatalog({} as any)).toThrow(/unexpected response/i);
+  });
+});
+
+describe("rankDependencies : mots courts", () => {
+  it("ai ne correspond pas à mail/email, mais à spring-ai-openai", () => {
+    const catalog = [
+      { id: "mail", name: "Java Mail Sender", description: "Send email using Java Mail" },
+      { id: "spring-ai-openai", name: "OpenAI", description: "Spring AI with OpenAI" },
+    ];
+    expect(rankDependencies(catalog, ["ai"]).map(e => e.id)).toEqual(["spring-ai-openai"]);
   });
 });
 
@@ -159,6 +171,21 @@ describe("buildSnippets", () => {
     expect(s.kind).toBe("plugin");
     expect(s.maven).toBeUndefined();
     expect(s.notes.join(" ")).toMatch(/build plugin/i);
+  });
+
+  it("native : plugin GraalVM réel, pas les coordonnées spring-boot", () => {
+    const s = buildSnippets("native", data, "both");
+    expect(s.coordinates).toBeUndefined();
+    const notes = s.notes.join(" ");
+    expect(notes).toContain("org.graalvm.buildtools.native");
+    expect(notes).toContain("org.graalvm.buildtools:native-maven-plugin");
+  });
+
+  it.each(["devtools", "docker-compose"])("%s : optional en Maven, developmentOnly en Gradle", id => {
+    const s = buildSnippets(id, data, "both");
+    expect(s.maven).toContain("<scope>runtime</scope>");
+    expect(s.maven).toContain("<optional>true</optional>");
+    expect(s.gradle).toMatch(/^developmentOnly\("org\.springframework\.boot:spring-boot-/);
   });
 
   it("id sans coordonnées : pas de snippet", () => {

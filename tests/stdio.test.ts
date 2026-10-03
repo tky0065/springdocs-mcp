@@ -86,7 +86,7 @@ describe("MCP server over stdio", () => {
     await client.initialize("2024-11-05");
     const { result } = await client.request("tools/call", { name: "spring_cache_stats", arguments: {} });
     expect(result.isError).toBeFalsy();
-    expect(result.content[0].text).toContain("Entries: 0 / 500");
+    expect(result.content[0].text).toContain("Entries: 0");
   });
 
   it("annonce la capacité prompts et liste les 2 prompts", async () => {

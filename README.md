@@ -87,9 +87,36 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 
 ## ✨ Features & Tools
 
-### 📚 **Core Documentation (8 Enhanced Tools)**
+The server exposes **17 tools**.
+
+### 📚 **Core Documentation (8 Tools)**
 | Tool | Purpose | Example Usage |
-|------|-
+|------|---------|---------------|
+| `search_spring_docs` | Search Spring documentation (`docType` all, guides, projects, reference, content; optional `version`) | "Search docs for WebClient" |
+| `search_spring_projects` | Find Spring projects | "Find projects about security" |
+| `get_spring_project` | Project page as markdown (paginated with `offset`) | "Show the Spring Data project" |
+| `get_all_spring_guides` | List the getting-started guides | "List the guides" |
+| `get_spring_guide` | Complete guide content | "Get the rest-service guide" |
+| `get_spring_reference` | Reference documentation for 11 projects (`version`, `offset`) | "Boot reference, web section" |
+| `get_migration_guide` | Spring Boot / Framework / Batch migration guides and upgrade notes | "Migration guide to Boot 3.4" |
+| `search_spring_concepts` | Explore Spring concepts (optional `version`) | "Explain auto-configuration" |
+
+### 🚀 **Advanced Features (6 Tools)**
+| Tool | Purpose | Example Usage |
+|------|---------|---------------|
+| `search_spring_ecosystem` | Search the whole ecosystem, Spring AI included | "Find Spring AI vector stores" |
+| `get_spring_tutorial` | Step-by-step tutorials | "Tutorial on Spring Security" |
+| `compare_spring_versions` | Version comparison and migration notes | "Compare 3.3 and 3.4" |
+| `get_release_notes` | GitHub release notes with focus filter | "Release notes of Boot 3.5" |
+| `get_spring_best_practices` | Expert guidance by category | "Best practices for testing" |
+| `diagnose_spring_issues` | Offline stack trace and error diagnosis | "Diagnose this DataSource error" |
+
+### 🧰 **Tooling (3 Tools)**
+| Tool | Purpose | Example Usage |
+|------|---------|---------------|
+| `get_spring_initializr` | Spring Initializr metadata: Boot versions, dependencies (start.spring.io) | "Which Boot versions does Initializr offer?" |
+| `find_spring_dependency` | Find starters for a need, with Maven and Gradle snippets (optional `bootVersion` as X.Y.Z) | "Which dependency for Redis caching?" |
+| `spring_cache_stats` | In-memory cache statistics and optional purge | "Show cache stats" |
 
 ---
 
@@ -109,6 +136,10 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 ```
 "Search for REST API documentation in Spring Boot"
 ```
+
+`search_spring_docs` and `search_spring_concepts` accept an optional `version` (`3.4` or `3.4.2`, the patch is ignored; `current` or omitted = latest) that targets the Spring Boot reference documentation of that version (a version that is not published gives a dedicated error). Guides and projects are not versioned and ignore it; with `docType=content`, Boot reference pages of other versions are left out of the results.
+
+`get_migration_guide` accepts `project` (`spring-boot` by default, `spring-framework`, `spring-batch`): Framework serves the release notes of its minor version (`6.2`, section "Upgrading From ..."), Batch its migration guide (`5.0`, `6.0`), both read as raw markdown from the project wiki; `section` and `offset` work as for Boot. Spring Security and Spring AI (docs.spring.io pages) are not covered yet.
 
 `search_spring_docs` accepts `docType=content`: full-text search (BM25 ranking) over the pages the server has already read (`get_spring_project`, `get_spring_reference`, `get_spring_guide`). It is included in `docType=all` and stays empty until a page has been read.
 
@@ -200,6 +231,16 @@ npx @enokdev/springdocs-mcp --transport http --port 3000   # écoute sur 127.0.0
 | (aucune) | `MCP_ALLOWED_HOSTS` | vide : liste de `Host` supplémentaires, séparés par des virgules |
 
 Endpoint MCP : `POST /mcp` (mode sans état) ; santé : `GET /healthz`. **Aucune authentification** : l'écoute reste sur loopback par défaut, et les en-têtes `Host`/`Origin` sont contrôlés contre le DNS rebinding. Pour un conteneur, `MCP_TRANSPORT=http MCP_HOST=0.0.0.0` avec le port publié (`-p 127.0.0.1:3000:3000`) ; si le port publié diffère du port interne, déclarer le `Host` utilisé par le client, par exemple `MCP_ALLOWED_HOSTS=localhost:8080`.
+
+Le `Host` doit être de la forme `nom:port` : un `Host` sans port (client sur le port 80 ou 443 derrière un reverse proxy, par exemple `Host: mcp.example.com`) est refusé en 403. Il faut alors le déclarer tel que le proxy le transmet, via `MCP_ALLOWED_HOSTS=mcp.example.com` (liste séparée par des virgules, comparaison exacte avec l'en-tête reçu).
+
+### Jeton GitHub (optionnel)
+
+`get_release_notes` et `compare_spring_versions` interrogent l'API GitHub, limitée à 60 requêtes/heure sans authentification. Définir `GITHUB_TOKEN` (jeton sans scope particulier suffit) relève cette limite à 5000/heure ; le jeton n'est envoyé qu'à `api.github.com` (jamais à un autre hôte ni après une redirection) et n'est jamais journalisé. En cas de limite atteinte, l'outil échoue immédiatement avec un message clair (délai de reprise inclus) au lieu d'attendre. `get_release_notes` accepte `version` en `X.Y` (ex. `3.5`) pour obtenir la dernière release stable de cette mineure ; `compare_spring_versions` applique `focus` (`breaking-changes`, `new-features`, `deprecations`).
+
+```json
+{ "mcpServers": { "springdocs": { "command": "npx", "args": ["@enokdev/springdocs-mcp@latest"], "env": { "GITHUB_TOKEN": "ghp_..." } } } }
+```
 
 ## 🧪 Testing & Development
 
@@ -303,6 +344,7 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 
 ### ⚡ **Performance & Resilience**
 - Repeated requests are served from the in-memory cache (30 min TTL, 24 h for stable content) without a new network call
+- The cache is bounded by an estimated memory budget (64 MiB by default, LRU eviction, a single value larger than the budget is not cached); override with `MCP_CACHE_MAX_MB` (e.g. `MCP_CACHE_MAX_MB=32`). `spring_cache_stats` reports entries and estimated memory used / budget
 - Retry with exponential backoff and request timeouts on all external HTTP calls
 - Responses larger than 5 MiB are rejected
 

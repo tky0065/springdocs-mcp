@@ -68,7 +68,7 @@ docker run -i \
 
 ## HTTP transport
 
-The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_TRANSPORT=http` and `MCP_HOST=0.0.0.0`, then publish the port (for example `-p 127.0.0.1:3000:3000`). The endpoint is `POST /mcp`, with `GET /healthz` for health checks. There is no authentication: do not expose the port beyond trusted networks. If the published port differs from the internal one, set `MCP_ALLOWED_HOSTS` (for example `localhost:8080`). See the main README, section "Transport HTTP". The Dockerfile itself is unchanged.
+The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_TRANSPORT=http` and `MCP_HOST=0.0.0.0`, then publish the port (for example `-p 127.0.0.1:3000:3000`). The endpoint is `POST /mcp`, with `GET /healthz` for health checks. There is no authentication: do not expose the port beyond trusted networks. If the published port differs from the internal one, set `MCP_ALLOWED_HOSTS` (for example `localhost:8080`). The same applies behind a reverse proxy that forwards a `Host` without a port (client on port 80/443): list it exactly as received, for example `MCP_ALLOWED_HOSTS=mcp.example.com`. See the main README, section "Transport HTTP". The Dockerfile itself is unchanged.
 
 ## Features
 
@@ -91,16 +91,18 @@ The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_
 - `get_migration_guide` - Spring Boot migration guide / upgrade notes
 - `search_spring_concepts` - Explore Spring concepts
 
-### Advanced Tools (9 Tools)
+### Advanced Tools (6 Tools)
 - `search_spring_ecosystem` - Search entire ecosystem + Spring AI
 - `get_spring_tutorial` - Step-by-step tutorials
 - `compare_spring_versions` - Version comparison & migration
 - `get_release_notes` - GitHub release notes (any project, with focus filter)
 - `get_spring_best_practices` - Expert guidance by category
 - `diagnose_spring_issues` - Intelligent error diagnosis
+
+### Tooling (3 Tools)
 - `spring_cache_stats` - Cache statistics and optional purge
 - `get_spring_initializr` - Spring Initializr options and dependencies (start.spring.io)
-- `find_spring_dependency` - Find starters for a need, with Maven and Gradle snippets
+- `find_spring_dependency` - Find starters for a need, with Maven and Gradle snippets (optional `bootVersion` as X.Y.Z)
 
 ## Resources
 

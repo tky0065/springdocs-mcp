@@ -1,11 +1,12 @@
 import * as cheerio from 'cheerio';
 import { CacheService } from './cache.js';
-import { fetchWithRetry, FetchResult } from './http.js';
+import { fetchWithRetry, FetchResult, githubRateLimitMessage } from './http.js';
+import { fetchSpringGuidesList } from './guides-list.js';
 import { turndownService, extractContent } from './markdown.js';
 import { absoluteSpringUrl } from './url.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 import { renderDiagnosis } from './diagnosis.js';
-import { ReleaseFocus, filterReleaseBody, normalizeReleaseVersion } from './release-notes.js';
+import { ReleaseFocus, filterReleaseBody, normalizeReleaseVersion, isMinorVersion, latestStableOfMinor } from './release-notes.js';
 
 /** Raw GitHub release data kept in the cache (the focus filter is applied on read). */
 interface CachedRelease {
@@ -25,7 +26,6 @@ export class AdvancedFeaturesService {
   private cache: CacheService;
   private readonly baseUrl = 'https://docs.spring.io';
   private readonly springProjectsUrl = 'https://spring.io/projects';
-  private readonly springGuideUrl = 'https://spring.io/guides';
 
   private projectsConfig: SpringProjectsConfig;
 
@@ -49,32 +49,42 @@ export class AdvancedFeaturesService {
     // Validate before any network call
     const normalized = normalizeReleaseVersion(version);
     const repo = config.githubRepo;
-    const tag = normalized === undefined ? undefined : `${config.githubTagPrefix ?? ''}${normalized}`;
+    const tagPrefix = config.githubTagPrefix ?? '';
+    const minor = normalized !== undefined && isMinorVersion(normalized);
+    const tag = normalized === undefined || minor ? undefined : `${tagPrefix}${normalized}`;
 
     const cacheKey = `release:${project}:${normalized ?? 'latest'}`;
     let release = this.cache.get<CachedRelease>(cacheKey);
 
     if (!release) {
-      const url = tag === undefined
-        ? `https://api.github.com/repos/${repo}/releases/latest`
-        : `https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`;
-      const response = await this.fetchWithRetry(url);
+      let data: any;
+      if (minor) {
+        data = await this.findLatestOfMinor(repo, normalized as string, tagPrefix);
+        if (!data) {
+          throw new Error(
+            `No release found: ${config.displayName} ${normalized}.x (no stable release of that minor). See https://github.com/${repo}/releases`
+          );
+        }
+      } else {
+        const url = tag === undefined
+          ? `https://api.github.com/repos/${repo}/releases/latest`
+          : `https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`;
+        const response = await this.fetchWithRetry(url);
 
-      if (response.status === 404) {
-        throw new Error(
-          tag === undefined
-            ? `No release found for ${config.displayName}`
-            : `Release not found: ${config.displayName} ${normalized} (tag "${tag}"). See https://github.com/${repo}/releases`
-        );
-      }
-      if (response.status === 403 || response.status === 429) {
-        throw new Error('GitHub API rate limit reached (60 requests/hour without authentication). Try again later.');
-      }
-      if (!response.ok) {
-        throw new Error(`Failed to fetch release data: ${response.status}`);
+        if (response.status === 404) {
+          throw new Error(
+            tag === undefined
+              ? `No release found for ${config.displayName}`
+              : `Release not found: ${config.displayName} ${normalized} (tag "${tag}"). See https://github.com/${repo}/releases`
+          );
+        }
+        this.assertNotRateLimited(response);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch release data: ${response.status}`);
+        }
+        data = await response.json();
       }
 
-      const data = await response.json();
       release = {
         tag: data.tag_name,
         name: data.name || null,
@@ -83,8 +93,8 @@ export class AdvancedFeaturesService {
         prerelease: Boolean(data.prerelease),
         body: data.body ?? null,
       };
-      // Only successful responses are cached; "latest" moves, so it keeps the short TTL
-      if (normalized === undefined) {
+      // Only successful responses are cached; "latest" and "X.Y" move, so they keep the short TTL
+      if (normalized === undefined || minor) {
         this.cache.set(cacheKey, release);
       } else {
         this.cache.setLongTerm(cacheKey, release);
@@ -108,6 +118,37 @@ export class AdvancedFeaturesService {
       output += `No ${focus} entries found in these release notes. See the full notes: ${release.url}`;
     }
     return output;
+  }
+
+  /** Throws a clear error when GitHub refused the request because of its rate limit. */
+  private assertNotRateLimited(response: FetchResult): void {
+    if (response.rateLimit || response.status === 403 || response.status === 429) {
+      throw new Error(githubRateLimitMessage(response.rateLimit));
+    }
+  }
+
+  /** Latest stable release of an "X.Y" minor, paginating the GitHub releases list. */
+  private async findLatestOfMinor(repo: string, minor: string, tagPrefix: string): Promise<any | undefined> {
+    const MAX_PAGES = 5;
+    let best: any;
+    let seenOlderPage = false;
+    for (let page = 1; page <= MAX_PAGES && !seenOlderPage; page++) {
+      const response = await this.fetchWithRetry(
+        `https://api.github.com/repos/${repo}/releases?per_page=100&page=${page}`
+      );
+      this.assertNotRateLimited(response);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch release data: ${response.status}`);
+      }
+      const releases = await response.json();
+      if (!Array.isArray(releases) || releases.length === 0) break;
+
+      const candidate = latestStableOfMinor(releases, minor, tagPrefix);
+      // Once found, a page without any release of that minor means the rest is older
+      if (best && !candidate) seenOlderPage = true;
+      best = latestStableOfMinor(candidate ? [...(best ? [best] : []), candidate] : [], minor, tagPrefix) ?? best;
+    }
+    return best;
   }
 
   /**
@@ -231,6 +272,7 @@ export class AdvancedFeaturesService {
         const releaseNotesUrl = `https://api.github.com/repos/spring-projects/spring-boot/releases?per_page=100&page=${page}`;
         const response = await this.fetchWithRetry(releaseNotesUrl);
 
+        this.assertNotRateLimited(response);
         if (!response.ok) {
           throw new Error(`Failed to fetch release data: ${response.status}`);
         }
@@ -246,19 +288,31 @@ export class AdvancedFeaturesService {
         return `# Version Comparison: ${version1} vs ${version2}\n\nUnable to find release information for one or both versions. Versions must match a release tag exactly, in the X.Y.Z format (e.g. 3.5.0, not 3.5).\n\nAvailable versions can be found at: https://github.com/spring-projects/spring-boot/releases`;
       }
 
+      const excerpt = (release: any): string => {
+        const body = filterReleaseBody(release.body, focus as ReleaseFocus);
+        if (!body.trim()) {
+          return focus === 'all'
+            ? ''
+            : `No ${focus} entries found in these release notes. See the full notes: ${release.html_url}`;
+        }
+        return `${body.substring(0, 1000)}...`;
+      };
+
       const result = `# Spring Boot Version Comparison: ${version1} vs ${version2}
+
+**Focus:** ${focus}
 
 ## Version ${version1}
 **Released:** ${new Date(release1.published_at).toLocaleDateString()}
 **Release Notes:** ${release1.html_url}
 
-${(release1.body ?? '').substring(0, 1000)}...
+${excerpt(release1)}
 
 ## Version ${version2}
 **Released:** ${new Date(release2.published_at).toLocaleDateString()}
 **Release Notes:** ${release2.html_url}
 
-${(release2.body ?? '').substring(0, 1000)}...
+${excerpt(release2)}
 
 ## Migration Recommendations
 1. Review the full release notes at the URLs above
@@ -383,31 +437,15 @@ For complete documentation, visit: ${docUrl}`;
 
   private async searchGuides(query: string, limit: number) {
     try {
-      const response = await this.fetchWithRetry(this.springGuideUrl);
-      if (!response.ok) {
-        throw new Error('Failed to fetch Spring guides');
-      }
-
-      const html = await response.text();
-      const $ = cheerio.load(html);
-      const guides: any[] = [];
-
-      $('.guide-item, .card, .guide-card, .list-item').each((index: number, element: any) => {
-        const $guide = $(element);
-        const title = $guide.find('h2, h3, .title, .guide-title, .card-title, a').first().text().trim();
-        const description = $guide.find('p, .description, .summary, .card-text').first().text().trim();
-        const url = absoluteSpringUrl($guide.find('a').first().attr('href'));
-        const type = $guide.find('.badge, .label, .type').first().text().trim() || 'Guide';
-
-        if (title && url) {
-          if (title.toLowerCase().includes(query.toLowerCase()) ||
-              description.toLowerCase().includes(query.toLowerCase())) {
-            guides.push({ title, description: description || 'Spring Boot guide', url, type });
-          }
-        }
-      });
-
-      return guides.slice(0, limit);
+      // The /guides HTML is rendered client-side (no links): use the shared page-data list
+      const guides = await fetchSpringGuidesList();
+      const needle = query.toLowerCase();
+      return guides
+        .filter(guide =>
+          guide.title.toLowerCase().includes(needle) ||
+          guide.description.toLowerCase().includes(needle))
+        .map(guide => ({ title: guide.title, description: guide.description, url: guide.url, type: 'Guide' }))
+        .slice(0, limit);
     } catch (error) {
       console.error('Error searching guides:', error);
       throw error;

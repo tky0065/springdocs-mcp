@@ -123,7 +123,8 @@ function parseFrame(line: string): ParsedFrame | undefined {
   if (slash >= 0) {
     const before = name.slice(0, slash);
     const after = name.slice(name.lastIndexOf('/') + 1);
-    name = before.includes('$$Lambda') || !after.includes('.') ? before : after;
+    // Hidden classes ("com.acme.Foo/0x0000...method") also keep the part before the "/"
+    name = before.includes('$$Lambda') || after.startsWith('0x') || !after.includes('.') ? before : after;
   }
   if (name.length === 0 || !IDENTIFIER.test(name.replace(/<(init|clinit)>/, 'x'))) return undefined;
   return { text: line, name };
@@ -336,7 +337,7 @@ export const DIAGNOSIS_RULES: DiagnosisRule[] = [
   },
   {
     id: 'access-denied',
-    needles: ['accessdeniedexception', 'invalid csrf token', 'could not verify the provided csrf token', 'forbidden'],
+    needles: ['accessdeniedexception', 'invalid csrf token', 'could not verify the provided csrf token'],
     title: 'Access denied by Spring Security',
     checks: [
       'state-changing requests need the CSRF token unless CSRF is deliberately disabled for a stateless API',
@@ -404,6 +405,24 @@ const REFERENCE_TITLES: Record<string, string> = {
 };
 
 /**
+ * "forbidden" alone is too broad (a 403 from an external API is not a Spring Security issue):
+ * it only counts when the exception header mentioning it is thrown from a Spring Security frame.
+ */
+function hasSecurityForbidden(stackTrace: string): boolean {
+  let forbiddenHeader = false;
+  for (const line of boundedLines(stackTrace)) {
+    const frame = parseFrame(line);
+    if (frame) {
+      if (forbiddenHeader && frame.name.startsWith('org.springframework.security.')) return true;
+      forbiddenHeader = false; // only the first frame of the exception counts
+    } else if (parseHeader(line)) {
+      forbiddenHeader = line.toLowerCase().includes('forbidden');
+    }
+  }
+  return false;
+}
+
+/**
  * Returns the rules whose needles appear (lower-cased) in the analyzed text:
  * the error message plus the exception header lines of the trace. Order = table order.
  */
@@ -418,7 +437,10 @@ export function matchRules(errorMessage: string, analysis: TraceAnalysis, stackT
     for (const link of analysis.chain) parts.push(`${link.type}: ${link.message}`);
   }
   const text = parts.join('\n').toLowerCase();
-  const matched = DIAGNOSIS_RULES.filter((rule) => rule.needles.some((n) => text.includes(n)));
+  const securityForbidden = stackTrace !== undefined && hasSecurityForbidden(stackTrace);
+  const matched = DIAGNOSIS_RULES.filter(
+    (rule) => rule.needles.some((n) => text.includes(n)) || (rule.id === 'access-denied' && securityForbidden),
+  );
   // NoUniqueBeanDefinitionException messages also read "No qualifying bean of type ...":
   // that is not a missing bean.
   if (matched.some((r) => r.id === 'non-unique-bean')) {

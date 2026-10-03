@@ -8,7 +8,7 @@ import * as toolsModule from "../src/tools/index.js";
 import { fakeResponse } from "./helpers.js";
 
 const mockedFetch = vi.mocked(fetch) as unknown as ReturnType<typeof vi.fn>;
-const GUIDE_HTML = "<main><h1>Building a REST service</h1><p>Contenu du guide</p></main>";
+const GUIDE_HTML = "<main><h1>Building a REST service</h1><p>Contenu du guide : ce guide explique pas à pas comment construire un service REST avec Spring Boot.</p></main>";
 const requested = () => mockedFetch.mock.calls.map(call => call[0] as string);
 
 beforeEach(() => {
