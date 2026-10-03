@@ -39,3 +39,32 @@ describe("landing docs/index.html (#45)", () => {
     expect(html).not.toMatch(/All 12/);
   });
 });
+
+describe("landing : faits dérivés de la source de vérité (groupe I)", () => {
+  const names = ToolDefinitions.getToolList().map((t: { name: string }) => t.name);
+  const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
+
+  it("annonce le nombre réel de tools partout", () => {
+    const counts = [...html.matchAll(/\b(\d+) (?:powerful |available )?tools\b/gi)].map((m) => Number(m[1]));
+    expect(counts.length).toBeGreaterThan(0);
+    for (const c of counts) expect(c).toBe(names.length);
+  });
+
+  it("les titres de section (N) correspondent au nombre de cartes", () => {
+    const original = Number(/Enhanced Original Tools \((\d+)\)/.exec(html)?.[1]);
+    const advanced = Number(/Advanced New Tools \((\d+)\)/.exec(html)?.[1]);
+    expect(original + advanced).toBe($(".tool").length);
+    const idx = html.indexOf("Advanced New Tools");
+    expect((html.slice(idx).match(/class="tool"/g) ?? []).length).toBe(advanced);
+  });
+
+  it("la bannière, le badge et le pied affichent la version de package.json", () => {
+    expect($(".version-badge").text().trim()).toBe(`v${pkg.version}`);
+    expect($(".update-banner").text()).toContain(`v${pkg.version}`);
+    expect($("footer").text()).toContain(`v${pkg.version}`);
+  });
+
+  it("déclare un favicon inline (pas de 404 sur favicon.ico)", () => {
+    expect($('link[rel="icon"]').attr("href") ?? "").toMatch(/^data:image\/svg\+xml,/);
+  });
+});
