@@ -23,23 +23,11 @@ export interface SpringProjectConfig {
   /** Human-readable display name (e.g., "Spring Boot", "Spring AI") */
   displayName: string;
 
-  /** Base URL for project documentation */
-  baseDocUrl: string;
-
-  /** Latest known stable version (optional, informational) */
-  latestVersion?: string;
-
-  /** Path to API documentation relative to baseDocUrl (optional) */
-  apiPath?: string;
-
   /** Whether documentation URLs include version in path */
   hasVersionedDocs: boolean;
 
   /** Cache TTL strategy: 'short' (30min) for frequently updated, 'long' (24h) for stable */
   cacheStrategy: 'short' | 'long';
-
-  /** Search keywords/scopes associated with this project */
-  scopes: string[];
 
   /** Reference documentation sections available for this project (optional) */
   referenceSections?: string[];
@@ -80,7 +68,6 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-boot/',
       displayName: 'Spring Boot',
-      baseDocUrl: 'https://docs.spring.io/spring-boot/docs',
       referenceBaseUrl: 'https://docs.spring.io/spring-boot',
       referenceLayout: 'directory',
       referencePaths: {
@@ -88,11 +75,8 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
         'native-image': 'reference/packaging/native-image',
         'application-properties': 'appendix/application-properties'
       },
-      latestVersion: '3.5.6',
-      apiPath: '/api',
       hasVersionedDocs: true,
       cacheStrategy: 'long', // Stable releases, cache aggressively
-      scopes: ['boot', 'web', 'data', 'actuator', 'starters', 'autoconfiguration'],
       referenceSections: [
         'features',
         'using',
@@ -116,28 +100,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-ai/reference/',
       displayName: 'Spring AI',
-      baseDocUrl: 'https://docs.spring.io/spring-ai/reference/api', // Sections are under /api/
       referenceBaseUrl: 'https://docs.spring.io/spring-ai/reference/api',
       referenceLayout: 'flat',
-      latestVersion: '1.1.2',
-      apiPath: '/api',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-ai/reference/1.1/api/chatclient.html
       cacheStrategy: 'short', // AI documentation evolves rapidly, shorter cache
-      scopes: [
-        'ai',
-        'llm',
-        'rag',
-        'embeddings',
-        'vector',
-        'chatclient',
-        'openai',
-        'azure',
-        'anthropic',
-        'ollama',
-        'chroma',
-        'pinecone',
-        'pgvector'
-      ],
       referenceSections: [
         'chatclient',
         'chatmodel',
@@ -158,14 +124,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-framework/reference/',
       displayName: 'Spring Framework',
-      baseDocUrl: 'https://docs.spring.io/spring-framework/docs',
       referenceBaseUrl: 'https://docs.spring.io/spring-framework/reference',
       referenceLayout: 'flat',
-      latestVersion: '6.2.6',
-      apiPath: '/javadoc-api',
       hasVersionedDocs: true,
       cacheStrategy: 'long',
-      scopes: ['core', 'context', 'beans', 'aop', 'web', 'webflux', 'data-access'],
       referenceSections: [
         'core',
         'web',
@@ -185,7 +147,6 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: '',
       versionInsertAfter: 'https://docs.spring.io/spring-security/reference/',
       displayName: 'Spring Security',
-      baseDocUrl: 'https://docs.spring.io/spring-security',
       referenceBaseUrl: 'https://docs.spring.io/spring-security',
       referenceLayout: 'directory',
       // Directory layout: subsections only resolve to <dir>/<subsection>.html, so nested folders
@@ -200,7 +161,6 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       },
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-security/reference/6.5/index.html
       cacheStrategy: 'long',
-      scopes: ['security', 'authentication', 'authorization', 'oauth2', 'csrf'],
       referenceSections: [
         'servlet',
         'reactive',
@@ -223,12 +183,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: '',
       versionInsertAfter: 'https://docs.spring.io/spring-data/jpa/reference/',
       displayName: 'Spring Data JPA',
-      baseDocUrl: 'https://docs.spring.io/spring-data/jpa',
       referenceBaseUrl: 'https://docs.spring.io/spring-data/jpa/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-data/jpa/reference/3.5/index.html
       cacheStrategy: 'long',
-      scopes: ['jpa', 'data', 'repository', 'hibernate', 'persistence'],
       referenceSections: [
         'jpa',
         'auditing',
@@ -245,12 +203,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-batch/reference/',
       displayName: 'Spring Batch',
-      baseDocUrl: 'https://docs.spring.io/spring-batch',
       referenceBaseUrl: 'https://docs.spring.io/spring-batch/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-batch/reference/5.2/index.html
       cacheStrategy: 'long',
-      scopes: ['batch', 'job', 'step', 'chunk', 'etl'],
       referenceSections: [
         'spring-batch-architecture',
         'whatsnew',
@@ -275,12 +231,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-integration/reference/',
       displayName: 'Spring Integration',
-      baseDocUrl: 'https://docs.spring.io/spring-integration',
       referenceBaseUrl: 'https://docs.spring.io/spring-integration/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-integration/reference/6.5/index.html
       cacheStrategy: 'long',
-      scopes: ['integration', 'eip', 'messaging', 'channel', 'endpoint'],
       referenceSections: [
         'overview',
         'message',
@@ -306,12 +260,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-kafka/reference/',
       displayName: 'Spring for Apache Kafka',
-      baseDocUrl: 'https://docs.spring.io/spring-kafka',
       referenceBaseUrl: 'https://docs.spring.io/spring-kafka/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-kafka/reference/3.3/index.html
       cacheStrategy: 'long',
-      scopes: ['kafka', 'streams', 'consumer', 'producer', 'retrytopic'],
       referenceSections: [
         'introduction',
         'quick-tour',
@@ -331,12 +283,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: '',
       versionInsertAfter: 'https://docs.spring.io/spring-modulith/reference/',
       displayName: 'Spring Modulith',
-      baseDocUrl: 'https://docs.spring.io/spring-modulith',
       referenceBaseUrl: 'https://docs.spring.io/spring-modulith/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-modulith/reference/1.4/index.html
       cacheStrategy: 'long',
-      scopes: ['modulith', 'modules', 'events', 'architecture'],
       referenceSections: [
         'fundamentals',
         'events',
@@ -355,12 +305,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-cloud-gateway/reference/',
       displayName: 'Spring Cloud Gateway',
-      baseDocUrl: 'https://docs.spring.io/spring-cloud-gateway',
       referenceBaseUrl: 'https://docs.spring.io/spring-cloud-gateway/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-cloud-gateway/reference/4.3/index.html
       cacheStrategy: 'long',
-      scopes: ['gateway', 'cloud', 'routing', 'filters', 'proxy'],
       referenceSections: [
         'spring-cloud-gateway-server-webflux',
         'spring-cloud-gateway-server-webmvc',
@@ -376,12 +324,10 @@ export const SPRING_PROJECTS: Map<string, SpringProjectConfig> = new Map<string,
       githubTagPrefix: 'v',
       versionInsertAfter: 'https://docs.spring.io/spring-cloud-config/reference/',
       displayName: 'Spring Cloud Config',
-      baseDocUrl: 'https://docs.spring.io/spring-cloud-config',
       referenceBaseUrl: 'https://docs.spring.io/spring-cloud-config/reference',
       referenceLayout: 'flat',
       hasVersionedDocs: true, // Verified: https://docs.spring.io/spring-cloud-config/reference/4.3/index.html
       cacheStrategy: 'long',
-      scopes: ['config', 'cloud', 'configuration', 'server', 'client'],
       referenceSections: [
         'quickstart',
         'server',

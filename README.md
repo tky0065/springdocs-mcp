@@ -303,6 +303,7 @@ echo $? -eq 0 && echo "✅ Network: OK" || echo "❌ Network: FAILED"
 
 ### ⚡ **Performance & Resilience**
 - Repeated requests are served from the in-memory cache (30 min TTL, 24 h for stable content) without a new network call
+- The cache is bounded by an estimated memory budget (64 MiB by default, LRU eviction, a single value larger than the budget is not cached); override with `MCP_CACHE_MAX_MB` (e.g. `MCP_CACHE_MAX_MB=32`). `spring_cache_stats` reports entries and estimated memory used / budget
 - Retry with exponential backoff and request timeouts on all external HTTP calls
 - Responses larger than 5 MiB are rejected
 
