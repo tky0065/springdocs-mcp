@@ -68,7 +68,7 @@ docker run -i \
 
 ## HTTP transport
 
-The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_TRANSPORT=http` and `MCP_HOST=0.0.0.0`, then publish the port (for example `-p 127.0.0.1:3000:3000`). The endpoint is `POST /mcp`, with `GET /healthz` for health checks. There is no authentication: do not expose the port beyond trusted networks. If the published port differs from the internal one, set `MCP_ALLOWED_HOSTS` (for example `localhost:8080`). See the main README, section "Transport HTTP". The Dockerfile itself is unchanged.
+The image runs on stdio by default. To serve MCP over Streamable HTTP, set `MCP_TRANSPORT=http` and `MCP_HOST=0.0.0.0`, then publish the port (for example `-p 127.0.0.1:3000:3000`). The endpoint is `POST /mcp`, with `GET /healthz` for health checks. There is no authentication: do not expose the port beyond trusted networks. If the published port differs from the internal one, set `MCP_ALLOWED_HOSTS` (for example `localhost:8080`). The same applies behind a reverse proxy that forwards a `Host` without a port (client on port 80/443): list it exactly as received, for example `MCP_ALLOWED_HOSTS=mcp.example.com`. See the main README, section "Transport HTTP". The Dockerfile itself is unchanged.
 
 ## Features
 
