@@ -196,13 +196,13 @@ class SpringBootMCPServerAdvanced {
 
   // Original tool handlers (optimized)
   private async handleSearchDocs(args: any) {
-    const { query, docType = "all", limit = 10 } = args;
+    const { query, docType = "all", limit = 10, version } = args;
 
     if (!query || typeof query !== "string") {
       throw new Error("The 'query' parameter is required and must be a string");
     }
 
-    const results = await this.docsService.searchDocumentation(query, docType, limit);
+    const results = await this.docsService.searchDocumentation(query, docType, limit, version);
 
     return {
       content: [
@@ -307,13 +307,13 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleSearchConcepts(args: any) {
-    const { concept } = args;
+    const { concept, version } = args;
 
     if (!concept || typeof concept !== "string") {
       throw new Error("The 'concept' parameter is required and must be a string");
     }
 
-    const results = await this.docsService.searchConcepts(concept);
+    const results = await this.docsService.searchConcepts(concept, version);
 
     return {
       content: [
@@ -399,9 +399,9 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleGetMigrationGuide(args: any) {
-    const { version, document = "auto", section, offset = 0 } = args;
+    const { version, document = "auto", section, offset = 0, project = "spring-boot" } = args;
 
-    const guide = await this.docsService.getMigrationGuide(version, document, section, offset);
+    const guide = await this.docsService.getMigrationGuide(version, document, section, offset, project);
 
     return {
       content: [
