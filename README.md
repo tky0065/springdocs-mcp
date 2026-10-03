@@ -110,6 +110,8 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | \
 "Search for REST API documentation in Spring Boot"
 ```
 
+`search_spring_docs` accepts `docType=content`: full-text search (BM25 ranking) over the pages the server has already read (`get_spring_project`, `get_spring_reference`, `get_spring_guide`). It is included in `docType=all` and stays empty until a page has been read.
+
 ### 🆕 Spring AI Support
 ```
 "Get Spring AI ChatClient reference documentation"

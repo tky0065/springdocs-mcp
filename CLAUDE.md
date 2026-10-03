@@ -62,6 +62,7 @@ npm run cicd:check   # Check CI/CD configuration status
 - `src/services/boot-wiki.ts`: Spring Boot wiki access (migration guides / upgrade notes)
 - `src/services/release-notes.ts`: GitHub release notes fetching and focus filtering
 - `src/services/diagnosis.ts`: local (offline) stack trace analysis used by `diagnose_spring_issues`
+- `src/services/search-index.ts`: in-memory BM25 index (`SearchIndex`) fed by pages the docs service already fetched; powers `docType="content"` of `search_spring_docs` (never cached, empty on a cold server)
 
 **Tool Definitions** (`src/tools/index.ts`):
 - Centralized schema definitions for all 17 MCP tools
