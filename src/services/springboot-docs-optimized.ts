@@ -18,6 +18,7 @@ export class SpringBootDocsServiceOptimized {
   private readonly baseUrl = 'https://docs.spring.io';
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
+  private readonly springGuidesDataUrl = 'https://spring.io/page-data/guides/page-data.json';
   private projectsConfig: SpringProjectsConfig;
   private cache: CacheService;
   private searchIndex: SearchIndex;
@@ -158,37 +159,42 @@ export class SpringBootDocsServiceOptimized {
 
     console.error(`🔍 Fetching guides for category: ${category || 'all'}`);
     try {
-      const response = await this.fetchWithRetry(this.springGuideUrl);
+      // The /guides page is rendered client-side (Gatsby): its HTML holds no guide links,
+      // the list lives in the page-data JSON that the page itself loads.
+      const response = await this.fetchWithRetry(this.springGuidesDataUrl);
 
       if (!response.ok) {
         throw new Error('Unable to access Spring guides page');
       }
 
-      const html = await response.text();
-      const $ = cheerio.load(html);
+      let nodes: unknown;
+      try {
+        nodes = JSON.parse(await response.text())?.result?.data?.guides?.nodes;
+      } catch {
+        nodes = undefined;
+      }
+      if (!Array.isArray(nodes)) {
+        throw new Error('Unexpected format of the Spring guides data (no guides list found)');
+      }
 
       const guides: any[] = [];
+      for (const node of nodes as any[]) {
+        const title = typeof node?.title === 'string' ? node.title.trim() : '';
+        const url = absoluteSpringUrl(typeof node?.path === 'string' ? node.path : undefined);
+        if (!title || !url) continue;
 
-      // Parse actual Spring guides page
-      $('.guide-item, .card, .guide-card, .list-item, .guide').each((_, element: any) => {
-        const $guide = $(element);
-        const title = $guide.find('h2, h3, .title, .guide-title, a').first().text().trim();
-        const description = $guide.find('p, .description, .summary').first().text().trim();
-        const guideCategory = $guide.find('.category, .badge, .label').first().text().trim();
-        const url = absoluteSpringUrl($guide.find('a').first().attr('href'));
+        const categories: string[] = Array.isArray(node.category) ? node.category.map(String) : [];
+        const guideCategory = categories.join(', ');
+        if (category && !guideCategory.toLowerCase().includes(category.toLowerCase())) continue;
 
-        if (title && url) {
-          if (!category || guideCategory.toLowerCase().includes(category.toLowerCase())) {
-            guides.push({
-              type: 'spring-guide',
-              title: title,
-              description: description || 'Spring guide',
-              category: guideCategory || 'General',
-              url: url,
-            });
-          }
-        }
-      });
+        guides.push({
+          type: 'spring-guide',
+          title,
+          description: (typeof node.description === 'string' && node.description.trim()) || 'Spring guide',
+          category: guideCategory || 'General',
+          url,
+        });
+      }
 
       const results = guides.slice(0, limit);
       this.cache.set(cacheKey, results);
@@ -616,7 +622,10 @@ export class SpringBootDocsServiceOptimized {
     $('nav, footer, .navbar, .sidebar, #js-sidebar').remove();
 
     // Get main content
-    const mainContent = $('.content, .guide-content, main, .markdown-body, .guide-body, article').first();
+    // Selectors are tried in priority order: a single comma list would pick the first match in
+    // document order (on spring.io an unrelated <article> card comes before the guide body)
+    const selectors = ['.ascii-doc', '.content', '.guide-content', 'main', '.markdown-body', '.guide-body', 'article'];
+    const mainContent = selectors.map(selector => $(selector).first()).find(match => match.length > 0) ?? $();
 
     let markdown: string;
     if (mainContent.length === 0) {
@@ -625,6 +634,10 @@ export class SpringBootDocsServiceOptimized {
       markdown = turndownService.turndown($('body').html() || '');
     } else {
       markdown = turndownService.turndown(mainContent.html() || '');
+    }
+
+    if (!markdown.trim()) {
+      throw new Error(`No content could be extracted from the guide page: ${sourceUrl}`);
     }
 
     // Use intelligent extraction

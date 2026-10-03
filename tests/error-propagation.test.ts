@@ -10,6 +10,7 @@ import { fakeResponse, fixture, settle } from "./helpers.js";
 const mockedFetch = vi.mocked(fetch) as unknown as ReturnType<typeof vi.fn>;
 const LISTING_HTML = fixture("listing.html");
 const RELEASES_JSON = fixture("releases.json");
+const GUIDES_JSON = fixture("guides-page-data.json");
 
 /** URL substrings that answer 503; everything else answers with the fixtures. */
 let down: string[] = [];
@@ -22,7 +23,9 @@ beforeEach(() => {
   mockedFetch.mockReset();
   mockedFetch.mockImplementation(async (url: string) => {
     if (down.some((fragment) => String(url).includes(fragment))) return fakeResponse(503);
-    return fakeResponse(200, String(url).includes("api.github.com") ? RELEASES_JSON : LISTING_HTML);
+    const target = String(url);
+    if (target.includes("page-data/guides")) return fakeResponse(200, GUIDES_JSON);
+    return fakeResponse(200, target.includes("api.github.com") ? RELEASES_JSON : LISTING_HTML);
   });
 });
 afterEach(() => {
