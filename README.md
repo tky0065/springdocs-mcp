@@ -203,6 +203,14 @@ Endpoint MCP : `POST /mcp` (mode sans état) ; santé : `GET /healthz`. **Aucune
 
 Le `Host` doit être de la forme `nom:port` : un `Host` sans port (client sur le port 80 ou 443 derrière un reverse proxy, par exemple `Host: mcp.example.com`) est refusé en 403. Il faut alors le déclarer tel que le proxy le transmet, via `MCP_ALLOWED_HOSTS=mcp.example.com` (liste séparée par des virgules, comparaison exacte avec l'en-tête reçu).
 
+### Jeton GitHub (optionnel)
+
+`get_release_notes` et `compare_spring_versions` interrogent l'API GitHub, limitée à 60 requêtes/heure sans authentification. Définir `GITHUB_TOKEN` (jeton sans scope particulier suffit) relève cette limite à 5000/heure ; le jeton n'est envoyé qu'à `api.github.com` (jamais à un autre hôte ni après une redirection) et n'est jamais journalisé. En cas de limite atteinte, l'outil échoue immédiatement avec un message clair (délai de reprise inclus) au lieu d'attendre. `get_release_notes` accepte `version` en `X.Y` (ex. `3.5`) pour obtenir la dernière release stable de cette mineure ; `compare_spring_versions` applique `focus` (`breaking-changes`, `new-features`, `deprecations`).
+
+```json
+{ "mcpServers": { "springdocs": { "command": "npx", "args": ["@enokdev/springdocs-mcp@latest"], "env": { "GITHUB_TOKEN": "ghp_..." } } } }
+```
+
 ## 🧪 Testing & Development
 
 ### Quick Test

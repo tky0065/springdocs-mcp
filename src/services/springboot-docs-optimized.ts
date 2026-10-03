@@ -3,6 +3,7 @@ import { CacheService } from './cache.js';
 import { fetchWithRetry, FetchResult } from './http.js';
 import { turndownService, extractContent, pageMarkdown } from './markdown.js';
 import { absoluteSpringUrl, assertSafeSegment, normalizeVersion } from './url.js';
+import { fetchSpringGuidesList } from './guides-list.js';
 
 import { WikiDocument, resolveWikiDocument, wikiPageName, wikiPageUrl, expectedWikiTitle, extractWikiMarkdown, selectSections } from './boot-wiki.js';
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
@@ -18,7 +19,6 @@ export class SpringBootDocsServiceOptimized {
   private readonly baseUrl = 'https://docs.spring.io';
   private readonly springProjectsUrl = 'https://spring.io/projects';
   private readonly springGuideUrl = 'https://spring.io/guides';
-  private readonly springGuidesDataUrl = 'https://spring.io/page-data/guides/page-data.json';
   private projectsConfig: SpringProjectsConfig;
   private cache: CacheService;
   private searchIndex: SearchIndex;
@@ -159,42 +159,7 @@ export class SpringBootDocsServiceOptimized {
 
     console.error(`🔍 Fetching guides for category: ${category || 'all'}`);
     try {
-      // The /guides page is rendered client-side (Gatsby): its HTML holds no guide links,
-      // the list lives in the page-data JSON that the page itself loads.
-      const response = await this.fetchWithRetry(this.springGuidesDataUrl);
-
-      if (!response.ok) {
-        throw new Error('Unable to access Spring guides page');
-      }
-
-      let nodes: unknown;
-      try {
-        nodes = JSON.parse(await response.text())?.result?.data?.guides?.nodes;
-      } catch {
-        nodes = undefined;
-      }
-      if (!Array.isArray(nodes)) {
-        throw new Error('Unexpected format of the Spring guides data (no guides list found)');
-      }
-
-      const guides: any[] = [];
-      for (const node of nodes as any[]) {
-        const title = typeof node?.title === 'string' ? node.title.trim() : '';
-        const url = absoluteSpringUrl(typeof node?.path === 'string' ? node.path : undefined);
-        if (!title || !url) continue;
-
-        const categories: string[] = Array.isArray(node.category) ? node.category.map(String) : [];
-        const guideCategory = categories.join(', ');
-        if (category && !guideCategory.toLowerCase().includes(category.toLowerCase())) continue;
-
-        guides.push({
-          type: 'spring-guide',
-          title,
-          description: (typeof node.description === 'string' && node.description.trim()) || 'Spring guide',
-          category: guideCategory || 'General',
-          url,
-        });
-      }
+      const guides = await fetchSpringGuidesList(category);
 
       const results = guides.slice(0, limit);
       this.cache.set(cacheKey, results);

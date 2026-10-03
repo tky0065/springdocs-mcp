@@ -111,7 +111,7 @@ describe("normalizeReleaseVersion (#33)", () => {
     expect(normalizeReleaseVersion(input)).toBe(expected);
   });
 
-  it.each(["../x", "3.5", "3.5.0/../x", "v", " 3.5.0", "3.5.0 ", "3.5.0\n", "3.x.0", "3.5.0-", "%2e%2e"])(
+  it.each(["../x", "3.5.0/../x", "v", " 3.5.0", "3.5.0 ", "3.5.0\n", "3.x.0", "3.5.0-", "%2e%2e"])(
     "rejette %j",
     (input) => {
       expect(() => normalizeReleaseVersion(input)).toThrow(/Invalid version/);

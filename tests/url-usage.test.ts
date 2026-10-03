@@ -40,6 +40,11 @@ describe("entrées sans lien (#15)", () => {
     expectOnlyLinked(await (new AdvancedFeaturesService() as any).searchProjects("widget", 10));
   });
   it("AdvancedFeaturesService.searchGuides", async () => {
-    expectOnlyLinked(await (new AdvancedFeaturesService() as any).searchGuides("widget", 10));
+    mockedFetch.mockImplementation(async () => fakeResponse(200, JSON.stringify({ result: { data: { guides: { nodes: [
+      { title: "Widget no link", description: "widget without path", category: [] },
+      { title: "Widget linked", description: "widget with path", path: "/guides/widget", category: [] },
+    ] } } } })));
+    const guides = await (new AdvancedFeaturesService() as any).searchGuides("widget", 10);
+    expect(guides.map((g: { url: string }) => g.url)).toEqual(["https://spring.io/guides/widget"]);
   });
 });
