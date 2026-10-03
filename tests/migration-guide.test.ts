@@ -83,18 +83,33 @@ describe("get_migration_guide (#35)", () => {
     expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
 
-  it("pagination : pied Partie et page suivante sans fetch", async () => {
+  it("pagination : pied Part et page suivante sans fetch", async () => {
     mockedFetch.mockImplementation(async () => fakeResponse(200, bigGuide()));
     const service = new SpringBootDocsServiceOptimized();
     const first = await service.getMigrationGuide("3.0");
-    expect(first).toContain("Partie 0–");
+    expect(first).toContain("Part 0–");
     const next = /offset=(\d+)/.exec(first)![1];
     const second = await service.getMigrationGuide("3.0", "auto", undefined, Number(next));
-    expect(second).toContain(`Partie ${next}–`);
+    expect(second).toContain(`Part ${next}–`);
     expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
 
-  it.each(["../x", "3", "3.x", "v3.0", " 3.0", "current", ""])("version invalide %j -> rejet sans fetch", async (version) => {
+  it("pied en anglais ; avec section, precise que offset s'applique au texte filtre", async () => {
+    const html = GUIDE.replace(
+      '<div class="markdown-body">',
+      `<div class="markdown-body"><h2>Jakarta EE filler</h2>${"<p>Paragraphe de remplissage pour la pagination.</p>".repeat(300)}`
+    );
+    mockedFetch.mockImplementation(async () => fakeResponse(200, html));
+    const service = new SpringBootDocsServiceOptimized();
+    const filtered = await service.getMigrationGuide("3.0", "auto", "jakarta");
+    expect(filtered).toMatch(/Part 0–\d+ of \d+ characters\. To continue, call again with offset=\d+/);
+    expect(filtered).toContain("offset applies to the filtered text");
+    expect(filtered).not.toMatch(/Partie|sur \d+ caract/);
+    const full = await service.getMigrationGuide("3.0", "auto", undefined);
+    expect(full).not.toContain("filtered text");
+  });
+
+  it.each(["../x", "3","3.x", "v3.0", " 3.0", "current", ""])("version invalide %j -> rejet sans fetch", async (version) => {
     await expect(new SpringBootDocsServiceOptimized().getMigrationGuide(version)).rejects.toThrow();
     expect(mockedFetch).not.toHaveBeenCalled();
   });
