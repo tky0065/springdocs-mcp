@@ -428,9 +428,9 @@ class SpringBootMCPServerAdvanced {
   }
 
   private async handleFindDependency(args: any) {
-    const { need, build = "both" } = args;
+    const { need, build = "both", bootVersion } = args;
 
-    const text = await this.initializrService.findDependency(need, build);
+    const text = await this.initializrService.findDependency(need, build, bootVersion);
 
     return {
       content: [

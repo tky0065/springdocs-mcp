@@ -34,6 +34,7 @@ export interface Snippets {
 
 const MAX_RESULTS = 5;
 const MIN_WORD_LENGTH = 2;
+const DEVELOPMENT_ONLY = new Set(['spring-boot-devtools', 'spring-boot-docker-compose']);
 const SAFE_VALUE = /^[A-Za-z0-9_.-]+$/;
 const STOP_WORDS = new Set([
   'a', 'an', 'the', 'for', 'with', 'to', 'and', 'of', 'in', 'on', 'my', 'i', 'want', 'need', 'use', 'using', 'spring',
@@ -58,6 +59,19 @@ export function flattenCatalog(meta: InitializrMetadata): CatalogEntry[] {
   })));
 }
 
+/** One line of plain text, with the markdown specials neutralised (for titles built from user input). */
+export function escapeInline(text: string): string {
+  return text.replace(/\s+/g, ' ').trim().replace(/[\\`*_[\]<>#|~]/g, '\\$&');
+}
+
+const SHORT_WORD_LENGTH = 3;
+
+/** Substring match, except that short words (2-3 characters) must be whole words ("ai" is not in "mail"). */
+function contains(text: string, word: string): boolean {
+  if (word.length > SHORT_WORD_LENGTH) return text.includes(word);
+  return new RegExp(`(?<![a-z0-9])${word}(?![a-z0-9])`).test(text);
+}
+
 function score(entry: CatalogEntry, words: string[]): number {
   const id = entry.id.toLowerCase();
   const name = entry.name.toLowerCase();
@@ -65,9 +79,9 @@ function score(entry: CatalogEntry, words: string[]): number {
   let total = 0;
   for (const word of words) {
     if (id === word) total += 10;
-    else if (id.includes(word)) total += 5;
-    if (name.includes(word)) total += 4;
-    if (description.includes(word)) total += 1;
+    else if (contains(id, word)) total += 5;
+    if (contains(name, word)) total += 4;
+    if (contains(description, word)) total += 1;
   }
   return total;
 }
@@ -103,7 +117,17 @@ export function buildSnippets(id: string, data: DependencyData, build: BuildChoi
   }
   const coordinates = `${c.groupId}:${c.artifactId}`;
   if (c.groupId === 'org.springframework.boot' && c.artifactId === 'spring-boot') {
-    return { kind: 'plugin', coordinates, notes: ['Build plugin, not a dependency: enable it in the build configuration.'] };
+    // Initializr publishes the "native" entry with the spring-boot coordinates, but it generates the GraalVM plugin.
+    return {
+      kind: 'plugin',
+      coordinates: id === 'native' ? undefined : coordinates,
+      notes: [
+        'Build plugin, not a dependency: enable it in the build configuration.',
+        ...(id === 'native'
+          ? ['GraalVM Native Build Tools: Gradle plugin `org.graalvm.buildtools.native`, Maven plugin `org.graalvm.buildtools:native-maven-plugin`.']
+          : []),
+      ],
+    };
   }
 
   const notes: string[] = [];
@@ -121,11 +145,15 @@ export function buildSnippets(id: string, data: DependencyData, build: BuildChoi
     scope = 'compile';
   }
 
+  // Initializr publishes these as "runtime" but generates optional (Maven) / developmentOnly (Gradle).
+  const developmentOnly = scope === 'runtime' && c.groupId === 'org.springframework.boot' && DEVELOPMENT_ONLY.has(c.artifactId);
+  if (developmentOnly) notes.push('Development-only: not packaged in the production artifact.');
+
   const gav = c.version ? `${coordinates}:${c.version}` : coordinates;
   const mavenExtra = [
     ...(c.version ? [`<version>${c.version}</version>`] : []),
     ...(scope === 'runtime' || scope === 'test' || scope === 'provided' ? [`<scope>${scope}</scope>`] : []),
-    ...(scope === 'annotationProcessor' ? ['<optional>true</optional>'] : []),
+    ...(scope === 'annotationProcessor' || developmentOnly ? ['<optional>true</optional>'] : []),
   ];
   const mavenParts: string[] = [];
   if (bom) {
@@ -154,7 +182,7 @@ export function buildSnippets(id: string, data: DependencyData, build: BuildChoi
   };
   const gradleLines = [
     ...(bom ? [`implementation(platform("${bom.groupId}:${bom.artifactId}:${bom.version}"))`] : []),
-    ...gradleConfig[scope].map(config => `${config}("${gav}")`),
+    ...(developmentOnly ? ['developmentOnly'] : gradleConfig[scope]).map(config => `${config}("${gav}")`),
   ];
 
   return {
@@ -174,9 +202,9 @@ export function formatDependencyMatches(
   build: BuildChoice,
 ): string {
   if (ranked.length === 0) {
-    return `No dependency matches "${need.trim()}". Try other English keywords, or list everything with get_spring_initializr (section "dependencies").`;
+    return `No dependency matches "${escapeInline(need)}". Try other English keywords, or list everything with get_spring_initializr (section "dependencies").`;
   }
-  const lines = [`# Dependencies for "${need.trim()}"${data.bootVersion ? ` (Spring Boot ${data.bootVersion})` : ''}`];
+  const lines = [`# Dependencies for "${escapeInline(need)}"${data.bootVersion ? ` (Spring Boot ${data.bootVersion})` : ''}`];
   for (const entry of ranked.slice(0, MAX_RESULTS)) {
     const snippets = buildSnippets(entry.id, data, build);
     lines.push('', `## \`${entry.id}\` — ${entry.name}`);
