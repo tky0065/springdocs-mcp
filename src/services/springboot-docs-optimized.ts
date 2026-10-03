@@ -9,6 +9,9 @@ import { WikiDocument, resolveWikiDocument, wikiPageName, wikiPageUrl, expectedW
 import { SpringProjectsConfig, springProjectsConfig } from './spring-projects-config.js';
 import { SearchIndex } from './search-index.js';
 
+/** Below this size an extracted guide is considered empty (a real guide is far longer; the smallest fixture is ~190). */
+const MIN_GUIDE_CHARS = 100;
+
 /**
  * Spring Documentation Service - Supports multiple Spring projects (Boot, AI, Framework, etc.)
  * Uses ONLY real Spring documentation APIs - no mock data
@@ -40,6 +43,11 @@ export class SpringBootDocsServiceOptimized {
     } catch (error) {
       console.error(`Content index failure for ${docId}:`, error instanceof Error ? error.message : error);
     }
+  }
+
+  /** Re-feeds the index from the cache when a page was evicted or read before the index existed. */
+  private reindexIfMissing(docId: string, title: string, url: string, text: string): void {
+    if (!this.searchIndex.has(docId)) this.indexPage(docId, title, url, text);
   }
 
   /**
@@ -104,6 +112,7 @@ export class SpringBootDocsServiceOptimized {
     const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for project: ${projectName}`);
+      this.reindexIfMissing(`project:${slug}`, projectName, cached.url, cached.markdown);
       return cached;
     }
 
@@ -184,9 +193,13 @@ export class SpringBootDocsServiceOptimized {
     }
     const safeId = encodeURIComponent(name);
     const cacheKey = `guide:${name}:${detailLevel}`;
+    const rawKey = `guide-md:${name}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for guide: ${guideId} (${detailLevel})`);
+      // The formatted text depends on detailLevel: the index is fed from the full markdown kept apart
+      const full = this.cache.get<{ markdown: string; url: string }>(rawKey);
+      if (full) this.reindexIfMissing(`guide:${name}`, `Guide: ${name}`, full.url, full.markdown);
       return cached;
     }
 
@@ -224,8 +237,11 @@ export class SpringBootDocsServiceOptimized {
     }
 
     try {
-      const result = this.processHtmlGuide(content, guideId, sourceUrl, detailLevel);
-      this.indexPage(`guide:${name}`, `Guide: ${name}`, sourceUrl, result);
+      const markdown = this.extractGuideMarkdown(content, sourceUrl);
+      const result = this.formatGuide(markdown, guideId, sourceUrl, detailLevel);
+      // Index the complete text, whatever the detail level of this read
+      this.indexPage(`guide:${name}`, `Guide: ${name}`, sourceUrl, markdown);
+      this.cache.setLongTerm(rawKey, { markdown, url: sourceUrl });
       this.cache.setLongTerm(cacheKey, result);
       return result;
     } catch (error) {
@@ -270,6 +286,12 @@ export class SpringBootDocsServiceOptimized {
     const cached = this.cache.get<{ markdown: string; url: string }>(cacheKey);
     if (cached) {
       console.error(`✅ Cache hit for reference: ${projectId}/${section}`);
+      this.reindexIfMissing(
+        `reference:${projectId}:${normalizedVersion ?? 'current'}:${section}:${subsection ?? 'main'}`,
+        this.referenceTitle(projectId, section, subsection),
+        cached.url,
+        cached.markdown
+      );
       return this.formatPage(this.referenceTitle(projectId, section, subsection), cached.markdown, cached.url, offset, 'For complete reference, visit');
     }
 
@@ -359,6 +381,7 @@ export class SpringBootDocsServiceOptimized {
     let entry = this.cache.get<{ markdown: string; url: string; title: string }>(cacheKey);
     if (entry) {
       console.error(`✅ Cache hit for migration page: ${cacheKey}`);
+      this.reindexIfMissing(cacheKey, entry.title, entry.url, entry.markdown);
     } else {
       const url = wikiPageUrl(wikiPageName(normalizedVersion, resolved));
       console.error(`🔍 Fetching migration page: ${url}`);
@@ -369,7 +392,8 @@ export class SpringBootDocsServiceOptimized {
       const html = await response.text();
       const { markdown, title } = extractWikiMarkdown(html, expectedWikiTitle(normalizedVersion, resolved), url);
       entry = { markdown, url, title };
-      // Only successful, verified pages are cached
+      // Only successful, verified pages are cached and indexed (whole page, not just the requested section)
+      this.indexPage(cacheKey, entry.title, url, markdown);
       this.cache.setLongTerm(cacheKey, entry);
     }
 
@@ -401,15 +425,15 @@ export class SpringBootDocsServiceOptimized {
   /**
    * Search Spring concepts - alias for backward compatibility
    */
-  async searchConcepts(concept: string, category?: string): Promise<string> {
-    return this.searchSpringConcepts(concept, category);
+  async searchConcepts(concept: string): Promise<string> {
+    return this.searchSpringConcepts(concept);
   }
 
   /**
    * Search Spring concepts - using real documentation
    */
-  async searchSpringConcepts(concept: string, category?: string): Promise<string> {
-    const cacheKey = `concepts:${concept}:${category || 'all'}`;
+  async searchSpringConcepts(concept: string): Promise<string> {
+    const cacheKey = `concepts:${concept}`;
     const cached = this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
@@ -579,8 +603,8 @@ export class SpringBootDocsServiceOptimized {
     }
   }
 
-  private processHtmlGuide(content: string, guideId: string, sourceUrl: string, detailLevel: string = 'medium'): string {
-    console.error(`Processing HTML content with detail level: ${detailLevel}...`);
+  private extractGuideMarkdown(content: string, sourceUrl: string): string {
+    console.error('Processing HTML guide content...');
     const $ = cheerio.load(content);
 
     // Remove navigation and footer elements
@@ -601,10 +625,15 @@ export class SpringBootDocsServiceOptimized {
       markdown = turndownService.turndown(mainContent.html() || '');
     }
 
-    if (!markdown.trim()) {
+    const trimmed = markdown.trim();
+    // A near-empty page or a JSON excerpt (client-rendered page data) is not a guide
+    if (trimmed.length < MIN_GUIDE_CHARS || /^[{[]\s*"/.test(trimmed)) {
       throw new Error(`No content could be extracted from the guide page: ${sourceUrl}`);
     }
+    return markdown;
+  }
 
+  private formatGuide(markdown: string, guideId: string, sourceUrl: string, detailLevel: string): string {
     // Use intelligent extraction
     const { content: extractedContent, truncated } = extractContent(markdown, detailLevel);
 

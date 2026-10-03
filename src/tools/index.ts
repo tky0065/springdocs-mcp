@@ -160,7 +160,7 @@ export class ToolDefinitions {
       },
       {
         name: "search_spring_concepts",
-        description: "Recherche des concepts Spring Boot par catégorie avec des explications détaillées",
+        description: "Recherche des concepts Spring Boot dans la documentation de référence (titres de sections correspondants, extraits)",
         inputSchema: {
           type: "object",
           properties: {
@@ -168,11 +168,6 @@ export class ToolDefinitions {
               type: "string",
               maxLength: 200,
               description: "Le concept Spring Boot à rechercher (par exemple: 'auto-configuration', 'profiles', 'actuator')",
-            },
-            category: {
-              type: "string",
-              enum: ["core", "web", "data", "security", "testing", "production"],
-              description: "Catégorie du concept pour filtrer les résultats",
             },
           },
           required: ["concept"],

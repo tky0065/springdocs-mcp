@@ -64,6 +64,10 @@ export class SearchIndex {
     return this.docs.size;
   }
 
+  has(docId: string): boolean {
+    return this.docs.has(docId);
+  }
+
   add(docId: string, doc: { title: string; url: string; text: string }): void {
     this.remove(docId);
     const text = doc.text.length > this.maxChars ? doc.text.slice(0, this.maxChars) : doc.text;
